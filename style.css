@@ -65,13 +65,78 @@ h1 {
   color: var(--ink-soft);
 }
 
-.masthead nav {
+.intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.intro-text { flex: 1 1 auto; min-width: 0; }
+
+.portrait {
+  flex: 0 0 auto;
+  margin-top: 0.5rem;
+}
+
+.portrait img {
+  display: block;
+  width: 9.5rem;
+  height: 9.5rem;
+  object-fit: cover;
+  border-radius: 50%;
+  filter: saturate(0.92);
+}
+
+.masthead nav.contact {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
   padding-bottom: 2.5rem;
-  border-bottom: 1px solid var(--rule);
   font-size: 0.9rem;
+}
+
+/* ---------- section nav ---------- */
+
+nav.sections {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-inline: -1.5rem;
+  padding: 0 1.5rem;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+nav.sections ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 0.85rem 0;
+  list-style: none;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+
+nav.sections a {
+  border-bottom: none;
+  color: var(--ink-faint);
+}
+
+nav.sections a:hover { color: var(--accent); }
+
+/* Anchor targets clear the sticky bar. */
+section { scroll-margin-top: 4.5rem; }
+
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
 /* ---------- sections ---------- */
@@ -211,8 +276,19 @@ footer p { margin: 0; }
   .masthead { padding-top: 3.5rem; }
   h1 { font-size: 2.1rem; }
   .standfirst { font-size: 1.05rem; }
-  .masthead nav { gap: 1rem 1.25rem; }
+  .masthead nav.contact { gap: 1rem 1.25rem; }
   section { margin-top: 3rem; }
+
+  .intro {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+  .portrait { margin-top: 0; }
+  .portrait img { width: 6.5rem; height: 6.5rem; }
+
+  nav.sections { margin-inline: -1rem; padding: 0 1rem; }
+  nav.sections ul { gap: 1.1rem; font-size: 0.72rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -227,4 +303,5 @@ footer p { margin: 0; }
   .masthead { padding-top: 0; }
   a { border-bottom: none; }
   .entry { page-break-inside: avoid; }
+  nav.sections { display: none; }
 }

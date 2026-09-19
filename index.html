@@ -11,18 +11,40 @@
 <body>
 
 <header class="masthead">
-  <h1>Neal D&rsquo;Andrea</h1>
-  <p class="standfirst">
-    PhD candidate in computer science at the University of Cincinnati. I work on
-    two things: teaching robots to hand objects to people, and building the
-    market data infrastructure behind a live options trading operation.
-  </p>
-  <nav aria-label="Contact">
+  <div class="intro">
+    <div class="intro-text">
+      <h1>Neal D&rsquo;Andrea</h1>
+      <p class="standfirst">
+        PhD candidate in computer science at the University of Cincinnati. I work
+        on two things: teaching robots to hand objects to people, and building the
+        market data infrastructure behind a live options trading operation.
+      </p>
+    </div>
+    <!-- PORTRAIT: drop portrait.jpg into this folder, then delete the two
+         comment markers around the block below to switch it on. -->
+    <!--
+    <picture class="portrait">
+      <source srcset="portrait-small.jpg" media="(max-width: 34rem)">
+      <img src="portrait.jpg" alt="Neal D'Andrea" width="150" height="150">
+    </picture>
+    -->
+  </div>
+  <nav class="contact" aria-label="Contact">
     <a href="mailto:dandrenf@mail.uc.edu">dandrenf@mail.uc.edu</a>
     <a href="https://www.linkedin.com/in/nealdandrea">LinkedIn</a>
     <a href="https://github.com/Neal-dandrea">GitHub</a>
   </nav>
 </header>
+
+<nav class="sections" aria-label="Sections">
+  <ul>
+    <li><a href="#work">Work</a></li>
+    <li><a href="#publications">Publications</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#education">Education</a></li>
+    <li><a href="#skills">Tools</a></li>
+  </ul>
+</nav>
 
 <main>
 
@@ -193,6 +215,49 @@
   </article>
 </section>
 
+<section id="publications">
+  <h2>Publications</h2>
+
+  <!-- PLACEHOLDER — waiting on the real citation. Replace the fields below
+       with the title, author list, conference name, location and date, and
+       add href="..." to the link if there is a DOI or IEEE Xplore page. -->
+  <article class="entry compact pub">
+    <header>
+      <h3>[Paper title]</h3>
+      <p class="meta">
+        [Author list] <span class="sep">·</span>
+        IEEE [conference name], Cincinnati, Ohio <span class="sep">·</span> [year]
+      </p>
+    </header>
+    <p>[One or two sentences on what the paper shows.]</p>
+  </article>
+</section>
+
+<section id="projects">
+  <h2>Projects</h2>
+
+  <article class="entry compact project">
+    <header>
+      <h3>Deep learning models for sequential sensor data</h3>
+    </header>
+    <ul>
+      <li>
+        CNN, LSTM and autoencoder architectures in PyTorch predicting
+        experimental outcomes from time-series sensor data, using packed LSTM
+        sequences to handle variable-length series efficiently.
+      </li>
+      <li>
+        Dropout, ReduceLROnPlateau scheduling and systematic hyperparameter
+        tuning across Adam and SGD; diagnosed and resolved NaN-loss training
+        instabilities through architecture and parameter changes.
+      </li>
+      <li>
+        Exported to ONNX for computational graph validation in Netron.
+      </li>
+    </ul>
+  </article>
+</section>
+
 <section id="education">
   <h2>Education</h2>
 
@@ -215,31 +280,6 @@
     <p>
       Double major with a minor in mathematics. GPA 3.56.
     </p>
-  </article>
-</section>
-
-<section id="projects">
-  <h2>Selected project</h2>
-
-  <article class="entry compact">
-    <header>
-      <h3>Deep learning models for sequential sensor data</h3>
-    </header>
-    <ul>
-      <li>
-        CNN, LSTM and autoencoder architectures in PyTorch predicting
-        experimental outcomes from time-series sensor data, using packed LSTM
-        sequences to handle variable-length series efficiently.
-      </li>
-      <li>
-        Dropout, ReduceLROnPlateau scheduling and systematic hyperparameter
-        tuning across Adam and SGD; diagnosed and resolved NaN-loss training
-        instabilities through architecture and parameter changes.
-      </li>
-      <li>
-        Exported to ONNX for computational graph validation in Netron.
-      </li>
-    </ul>
   </article>
 </section>
 
