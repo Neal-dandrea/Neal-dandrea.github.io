@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neal D'Andrea</title>
+<meta name="description" content="Neal D'Andrea — PhD candidate in computer science at the University of Cincinnati. Robot learning and quantitative trading infrastructure.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Neal D&rsquo;Andrea</h1>
+  <p class="standfirst">
+    PhD candidate in computer science at the University of Cincinnati. I work on
+    two things: teaching robots to hand objects to people, and building the
+    market data infrastructure behind a live options trading operation.
+  </p>
+  <nav aria-label="Contact">
+    <a href="mailto:dandrenf@mail.uc.edu">dandrenf@mail.uc.edu</a>
+    <a href="https://www.linkedin.com/in/nealdandrea">LinkedIn</a>
+    <a href="https://github.com/Neal-dandrea">GitHub</a>
+  </nav>
+</header>
+
+<main>
+
+<section id="work">
+  <h2>Work</h2>
+
+  <article class="entry">
+    <header>
+      <h3>Graduate Research Assistant</h3>
+      <p class="meta">University of Cincinnati <span class="sep">·</span> Aug 2025 &ndash; present</p>
+    </header>
+    <p class="lede">
+      Robot learning for assistive handover and in-space servicing, assembly and
+      manufacturing &mdash; the problem of a robot putting an object into a
+      person&rsquo;s hand, reliably, outside the conditions it was trained in.
+    </p>
+    <ul>
+      <li>
+        Building a control framework for robotic handover from imitation
+        learning and vision&ndash;language&ndash;action models.
+      </li>
+      <li>
+        Migrated the manipulation stack from a 171M-parameter U-Net diffusion
+        policy to NVIDIA GR00T N1.7, a 3B-parameter VLA, after diagnosing that
+        the diffusion policy would not generalize outside its training
+        distribution.
+      </li>
+      <li>
+        Built the conversion pipeline from Universal Manipulation Interface
+        recordings to LeRobot v2.1 &mdash; absolute end-effector pose actions,
+        language annotations and modality metadata across 265,000 frames and
+        215 demonstrations, with per-step validation that rejects SLAM tracking
+        failures.
+      </li>
+      <li>
+        Deployed it as a real-time closed-loop controller: 125&nbsp;ms GPU
+        inference served over ZMQ, action chunks subsampled and rate-limited to
+        a workspace-gated client, executed through Cartesian impedance control
+        at 1&nbsp;kHz on a Franka FR3.
+      </li>
+      <li>
+        Found and corrected systematic train&ndash;deploy mismatches: a
+        45-degree tool-frame rotation error, stale camera frames buffered across
+        control cycles, and an observation mask that removed 5.6 percent of the
+        image the model was trained on.
+      </li>
+      <li>
+        Traced a further source of domain shift to video compression in the data
+        pipeline; rebuilt the conversion at 3&times; fidelity and retrained,
+        cutting prediction error against the original model on 20 held-out
+        episodes at every checkpoint &mdash; after first establishing that
+        single-trajectory evaluation could not separate real improvement from
+        sampler variance.
+      </li>
+      <li>
+        Built the collection pipeline itself: a UMI gripper with GoPro cameras
+        and ArUco fiducials, video processed through ORB-SLAM3 to recover 6-DOF
+        gripper poses synchronized with RGB observations and gripper state.
+      </li>
+      <li>
+        Exploring quantum-inspired low-rank attention to compress the vision
+        encoder for resource-constrained space-grade hardware.
+      </li>
+    </ul>
+  </article>
+
+  <article class="entry">
+    <header>
+      <h3>Quantitative Platform Engineer</h3>
+      <p class="meta">EQ Risk Management Consulting <span class="sep">·</span> May 2026 &ndash; present</p>
+    </header>
+    <p class="lede">
+      The full market data stack, from tick ingestion to backtest, now in daily
+      production use by a trader with twenty years in institutional S&amp;P 500
+      index options.
+    </p>
+    <ul>
+      <li>
+        Architected and shipped an end-to-end platform in Python and C++ that
+        ingests live equities, futures and options from the Schwab API over REST
+        and WebSocket.
+      </li>
+      <li>
+        Built the historical store on KDB+/q with date-partitioned storage and a
+        500&nbsp;ms tick capture pipeline across a multi-asset universe, on the
+        order of tens of millions of rows per trading day.
+      </li>
+      <li>
+        Designed a bar aggregation engine for arbitrary intervals, including
+        in-progress bars assembled from a rolling in-memory tick buffer &mdash;
+        sub-minute resolution the vendor API does not expose.
+      </li>
+      <li>
+        Established the backtesting methodology: look-ahead bias eliminated
+        through point-in-time sector and index membership reconstruction,
+        survivorship correction, and embargoed chronological splits. Systematic
+        ablation retired 13 of 14 candidate signal families as statistically
+        indistinguishable from baseline.
+      </li>
+      <li>
+        Quantified strategy capacity through effective breadth &mdash; a nominal
+        126,756-bet universe delivered only 513 independent bets after
+        correlation adjustment, which moved the research agenda off signal
+        discovery and onto sample size.
+      </li>
+      <li>
+        Implemented a C++ compute kernel with Python orchestration and a
+        GPU-accelerated backtest sweep, validating cross-implementation
+        correctness through a 61-test differential parity harness.
+      </li>
+      <li>
+        Trained PPO agents with transaction-cost-aware reward shaping and
+        calibrated slippage, evaluated against matched baselines on identical
+        bars and cost assumptions.
+      </li>
+    </ul>
+  </article>
+
+  <article class="entry">
+    <header>
+      <h3>Technical Lead, Quantitative Finance Research Program</h3>
+      <p class="meta">University of Cincinnati <span class="sep">·</span> Aug 2026 &ndash; present</p>
+    </header>
+    <ul>
+      <li>
+        Co-lead an 18-student research program across market data
+        infrastructure, machine learning signal research, agentic AI systems and
+        corporate-sponsored projects.
+      </li>
+      <li>
+        Run technical interviews for selection, assessing depth in ML evaluation
+        methodology, distributed systems and LLM application design.
+      </li>
+      <li>
+        Scope five workstreams and allocate engineers by skill assessment,
+        balancing team composition against what each project actually needs.
+      </li>
+    </ul>
+  </article>
+
+  <article class="entry">
+    <header>
+      <h3>Algorithm Engineer Intern II</h3>
+      <p class="meta">DexCom, Inc. <span class="sep">·</span> May 2025 &ndash; Aug 2025</p>
+    </header>
+    <ul>
+      <li>
+        Developed commercializable algorithms extending continuous glucose
+        monitoring into non-intensive type 2 diabetes, prediabetes, hospital
+        settings and pregnancy-related care.
+      </li>
+      <li>
+        Built statistical and machine learning models over multiple
+        simultaneous physiological data streams to improve CGM efficacy and
+        adaptability.
+      </li>
+      <li>
+        Engineered assessment and validation tooling for CGM performance across
+        diverse environments, supporting expansion into new therapeutic and
+        diagnostic markets.
+      </li>
+      <li>
+        Worked within the Advanced Technology team &mdash; therapeutics,
+        diagnostics and insights &mdash; on entrepreneurial initiatives needing
+        novel go-to-market strategies.
+      </li>
+    </ul>
+  </article>
+</section>
+
+<section id="education">
+  <h2>Education</h2>
+
+  <article class="entry compact">
+    <header>
+      <h3>PhD, Computer Science</h3>
+      <p class="meta">University of Cincinnati <span class="sep">·</span> Aug 2024 &ndash; May 2028 (expected)</p>
+    </header>
+    <p>
+      Specialization in applied machine learning and applied deep learning.
+      GPA 4.00.
+    </p>
+  </article>
+
+  <article class="entry compact">
+    <header>
+      <h3>BS, Computer and Information Science &middot; BS, Economics</h3>
+      <p class="meta">The Ohio State University <span class="sep">·</span> Aug 2020 &ndash; May 2024</p>
+    </header>
+    <p>
+      Double major with a minor in mathematics. GPA 3.56.
+    </p>
+  </article>
+</section>
+
+<section id="projects">
+  <h2>Selected project</h2>
+
+  <article class="entry compact">
+    <header>
+      <h3>Deep learning models for sequential sensor data</h3>
+    </header>
+    <ul>
+      <li>
+        CNN, LSTM and autoencoder architectures in PyTorch predicting
+        experimental outcomes from time-series sensor data, using packed LSTM
+        sequences to handle variable-length series efficiently.
+      </li>
+      <li>
+        Dropout, ReduceLROnPlateau scheduling and systematic hyperparameter
+        tuning across Adam and SGD; diagnosed and resolved NaN-loss training
+        instabilities through architecture and parameter changes.
+      </li>
+      <li>
+        Exported to ONNX for computational graph validation in Netron.
+      </li>
+    </ul>
+  </article>
+</section>
+
+<section id="skills">
+  <h2>Tools</h2>
+  <dl class="skills">
+    <dt>Languages and databases</dt>
+    <dd>Python, C++, C, q/KDB+, SQL, VBA, JavaScript</dd>
+
+    <dt>Robot learning</dt>
+    <dd>
+      PyTorch, vision&ndash;language&ndash;action models (NVIDIA GR00T),
+      imitation learning, diffusion policies, LeRobot, NVIDIA Isaac Sim and
+      Isaac Lab, ORB-SLAM3, Franka FR3, Cartesian impedance control
+    </dd>
+
+    <dt>Machine learning</dt>
+    <dd>
+      TensorFlow, scikit-learn, reinforcement learning (PPO, DQN), time-series
+      forecasting, feature engineering, model optimization
+    </dd>
+
+    <dt>Data infrastructure</dt>
+    <dd>
+      KDB+ time-series databases, MSSQL, PostgreSQL, InfluxDB, WebSocket
+      streaming, REST APIs, ZMQ, Spark, Docker, AWS, Azure
+    </dd>
+
+    <dt>Quantitative finance</dt>
+    <dd>
+      Market microstructure, options and futures data, backtesting methodology,
+      transaction cost and slippage modeling, survivorship and look-ahead bias
+      correction
+    </dd>
+  </dl>
+</section>
+
+<section id="involvement">
+  <h2>Involvement</h2>
+  <ul class="plain">
+    <li>University of Cincinnati Artificial Intelligence Society <span class="meta">&middot; 2024 &ndash; present</span></li>
+    <li>Bearcat Tech Innovators, University of Cincinnati <span class="meta">&middot; 2024 &ndash; present</span></li>
+    <li>Translational Data Analytics Institute, Ohio State <span class="meta">&middot; 2023 &ndash; 2024</span></li>
+    <li>Big Data and Analytics Association, Ohio State <span class="meta">&middot; 2022 &ndash; 2024</span></li>
+  </ul>
+</section>
+
+</main>
+
+<footer>
+  <p>
+    <a href="mailto:dandrenf@mail.uc.edu">dandrenf@mail.uc.edu</a>
+    <span class="sep">·</span>
+    <a href="https://www.linkedin.com/in/nealdandrea">LinkedIn</a>
+    <span class="sep">·</span>
+    <a href="https://github.com/Neal-dandrea">GitHub</a>
+    <span class="sep">·</span>
+    Cincinnati, Ohio
+  </p>
+</footer>
+
+</body>
+</html>
