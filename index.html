@@ -20,14 +20,10 @@
         market data infrastructure behind a live options trading operation.
       </p>
     </div>
-    <!-- PORTRAIT: drop portrait.jpg into this folder, then delete the two
-         comment markers around the block below to switch it on. -->
-    <!--
     <picture class="portrait">
       <source srcset="portrait-small.jpg" media="(max-width: 34rem)">
-      <img src="portrait.jpg" alt="Neal D'Andrea" width="150" height="150">
+      <img src="portrait.jpg" alt="Neal D&rsquo;Andrea" width="600" height="600">
     </picture>
-    -->
   </div>
   <nav class="contact" aria-label="Contact">
     <a href="mailto:dandrenf@mail.uc.edu">dandrenf@mail.uc.edu</a>
@@ -38,6 +34,7 @@
 
 <nav class="sections" aria-label="Sections">
   <ul>
+    <li><a href="#research">Research</a></li>
     <li><a href="#work">Work</a></li>
     <li><a href="#publications">Publications</a></li>
     <li><a href="#projects">Projects</a></li>
@@ -47,6 +44,51 @@
 </nav>
 
 <main>
+
+<section id="research">
+  <h2>Current research</h2>
+
+  <article class="entry">
+    <header>
+      <h3>Quantum-inspired compression for robot policies</h3>
+    </header>
+    <p>
+      Vision&ndash;language&ndash;action models are large, and the hardware that
+      would benefit from them most is the hardware least able to run them. A
+      spacecraft servicing arm carries a radiation-hardened processor a
+      generation or more behind anything in a lab, with a power budget to match.
+      A 3B-parameter policy does not fit.
+    </p>
+    <p>
+      I am working on low-rank attention mechanisms drawn from quantum
+      information &mdash; tensor-network factorizations of the kind used to
+      represent entangled states &mdash; applied to the vision encoder, where
+      most of the parameter count sits. The question is how far the encoder can
+      be compressed before the policy stops generalizing, which is the same
+      distribution-shift question the deployment work runs into from the other
+      direction.
+    </p>
+    <!-- TODO: add the specific method, any measured compression ratio or
+         success-rate numbers, collaborators, and the funding source or lab
+         name once those are settled. -->
+  </article>
+
+  <article class="entry">
+    <header>
+      <h3>Handover that survives contact with the real world</h3>
+    </header>
+    <p>
+      A policy that hands an object to a person in the lab, and fails in a
+      kitchen, has learned the lab. Most of my time on the manipulation stack
+      has gone not into the model but into the gap between training and
+      deployment &mdash; frame conventions, stale observations, compression
+      artifacts, masked pixels &mdash; and into evaluation strong enough to tell
+      a real improvement from sampler variance. Assistive handover is the near
+      application; in-space servicing, assembly and manufacturing is the one
+      that sets the constraints.
+    </p>
+  </article>
+</section>
 
 <section id="work">
   <h2>Work</h2>
