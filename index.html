@@ -50,27 +50,56 @@
 
   <article class="entry">
     <header>
-      <h3>Quantum-inspired compression for robot policies</h3>
+      <h3>Quantum vision transformer policies for robotic manipulation</h3>
     </header>
-    <p>
-      Vision&ndash;language&ndash;action models are large, and the hardware that
-      would benefit from them most is the hardware least able to run them. A
-      spacecraft servicing arm carries a radiation-hardened processor a
-      generation or more behind anything in a lab, with a power budget to match.
-      A 3B-parameter policy does not fit.
+    <p class="lede">
+      Can parameterized quantum circuits replace the attention projections in a
+      vision transformer policy, and hold accuracy at fewer parameters?
+      Implemented in PennyLane and PyTorch, benchmarked on a Franka Emika FR3
+      reach-and-grasp task.
     </p>
     <p>
-      I am working on low-rank attention mechanisms drawn from quantum
-      information &mdash; tensor-network factorizations of the kind used to
-      represent entangled states &mdash; applied to the vision encoder, where
-      most of the parameter count sits. The question is how far the encoder can
-      be compressed before the policy stops generalizing, which is the same
-      distribution-shift question the deployment work runs into from the other
-      direction.
+      Most of the work so far has been making the question answerable. An
+      existing model family turned out to have been trained against the wrong
+      target &mdash; regressing the robot&rsquo;s absolute pose at the current
+      timestep rather than a future action, which makes a pose estimator, not a
+      controller &mdash; and evaluated on a frame-level random split that leaked
+      temporally adjacent frames between train and validation. Held-out error
+      was 192&nbsp;mm against a 30&nbsp;mm grasp tolerance.
     </p>
-    <!-- TODO: add the specific method, any measured compression ratio or
-         success-rate numbers, collaborators, and the funding source or lab
-         name once those are settled. -->
+    <p>
+      Rebuilding the pipeline around relative action targets in the gripper
+      frame, episode-level splits, and mean-predictor baselines reported as
+      R&sup2; took held-out R&sup2; from approximately zero to +0.455 across 222
+      demonstrations &mdash; 293,000 frames, 88,000 training samples &mdash; and
+      error from 192&nbsp;mm to roughly 18&nbsp;mm.
+    </p>
+    <p>
+      On that footing the comparison is pre-registered: quantum and matched
+      classical controls on identical episode splits, a width ladder spanning a
+      13&times; parameter range, three seeds per configuration, and an
+      acceptance criterion fixed before data collection and enforced in code.
+      An early pass showed patch-embedding convolutions dominating the
+      parameter count &mdash; 89 percent at the narrowest width, leaving the
+      quantum layers at 1.4 percent &mdash; so the architecture was restructured
+      to raise the quantum share to 10.5 percent, making the efficiency claim
+      about the quantum component rather than the classical layers around it.
+    </p>
+    <p>
+      <strong>Current finding:</strong> quantum and classical attention are
+      statistically indistinguishable at matched parameter count, at roughly
+      140&times; the wall-clock cost in simulation. The open question is whether
+      the quantum arm degrades more slowly below the capacity knee.
+    </p>
+    <p>
+      This is a parameter-efficiency question inside the imitation learning
+      stack rather than a separate line of work. If quantum layers do preserve
+      accuracy at fewer parameters, where they would go is the
+      embodiment-specific state and action projection modules of a
+      vision&ndash;language&ndash;action model, which run once per inference
+      &mdash; not inside the iterative denoising loop, where a 140&times;
+      multiplier would be untenable in a control loop.
+    </p>
   </article>
 
   <article class="entry">
@@ -350,7 +379,8 @@
     <dd>
       PyTorch, vision&ndash;language&ndash;action models (NVIDIA GR00T),
       imitation learning, diffusion policies, LeRobot, NVIDIA Isaac Sim and
-      Isaac Lab, ORB-SLAM3, Franka FR3, Cartesian impedance control
+      Isaac Lab, ORB-SLAM3, Franka FR3, Cartesian impedance control, PennyLane
+      and parameterized quantum circuits
     </dd>
 
     <dt>Machine learning</dt>
