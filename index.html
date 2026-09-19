@@ -16,8 +16,9 @@
       <h1>Neal D&rsquo;Andrea</h1>
       <p class="standfirst">
         PhD candidate in computer science at the University of Cincinnati. I work
-        on two things: teaching robots to hand objects to people, and building the
-        market data infrastructure behind a live options trading operation.
+        on two things: handing objects between independent robots in space
+        operations, and building the market data infrastructure behind equities
+        and live options trading.
       </p>
     </div>
     <picture class="portrait">
@@ -107,14 +108,16 @@
       <h3>Handover that survives contact with the real world</h3>
     </header>
     <p>
-      A policy that hands an object to a person in the lab, and fails in a
-      kitchen, has learned the lab. Most of my time on the manipulation stack
-      has gone not into the model but into the gap between training and
-      deployment &mdash; frame conventions, stale observations, compression
-      artifacts, masked pixels &mdash; and into evaluation strong enough to tell
-      a real improvement from sampler variance. Assistive handover is the near
-      application; in-space servicing, assembly and manufacturing is the one
-      that sets the constraints. The first step &mdash; reproducing the
+      Two independent robots passing an object between them, in orbit, with no
+      one in the loop to correct a bad grasp. A policy that does it in the lab
+      and fails on the hardware has learned the lab. Most of my time on the
+      manipulation stack has gone not into the model but into the gap between
+      training and deployment &mdash; frame conventions, stale observations,
+      compression artifacts, masked pixels &mdash; and into evaluation strong
+      enough to tell a real improvement from sampler variance. In-space
+      servicing, assembly and manufacturing sets the constraints: tight power
+      and compute budgets, communication latency, and very little opportunity to
+      collect or validate data. The first step &mdash; reproducing the
       demonstration-to-policy pipeline on commodity hardware and verifying it
       against a Franka arm &mdash; is
       <a href="#publications">published at NAECON 2026</a>.
@@ -131,9 +134,9 @@
       <p class="meta">University of Cincinnati <span class="sep">·</span> Aug 2025 &ndash; present</p>
     </header>
     <p class="lede">
-      Robot learning for assistive handover and in-space servicing, assembly and
-      manufacturing &mdash; the problem of a robot putting an object into a
-      person&rsquo;s hand, reliably, outside the conditions it was trained in.
+      Robot learning for in-space servicing, assembly and manufacturing &mdash;
+      the problem of handing an object from one independent robot to another,
+      reliably, outside the conditions it was trained in.
     </p>
     <ul>
       <li>
