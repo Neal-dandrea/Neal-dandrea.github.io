@@ -217,6 +217,32 @@ ul.plain li {
 
 ul.plain .meta { display: inline; font-size: 0.85rem; }
 
+/* ---------- publications ---------- */
+
+.pub h3 {
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.pub h3 a {
+  border-bottom-color: transparent;
+}
+
+.pub h3 a:hover {
+  border-bottom-color: var(--accent);
+}
+
+.pub .meta {
+  font-style: normal;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+.pub .meta strong {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
 /* ---------- skills ---------- */
 
 .skills { margin: 0; }

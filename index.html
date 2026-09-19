@@ -85,7 +85,10 @@
       artifacts, masked pixels &mdash; and into evaluation strong enough to tell
       a real improvement from sampler variance. Assistive handover is the near
       application; in-space servicing, assembly and manufacturing is the one
-      that sets the constraints.
+      that sets the constraints. The first step &mdash; reproducing the
+      demonstration-to-policy pipeline on commodity hardware and verifying it
+      against a Franka arm &mdash; is
+      <a href="#publications">published at NAECON 2026</a>.
     </p>
   </article>
 </section>
@@ -260,18 +263,30 @@
 <section id="publications">
   <h2>Publications</h2>
 
-  <!-- PLACEHOLDER — waiting on the real citation. Replace the fields below
-       with the title, author list, conference name, location and date, and
-       add href="..." to the link if there is a DOI or IEEE Xplore page. -->
   <article class="entry compact pub">
     <header>
-      <h3>[Paper title]</h3>
+      <h3>
+        <a href="https://ieeexplore.ieee.org/abstract/document/11674880">From
+        Human Demonstrations to Robotic Actions: Real2Sim Verification of a
+        Diffusion Policy for Autonomous Robotic Manipulation</a>
+      </h3>
       <p class="meta">
-        [Author list] <span class="sep">·</span>
-        IEEE [conference name], Cincinnati, Ohio <span class="sep">·</span> [year]
+        <strong>Neal D&rsquo;Andrea</strong>, Joshua Wachs, Abdou Wade, Ou Ma,
+        Raj Bhatnagar <span class="sep">·</span>
+        NAECON 2026, IEEE National Aerospace and Electronics Conference
+        <span class="sep">·</span> August 2026 <span class="sep">·</span> pp. 402&ndash;407
       </p>
     </header>
-    <p>[One or two sentences on what the paper shows.]</p>
+    <p>
+      The Universal Manipulation Interface trains manipulation policies from
+      handheld human demonstrations, and works well for robots on the ground.
+      Space is a harder case: harsh conditions, tight power and compute budgets,
+      communication latency, and very little opportunity to collect or validate
+      data. This paper is the first step toward carrying the approach across
+      &mdash; a comparable gripper, built and tested in both simulation and
+      experiment on a Franka Emika arm, reproducing the data collection and
+      diffusion policy training pipeline on commodity hardware.
+    </p>
   </article>
 </section>
 
