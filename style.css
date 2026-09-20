@@ -10,10 +10,7 @@
   --accent:    #9e1b32;   /* scarlet, common ground between UC red and OSU scarlet */
   --measure:   34rem;
 
-  /* Background surface: a faint instrument grid, financial chart and
-     CAD drawing both, plus two slow scarlet washes. */
-  --grid:      rgba(22, 24, 28, 0.045);
-  --grid-fine: rgba(22, 24, 28, 0.022);
+  /* Background washes. */
   --wash-a:    rgba(158, 27, 50, 0.085);
   --wash-b:    rgba(31, 58, 95, 0.060);
 }
@@ -27,8 +24,6 @@
     --rule:      #262a30;
     --accent:    #e2506a;
 
-    --grid:      rgba(231, 233, 236, 0.050);
-    --grid-fine: rgba(231, 233, 236, 0.024);
     --wash-a:    rgba(226, 80, 106, 0.075);
     --wash-b:    rgba(86, 140, 205, 0.060);
   }
@@ -54,42 +49,19 @@ body {
 }
 
 /* ---------- background surface ----------
-   Two fixed layers behind everything: an instrument grid that reads as both a
-   price chart and a CAD drawing, and two slow colour washes. Both are built
-   from gradients, so there are no image requests and nothing to load. */
+   One fixed layer behind everything: two slow colour washes, scarlet at the
+   top and a cool instrument blue at the bottom. Built from gradients, so
+   there are no image requests and nothing to load. */
 
-body::before,
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-}
-
-/* Grid: 5rem majors with 1rem minors inside them. */
-body::before {
-  background-image:
-    linear-gradient(to right,  var(--grid)      1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid)      1px, transparent 1px),
-    linear-gradient(to right,  var(--grid-fine) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-fine) 1px, transparent 1px);
-  background-size: 5rem 5rem, 5rem 5rem, 1rem 1rem, 1rem 1rem;
-  background-position: center top;
-  /* Fade the grid out down the page so long prose is never read over ruling. */
-  -webkit-mask-image: linear-gradient(to bottom, #000 0, rgba(0,0,0,0.55) 40rem, transparent 75rem);
-          mask-image: linear-gradient(to bottom, #000 0, rgba(0,0,0,0.55) 40rem, transparent 75rem);
-}
-
-/* Washes: scarlet top left, a cool instrument blue bottom right. */
-body::after {
   background-image:
     radial-gradient(55rem 38rem at 28% -6%,  var(--wash-a), transparent 68%),
     radial-gradient(50rem 42rem at 78% 104%, var(--wash-b), transparent 68%);
-}
-
-@media (max-width: 34rem) {
-  body::before { background-size: 3.5rem 3.5rem, 3.5rem 3.5rem, 0.875rem 0.875rem, 0.875rem 0.875rem; }
 }
 
 main, .masthead, footer {
@@ -529,6 +501,6 @@ footer p { margin: 0; }
   h2::before, nav.sections { display: none; }
   .entry { page-break-inside: avoid; }
   .crests li, .people li { page-break-inside: avoid; }
-  body::before, body::after { display: none; }
+  body::after { display: none; }
   nav.sections { display: none; }
 }
