@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Neal D'Andrea</title>
-<meta name="description" content="Neal D'Andrea — PhD candidate in computer science at the University of Cincinnati. Robot learning and quantitative trading infrastructure.">
+<meta name="description" content="Neal D'Andrea, PhD candidate in computer science at the University of Cincinnati. Robot learning for in-space manipulation, and market data infrastructure for equities and live options trading.">
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="data:,">
 </head>
@@ -16,9 +16,8 @@
       <h1>Neal D&rsquo;Andrea</h1>
       <p class="standfirst">
         PhD candidate in computer science at the University of Cincinnati. I work
-        on two things: handing objects between independent robots in space
-        operations, and building the market data infrastructure behind equities
-        and live options trading.
+        on handing objects between independent robots in space operations, and on the
+        market data infrastructure behind equities and live options trading.
       </p>
     </div>
     <picture class="portrait">
@@ -62,32 +61,32 @@
     <p>
       Most of the work so far has been making the question answerable. An
       existing model family turned out to have been trained against the wrong
-      target &mdash; regressing the robot&rsquo;s absolute pose at the current
-      timestep rather than a future action, which makes a pose estimator, not a
-      controller &mdash; and evaluated on a frame-level random split that leaked
-      temporally adjacent frames between train and validation. Held-out error
-      was 192&nbsp;mm against a 30&nbsp;mm grasp tolerance.
+      target, regressing the robot&rsquo;s absolute pose at the current timestep
+      rather than a future action. That makes a pose estimator, not a
+      controller. It had also been evaluated on a frame-level random split that
+      leaked temporally adjacent frames between train and validation. Held-out
+      error was 192&nbsp;mm against a 30&nbsp;mm grasp tolerance.
     </p>
     <p>
       Rebuilding the pipeline around relative action targets in the gripper
       frame, episode-level splits, and mean-predictor baselines reported as
       R&sup2; took held-out R&sup2; from approximately zero to +0.455 across 222
-      demonstrations &mdash; 293,000 frames, 88,000 training samples &mdash; and
-      error from 192&nbsp;mm to roughly 18&nbsp;mm.
+      demonstrations, covering 293,000 frames and 88,000 training samples, and
+      brought error from 192&nbsp;mm down to roughly 18&nbsp;mm.
     </p>
     <p>
-      On that footing the comparison is pre-registered: quantum and matched
-      classical controls on identical episode splits, a width ladder spanning a
-      13&times; parameter range, three seeds per configuration, and an
-      acceptance criterion fixed before data collection and enforced in code.
-      An early pass showed patch-embedding convolutions dominating the
-      parameter count &mdash; 89 percent at the narrowest width, leaving the
-      quantum layers at 1.4 percent &mdash; so the architecture was restructured
-      to raise the quantum share to 10.5 percent, making the efficiency claim
-      about the quantum component rather than the classical layers around it.
+      On that footing the comparison is pre-registered. Quantum and matched
+      classical controls run on identical episode splits, across a width ladder
+      spanning a 13&times; parameter range, three seeds per configuration, with
+      an acceptance criterion fixed before data collection and enforced in code.
+      An early pass showed patch-embedding convolutions dominating the parameter
+      count at 89 percent of the narrowest width, which left the quantum layers
+      at 1.4 percent. Restructuring the architecture raised the quantum share to
+      10.5 percent, so the efficiency claim is about the quantum component
+      rather than the classical layers around it.
     </p>
     <p>
-      <strong>Current finding:</strong> quantum and classical attention are
+      The current finding is that quantum and classical attention are
       statistically indistinguishable at matched parameter count, at roughly
       140&times; the wall-clock cost in simulation. The open question is whether
       the quantum arm degrades more slowly below the capacity knee.
@@ -97,9 +96,9 @@
       stack rather than a separate line of work. If quantum layers do preserve
       accuracy at fewer parameters, where they would go is the
       embodiment-specific state and action projection modules of a
-      vision&ndash;language&ndash;action model, which run once per inference
-      &mdash; not inside the iterative denoising loop, where a 140&times;
-      multiplier would be untenable in a control loop.
+      vision-language-action model, which run once per inference rather than
+      inside the iterative denoising loop, where a 140&times; multiplier would
+      be untenable in a control loop.
     </p>
   </article>
 
@@ -112,14 +111,14 @@
       one in the loop to correct a bad grasp. A policy that does it in the lab
       and fails on the hardware has learned the lab. Most of my time on the
       manipulation stack has gone not into the model but into the gap between
-      training and deployment &mdash; frame conventions, stale observations,
-      compression artifacts, masked pixels &mdash; and into evaluation strong
-      enough to tell a real improvement from sampler variance. In-space
-      servicing, assembly and manufacturing sets the constraints: tight power
-      and compute budgets, communication latency, and very little opportunity to
-      collect or validate data. The first step &mdash; reproducing the
-      demonstration-to-policy pipeline on commodity hardware and verifying it
-      against a Franka arm &mdash; is
+      training and deployment. Frame conventions, stale observations,
+      compression artifacts and masked pixels all sit in that gap, as does the
+      work of building evaluation strong enough to tell a real improvement from
+      sampler variance. In-space servicing, assembly and manufacturing sets the
+      constraints, among them tight power and compute budgets, communication
+      latency, and very little opportunity to collect or validate data. The
+      first step, reproducing the demonstration-to-policy pipeline on commodity
+      hardware and verifying it against a Franka arm, is
       <a href="#publications">published at NAECON 2026</a>.
     </p>
   </article>
@@ -134,14 +133,14 @@
       <p class="meta">University of Cincinnati <span class="sep">·</span> Aug 2025 &ndash; present</p>
     </header>
     <p class="lede">
-      Robot learning for in-space servicing, assembly and manufacturing &mdash;
-      the problem of handing an object from one independent robot to another,
-      reliably, outside the conditions it was trained in.
+      Robot learning for in-space servicing, assembly and manufacturing, built
+      around the problem of handing an object from one independent robot to
+      another, reliably, outside the conditions it was trained in.
     </p>
     <ul>
       <li>
         Building a control framework for robotic handover from imitation
-        learning and vision&ndash;language&ndash;action models.
+        learning and vision-language-action models.
       </li>
       <li>
         Migrated the manipulation stack from a 171M-parameter U-Net diffusion
@@ -151,19 +150,19 @@
       </li>
       <li>
         Built the conversion pipeline from Universal Manipulation Interface
-        recordings to LeRobot v2.1 &mdash; absolute end-effector pose actions,
+        recordings to LeRobot v2.1, covering absolute end-effector pose actions,
         language annotations and modality metadata across 265,000 frames and
         215 demonstrations, with per-step validation that rejects SLAM tracking
         failures.
       </li>
       <li>
-        Deployed it as a real-time closed-loop controller: 125&nbsp;ms GPU
+        Deployed it as a real-time closed-loop controller with 125&nbsp;ms GPU
         inference served over ZMQ, action chunks subsampled and rate-limited to
-        a workspace-gated client, executed through Cartesian impedance control
-        at 1&nbsp;kHz on a Franka FR3.
+        a workspace-gated client, and execution through Cartesian impedance
+        control at 1&nbsp;kHz on a Franka FR3.
       </li>
       <li>
-        Found and corrected systematic train&ndash;deploy mismatches: a
+        Found and corrected systematic train-deploy mismatches, including a
         45-degree tool-frame rotation error, stale camera frames buffered across
         control cycles, and an observation mask that removed 5.6 percent of the
         image the model was trained on.
@@ -172,14 +171,15 @@
         Traced a further source of domain shift to video compression in the data
         pipeline; rebuilt the conversion at 3&times; fidelity and retrained,
         cutting prediction error against the original model on 20 held-out
-        episodes at every checkpoint &mdash; after first establishing that
+        episodes at every checkpoint. That followed from first establishing that
         single-trajectory evaluation could not separate real improvement from
         sampler variance.
       </li>
       <li>
-        Built the collection pipeline itself: a UMI gripper with GoPro cameras
-        and ArUco fiducials, video processed through ORB-SLAM3 to recover 6-DOF
-        gripper poses synchronized with RGB observations and gripper state.
+        Built the collection pipeline itself, using a UMI gripper with GoPro
+        cameras and ArUco fiducials, with video processed through ORB-SLAM3 to
+        recover 6-DOF gripper poses synchronized with RGB observations and
+        gripper state.
       </li>
       <li>
         Exploring quantum-inspired low-rank attention to compress the vision
@@ -211,18 +211,18 @@
       </li>
       <li>
         Designed a bar aggregation engine for arbitrary intervals, including
-        in-progress bars assembled from a rolling in-memory tick buffer &mdash;
+        in-progress bars assembled from a rolling in-memory tick buffer, giving
         sub-minute resolution the vendor API does not expose.
       </li>
       <li>
-        Established the backtesting methodology: look-ahead bias eliminated
+        Established the backtesting methodology, eliminating look-ahead bias
         through point-in-time sector and index membership reconstruction,
         survivorship correction, and embargoed chronological splits. Systematic
         ablation retired 13 of 14 candidate signal families as statistically
         indistinguishable from baseline.
       </li>
       <li>
-        Quantified strategy capacity through effective breadth &mdash; a nominal
+        Quantified strategy capacity through effective breadth. A nominal
         126,756-bet universe delivered only 513 independent bets after
         correlation adjustment, which moved the research agenda off signal
         discovery and onto sample size.
@@ -284,9 +284,9 @@
         diagnostic markets.
       </li>
       <li>
-        Worked within the Advanced Technology team &mdash; therapeutics,
-        diagnostics and insights &mdash; on entrepreneurial initiatives needing
-        novel go-to-market strategies.
+        Worked within the Advanced Technology team, across therapeutics,
+        diagnostics and insights, on entrepreneurial initiatives needing novel
+        go-to-market strategies.
       </li>
     </ul>
   </article>
@@ -312,12 +312,12 @@
     <p>
       The Universal Manipulation Interface trains manipulation policies from
       handheld human demonstrations, and works well for robots on the ground.
-      Space is a harder case: harsh conditions, tight power and compute budgets,
+      Space is a harder case. Harsh conditions, tight power and compute budgets,
       communication latency, and very little opportunity to collect or validate
-      data. This paper is the first step toward carrying the approach across
-      &mdash; a comparable gripper, built and tested in both simulation and
-      experiment on a Franka Emika arm, reproducing the data collection and
-      diffusion policy training pipeline on commodity hardware.
+      data all work against it. This paper is the first step toward carrying the
+      approach across, with a comparable gripper built and tested in both
+      simulation and experiment on a Franka Emika arm, reproducing the data
+      collection and diffusion policy training pipeline on commodity hardware.
     </p>
   </article>
 </section>
@@ -380,7 +380,7 @@
 
     <dt>Robot learning</dt>
     <dd>
-      PyTorch, vision&ndash;language&ndash;action models (NVIDIA GR00T),
+      PyTorch, vision-language-action models (NVIDIA GR00T),
       imitation learning, diffusion policies, LeRobot, NVIDIA Isaac Sim and
       Isaac Lab, ORB-SLAM3, Franka FR3, Cartesian impedance control, PennyLane
       and parameterized quantum circuits
