@@ -255,6 +255,24 @@ ul.plain li {
 
 ul.plain .meta { display: inline; font-size: 0.85rem; }
 
+/* ---------- intro ---------- */
+
+/* The first paragraph carries the weight, so it is set a little larger than
+   body copy and the ones that follow step back down. */
+.intro-lede {
+  font-size: 1.1rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+#intro p { margin: 1.1rem 0 0; }
+#intro p:first-of-type { margin-top: 0; }
+#intro p + p { color: var(--ink-soft); }
+
+/* It sits directly under the sticky nav, so it needs less air above it than a
+   section landing mid-page. */
+#intro { margin-top: 3rem; }
+
 /* ---------- affiliations ---------- */
 
 .section-lede {
