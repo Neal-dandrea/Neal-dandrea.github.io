@@ -87,14 +87,24 @@ machine on the Tailnet.
 
 ## Publishing
 
-The site is static, so anything that serves files will host it.
+Live at **<https://neal-dandrea.github.io/>**, served by GitHub Pages from the
+`master` branch of `Neal-dandrea/Neal-dandrea.github.io`, root directory.
 
-- **GitHub Pages** — push to a repo, then Settings → Pages → deploy from
-  `master`, root. Free, and gives `<username>.github.io/<repo>`.
-- **Netlify or Cloudflare Pages** — connect the repo, no build command, publish
-  directory `.`.
+The repo name is what makes the URL a bare domain rather than
+`neal-dandrea.github.io/some-repo`: GitHub treats `<username>.github.io` as the
+account's one user site. Renaming the repo would change the URL, so don't.
 
-A custom domain points at either with a CNAME record.
+Publishing a change is just:
+
+```
+git push
+```
+
+The build takes a minute or so. There is no build step and no Actions workflow;
+Pages serves the files as they sit in the repo.
+
+A custom domain, if one is ever wanted, is a CNAME record at the registrar plus
+the domain entered under Settings → Pages.
 
 ## Content notes
 
