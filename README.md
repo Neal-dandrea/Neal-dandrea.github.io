@@ -102,10 +102,10 @@ A custom domain points at either with a CNAME record.
   carries a home street address and phone number, which should not sit on a
   public URL. If a downloadable PDF is wanted, make a web copy with those two
   lines removed and add it as `resume.pdf` with a link in the masthead.
-- The affiliations section carries real assets for the lab and both advisors,
-  taken from the IRAS Lab site. The four company and university tiles in `img/`
-  are still **placeholder monograms I drew**, not real logos. `img/README.md`
-  covers both cases, including the trademark question worth settling before the
-  site goes public.
+- The affiliations section uses real marks and real headshots throughout, each
+  taken from the organization's own site. Every mark has a dark-mode twin,
+  because an SVG loaded through `<img>` does not inherit the page's colour and
+  would otherwise render black on black. `img/README.md` has the details and
+  the regeneration recipe.
 - Employment is ordered by relevance rather than strictly by date: the robotics
   research leads, because that is what the page is aimed at.
