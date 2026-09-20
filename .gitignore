@@ -1,0 +1,4 @@
+# Screenshots taken while checking renders; never part of the site.
+shot*.png
+crop*.png
+_figtest.html
