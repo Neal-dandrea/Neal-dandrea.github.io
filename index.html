@@ -211,6 +211,37 @@
       demonstrations, covering 293,000 frames and 88,000 training samples, and
       brought error from 192&nbsp;mm down to roughly 18&nbsp;mm.
     </p>
+
+    <figure class="chart">
+      <svg viewBox="0 0 560 150" role="img"
+           aria-labelledby="errdrop-title errdrop-desc">
+        <title id="errdrop-title">Held-out prediction error before and after rebuilding the pipeline</title>
+        <desc id="errdrop-desc">Original pipeline, 192 millimetres. Rebuilt pipeline, 18 millimetres.
+        The grasp tolerance is 30 millimetres, so only the rebuilt pipeline falls inside it.</desc>
+
+        <line class="c-axis" x1="132.5" y1="12" x2="132.5" y2="98"/>
+
+        <text class="c-cat" x="120" y="36" text-anchor="end">Original pipeline</text>
+        <path class="c-was" d="M132,22 H464.0 A4,4 0 0 1 468.0,26 V38 A4,4 0 0 1 464.0,42 H132 Z"/>
+        <text class="c-val" x="478.0" y="36">192 mm</text>
+
+        <text class="c-cat" x="120" y="86" text-anchor="end">Rebuilt pipeline</text>
+        <path class="c-now" d="M132,72 H159.5 A4,4 0 0 1 163.5,76 V88 A4,4 0 0 1 159.5,92 H132 Z"/>
+        <text class="c-val" x="196.5" y="86">18 mm</text>
+
+        <!-- Grasp tolerance, drawn over the bars with a surface-coloured
+             backing stroke so it stays legible where it crosses a fill. -->
+        <line class="c-tol-back" x1="184.5" y1="12" x2="184.5" y2="98"/>
+        <line class="c-tol"      x1="184.5" y1="12" x2="184.5" y2="98"/>
+        <text class="c-tol-label" x="184.5" y="118">30 mm grasp tolerance</text>
+      </svg>
+      <figcaption>
+        Held-out error against the 30&nbsp;mm grasp tolerance. The original
+        pipeline missed by more than six times the tolerance, which makes a pose
+        estimator rather than a controller. Relative action targets and
+        episode-level splits brought it inside.
+      </figcaption>
+    </figure>
     <p>
       On that footing the comparison is pre-registered. Quantum and matched
       classical controls run on identical episode splits, across a width ladder

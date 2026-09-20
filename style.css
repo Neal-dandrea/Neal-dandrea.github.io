@@ -450,6 +450,70 @@ ul.plain .meta { display: inline; font-size: 0.85rem; }
   color: var(--ink-soft);
 }
 
+/* ---------- charts ---------- */
+
+/* Inline SVG, so it inherits the page's colour tokens and follows dark mode
+   without a second copy. Before and after are one hue in two shades; the
+   accent is spent on the tolerance, which is the line the story crosses. */
+.chart {
+  margin: 2rem 0 0;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.c-was { fill: var(--ink-faint); }
+.c-now { fill: var(--ink); }
+
+.c-axis {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+/* The backing stroke is the surface colour, so the tolerance rule stays
+   readable where it crosses the bar it is measuring. */
+.c-tol-back {
+  stroke: var(--paper);
+  stroke-width: 4;
+}
+
+.c-tol {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+/* Text wears text tokens, never the data colour. */
+.chart text {
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.c-cat { fill: var(--ink-soft); }
+.c-val { fill: var(--ink); font-weight: 600; }
+
+.c-tol-label {
+  fill: var(--ink-faint);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.chart figcaption {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 34rem) {
+  /* The viewBox scales the text down with the graphic, so bump it back up. */
+  .chart text { font-size: 15px; }
+  .c-tol-label { font-size: 14px; }
+}
+
 /* ---------- links ---------- */
 
 a {
