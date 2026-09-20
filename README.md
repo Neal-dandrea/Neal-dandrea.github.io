@@ -106,6 +106,27 @@ Pages serves the files as they sit in the repo.
 A custom domain, if one is ever wanted, is a CNAME record at the registrar plus
 the domain entered under Settings → Pages.
 
+## Link previews
+
+`og-card.jpg` is the 1200x630 image that LinkedIn, email clients and chat apps
+show when the URL is pasted. It is generated, not hand-drawn — the script that
+builds it lives in this README's history, but it is simple enough to rebuild:
+paper background, scarlet rule along the top, name and standfirst in the page
+serif, portrait cropped to a circle on the right.
+
+If the standfirst changes, regenerate the card so the two agree, and update the
+`og:description` in `index.html` to match. Both are absolute URLs pointing at
+`neal-dandrea.github.io`, which is required: relative paths do not work for
+`og:image`.
+
+## Accessibility
+
+`--ink-faint` carries dates, job titles and the publication byline, so it is
+held at or above the WCAG AA contrast minimum of 4.5:1 against `--paper`
+(currently 4.70:1 in light mode, 5.98:1 in dark). It is tempting to lighten it
+for a quieter look; don't, without re-checking the ratio. The other text
+colours clear the bar comfortably.
+
 ## Content notes
 
 - The résumé PDF is deliberately **not** published here. The version on file
