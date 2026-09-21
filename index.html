@@ -66,10 +66,10 @@
 
   <p class="intro-lede">
     My research is robot learning for in-space servicing, assembly and
-    manufacturing: imitation learning policies, diffusion policies and
-    vision-language-action models, trained from human demonstrations and run on
-    a Franka FR3. The hard part is rarely the architecture. It is the gap
-    between a policy that scores well offline and one that still closes on the
+    manufacturing. I work on imitation learning policies, diffusion policies
+    and vision-language-action models, trained from human demonstrations and
+    run on a Franka FR3. The hard part is rarely the architecture. It is the
+    gap between a policy that scores well offline and one that still closes on the
     hardware under tight power and compute budgets, communication latency, and
     nobody in the loop to correct a bad grasp. Most of that gap lives in frame
     conventions, stale observations, how the action is parameterized, and how
@@ -84,10 +84,10 @@
   </p>
 
   <p>
-    The two look unrelated and are mostly the same job: deciding whether a
-    measured improvement is real before anything gets built on top of it. In
-    the robotics work that meant finding a model regressing absolute pose at
-    the current timestep rather than a future action, evaluated on a
+    The two look unrelated and are mostly the same job, which is deciding
+    whether a measured improvement is real before anything gets built on top
+    of it. In the robotics work that meant finding a model regressing absolute
+    pose at the current timestep rather than a future action, evaluated on a
     frame-level random split that leaked temporally adjacent frames between
     train and validation, at 192&nbsp;mm held-out error against a 30&nbsp;mm
     grasp tolerance. Relative action targets in the gripper frame,
@@ -347,8 +347,8 @@
       </li>
       <li>
         Traced a further source of domain shift to video compression in the data
-        pipeline; rebuilt the conversion at 3&times; fidelity and retrained,
-        cutting prediction error against the original model on 20 held-out
+        pipeline, then rebuilt the conversion at 3&times; fidelity and
+        retrained, cutting prediction error against the original model on 20 held-out
         episodes at every checkpoint. That followed from first establishing that
         single-trajectory evaluation could not separate real improvement from
         sampler variance.
