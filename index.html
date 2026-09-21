@@ -84,17 +84,13 @@
   </p>
 
   <p>
-    The two look unrelated and are mostly the same job, which is deciding
-    whether a measured improvement is real before anything gets built on top
-    of it. In the robotics work that meant finding a model regressing absolute
-    pose at the current timestep rather than a future action, evaluated on a
-    frame-level random split that leaked temporally adjacent frames between
-    train and validation, at 192&nbsp;mm held-out error against a 30&nbsp;mm
-    grasp tolerance. Relative action targets in the gripper frame,
-    episode-level splits and mean-predictor baselines reported as R&sup2;
-    brought that to roughly 18&nbsp;mm. In the trading work the same discipline
-    retired 13 of 14 candidate signals as indistinguishable from baseline out
-    of sample.
+    What connects them is evaluation. I am most useful on problems where the
+    result is easy to fake and hard to verify, and most of my work on both
+    sides has been making a measurement trustworthy before anything gets built
+    on top of it. That is not glamorous work and it is usually the difference
+    between a demo and a system. On the robotics side it took held-out error
+    from six times the grasp tolerance to inside it. On the trading side it
+    retired 13 of 14 candidate signals.
   </p>
 </section>
 
