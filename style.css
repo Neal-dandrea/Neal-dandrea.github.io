@@ -343,9 +343,8 @@ ul.plain .meta { display: inline; font-size: 0.85rem; }
   color: var(--ink);
 }
 
-#intro p { margin: 1.1rem 0 0; }
+#intro p { margin: 1.1rem 0 0; color: var(--ink); }
 #intro p:first-of-type { margin-top: 0; }
-#intro p + p { color: var(--ink-soft); }
 
 /* It sits directly under the sticky nav, so it needs less air above it than a
    section landing mid-page. */

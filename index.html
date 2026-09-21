@@ -66,9 +66,14 @@
 
   <p class="intro-lede">
     My research is robot learning for in-space servicing, assembly and
-    manufacturing. The problem I keep returning to is the gap between a policy
-    that works in the lab and one that still works on the hardware, in orbit,
-    with nobody in the loop to correct a bad grasp.
+    manufacturing: imitation learning policies, diffusion policies and
+    vision-language-action models, trained from human demonstrations and run on
+    a Franka FR3. The hard part is rarely the architecture. It is the gap
+    between a policy that scores well offline and one that still closes on the
+    hardware under tight power and compute budgets, communication latency, and
+    nobody in the loop to correct a bad grasp. Most of that gap lives in frame
+    conventions, stale observations, how the action is parameterized, and how
+    the evaluation is split.
   </p>
 
   <p>
@@ -79,12 +84,17 @@
   </p>
 
   <p>
-    The two look unrelated and are mostly the same job. Both come down to
-    evaluation, to knowing whether a result is real before anything gets built
-    on top of it. In the robotics work that meant finding a model trained
-    against the wrong target and an evaluation split that leaked. In the
-    trading work it meant retiring 13 of 14 candidate signals as
-    indistinguishable from baseline.
+    The two look unrelated and are mostly the same job: deciding whether a
+    measured improvement is real before anything gets built on top of it. In
+    the robotics work that meant finding a model regressing absolute pose at
+    the current timestep rather than a future action, evaluated on a
+    frame-level random split that leaked temporally adjacent frames between
+    train and validation, at 192&nbsp;mm held-out error against a 30&nbsp;mm
+    grasp tolerance. Relative action targets in the gripper frame,
+    episode-level splits and mean-predictor baselines reported as R&sup2;
+    brought that to roughly 18&nbsp;mm. In the trading work the same discipline
+    retired 13 of 14 candidate signals as indistinguishable from baseline out
+    of sample.
   </p>
 </section>
 
