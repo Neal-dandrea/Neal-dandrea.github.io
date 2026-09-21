@@ -1,5 +1,6 @@
 /* Neal D'Andrea — personal site.
-   One column, one serif, no framework, no JavaScript. */
+   One column, one serif, no framework. The only JavaScript is the
+   expand/collapse-all control; the page works fully without it. */
 
 :root {
   --paper:     #f7f6f3;
@@ -190,9 +191,66 @@ h2::before {
   background: var(--accent);
 }
 
-.entry { margin-bottom: 3.25rem; }
+.entry { margin-bottom: 1.1rem; }
 .entry:last-child { margin-bottom: 0; }
-.entry.compact { margin-bottom: 2.25rem; }
+.entry.compact { margin-bottom: 1.1rem; }
+
+/* An open entry needs room to breathe; a closed one reads as a list row. */
+.entry[open] { margin-bottom: 3.25rem; }
+.entry[open].compact { margin-bottom: 2.25rem; }
+.entry[open]:last-child { margin-bottom: 0; }
+
+/* ---------- collapsible entries ---------- */
+
+.entry > summary {
+  position: relative;
+  display: block;          /* suppress the default marker box */
+  padding: 0.5rem 0 0.5rem 1.6rem;
+  cursor: pointer;
+  border-radius: 3px;
+  list-style: none;
+}
+
+.entry > summary::-webkit-details-marker { display: none; }
+
+/* Chevron, drawn from two borders so it needs no asset. */
+.entry > summary::before {
+  content: "";
+  position: absolute;
+  left: 0.25rem;
+  top: 1.12em;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-right: 1.5px solid var(--ink-faint);
+  border-bottom: 1.5px solid var(--ink-faint);
+  transform: translateY(-60%) rotate(-45deg);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.entry[open] > summary::before {
+  transform: translateY(-20%) rotate(45deg);
+}
+
+.entry > summary:hover h3,
+.entry[open] > summary h3 { color: var(--accent); }
+
+.entry > summary:hover::before,
+.entry[open] > summary::before { border-color: var(--accent); }
+
+.entry > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The first body element sits directly under the summary, which already
+   carries its own bottom padding. */
+.entry[open] > summary { margin-bottom: 0.2rem; }
+
+.entry-link { font-size: 0.9rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .entry > summary::before { transition: none; }
+}
 
 h3 {
   margin: 0;
@@ -214,6 +272,26 @@ h3 {
 .lede {
   margin: 1rem 0 0.4rem;
   color: var(--ink-soft);
+}
+
+.entry-controls {
+  display: block;
+  margin: -0.4rem 0 1.4rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.entry-controls:hover { color: var(--accent); }
+
+.entry-controls:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 /* ---------- lists ---------- */
@@ -581,7 +659,10 @@ footer p { margin: 0; }
   .masthead { padding-top: 0; }
   a { border-bottom: none; }
   h2::before, nav.sections { display: none; }
-  .entry { page-break-inside: avoid; }
+  .entry { page-break-inside: avoid; margin-bottom: 3.25rem; }
+  .entry > summary { padding-left: 0; }
+  .entry > summary::before { display: none; }
+  .entry-controls { display: none; }
   .crests li, .people li { page-break-inside: avoid; }
   body::after { display: none; }
   nav.sections { display: none; }
