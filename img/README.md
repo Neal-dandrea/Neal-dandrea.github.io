@@ -11,6 +11,8 @@ Every mark here is the real one, taken from the organization's own site.
 | `eq.svg` | EQ logotype | set by hand; see below |
 | `advisor-ou-ma.jpg` | Ou Ma headshot, square crop, 256px | the lab site |
 | `advisor-raj-bhatnagar.jpg` | Raj K. Bhatnagar headshot, square crop, 256px | the lab site |
+| `collaborator-david-salem.jpg` | David A. Salem headshot, square crop, 256px | the Lindner faculty page |
+| `collaborator-chaowen-guan.jpg` | Chaowen Guan headshot, square crop, 256px | `researchdirectory.uc.edu/p/guance` |
 
 EQ Risk Management Consulting has no public mark, so its slot is a plain "EQ"
 set in the page serif rather than an invented logo. The row prints the full
