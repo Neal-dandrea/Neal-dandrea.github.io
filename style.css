@@ -248,6 +248,21 @@ h2::before {
 
 .entry-link { font-size: 0.9rem; }
 
+/* Display equations. The site loads no math library and two formulas do not
+   justify adding one, so these are set in the monospace face and given room
+   either side, which is what makes them read as displayed rather than inline. */
+.formula {
+  margin: 1.1rem 0 1.1rem;
+  padding-left: 1.15rem;
+  border-left: 2px solid var(--rule);
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  overflow-x: auto;
+}
+
+.formula sub { font-size: 0.75em; }
+
 @media (prefers-reduced-motion: reduce) {
   .entry > summary::before { transition: none; }
 }

@@ -303,6 +303,79 @@
       <a href="#publications">published at NAECON 2026</a>.
     </p>
   </details>
+
+  <details class="entry">
+    <summary>
+      <h3>Stochastic localization as a proof technique for sampling</h3>
+      <p class="meta">In progress <span class="sep">&middot;</span> Sep 2026 &ndash; Dec 2026</p>
+    </summary>
+    <p class="lede">
+      Markov chain Monte Carlo is how you sample from a distribution you cannot
+      write down. The catch is that the answer is only as good as the number of
+      steps you ran, and nothing in the output tells you whether that was
+      enough. A chain that has not mixed produces samples that look fine and are
+      wrong. Mixing time is the bound that tells you when to trust it.
+    </p>
+    <p>
+      I am working through stochastic localization, a technique introduced by
+      Eldan for analyzing high-dimensional distributions, which now underpins
+      some of the sharpest mixing bounds available. The specific target is the
+      localization schemes framework of Chen and Eldan, which unifies stochastic
+      localization with spectral independence and yields mixing bounds for
+      Glauber dynamics on spin systems such as the hardcore and Ising models.
+    </p>
+    <p>
+      The object itself is simple to state. Take a sample X from the
+      distribution you care about, observe it through a noisy channel over time,
+      and track your evolving belief about what X was. Written as an observation
+      process that is
+    </p>
+    <p class="formula">y<sub>t</sub> = tX + B<sub>t</sub></p>
+    <p>
+      with B<sub>t</sub> a standard Brownian motion, and the posterior at time
+      t is
+    </p>
+    <p class="formula">&mu;<sub>t</sub>(dx) &prop; exp(&lang;y<sub>t</sub>, x&rang; &minus; (t/2)&Vert;x&Vert;&sup2;) &mu;(dx)</p>
+    <p>
+      As t grows, the posterior concentrates on a point. The measure localizes.
+      What makes it a proof technique rather than a curiosity is that the
+      posterior is a martingale, and controlling how quickly its covariance
+      grows along that path is what produces the bound.
+    </p>
+    <p>
+      I am learning spectral independence first, deliberately. It lives on
+      finite state spaces with matrices you can write out and chains you can
+      simulate, so the continuous stochastic-calculus version reads as a
+      generalization rather than arriving cold. The intellectual core of the
+      work is the dictionary between the two, meaning what plays the role of
+      pinning a coordinate, what plays the role of the influence matrix, and
+      what the condition that the covariance does not grow too quickly
+      corresponds to on the discrete side.
+    </p>
+    <p>
+      There is a connection to the market data work that I did not expect to
+      find. If log returns satisfy dY<sub>t</sub> = &mu; dt + &sigma;
+      dB<sub>t</sub> with the drift unknown and drawn from a prior, then
+      dividing through by &sigma; gives exactly the observation channel above,
+      with X equal to &mu; over &sigma;. The evolving posterior over an unknown
+      drift is itself a stochastic localization process. That is the worked
+      application I am carrying through the project, partly because it is
+      rigorous and partly because it makes the abstraction concrete.
+    </p>
+    <p>
+      What connects this to the rest of my work is the same thing that connects
+      the robotics and the trading. A sampler that has not mixed gives you an
+      answer that is easy to accept and hard to check. Mixing bounds are the
+      verification step for a whole class of methods that are otherwise trusted
+      on faith.
+    </p>
+    <p>
+      This is a group project for an advanced algorithms course, running ten
+      weeks with weekly check-ins. The deliverable is a report with a formal
+      problem statement, the preliminaries, and a rigorous proof of the mixing
+      bound and its complexity. I will post what comes out of it.
+    </p>
+  </details>
 </section>
 
 <section id="work">
@@ -567,6 +640,12 @@
       imitation learning, diffusion policies, LeRobot, NVIDIA Isaac Sim and
       Isaac Lab, ORB-SLAM3, Franka FR3, Cartesian impedance control, PennyLane
       and parameterized quantum circuits
+    </dd>
+
+    <dt>Probability and sampling</dt>
+    <dd>
+      Markov chain mixing, spectral gap and Dirichlet forms, Ito calculus and
+      stochastic differential equations, MCMC
     </dd>
 
     <dt>Machine learning</dt>
