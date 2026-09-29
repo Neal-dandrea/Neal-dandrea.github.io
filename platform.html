@@ -487,9 +487,14 @@
   <p class="panel-num">10</p>
   <h2>What is next</h2>
   <p class="panel-lede">
-    The real list, not a tidy one. Two of these are waiting on somebody else to
-    make a decision, one is waiting on a driver signature, and one is waiting on
-    the market to give us enough data to ask the question with.
+    What the next few months look like, in roughly the order I would pick it up.
+    Some of it is research, some of it is plumbing, and one item is a study with
+    a collaborator rather than a build.
+  </p>
+  <p class="panel-lede">
+    It is the real list rather than a tidy one. Two items are waiting on somebody
+    else to decide, one on a driver signature, and one on the market to hand us
+    enough data to ask the question with.
   </p>
 
   <ol class="next-list">
@@ -501,6 +506,23 @@
         direction. So the work is pooled training across symbols and longer
         samples, and re-running the leave-one-out test before any new feed gets
         wired in. Adding columns is the thing that already did not work.
+      </p>
+    </li>
+
+    <li>
+      <h3>Variance of returns at every interval, with Mufang</h3>
+      <p>
+        The same return series measured at twelve sampling intervals, from one
+        second through to monthly, to see how variance scales with the interval
+        and where it stops behaving the way the square-root rule says it should.
+        All twelve intervals already come out of the bar engine, so this is a
+        study rather than a build, which is a pleasant change.
+      </p>
+      <p>
+        The one-second end is the constrained one. Sub-minute bars are
+        accumulated from ticks rather than fetched from history, so that sample
+        grows one session at a time and cannot be backfilled. Checking the
+        coverage before assuming a long one-second sample is the first step.
       </p>
     </li>
 
@@ -533,10 +555,8 @@
         which makes it easy to keep postponing.
       </p>
       <p>
-        The same constraint caps the one-second end of the interval study.
-        Sub-minute bars are accumulated from ticks rather than fetched from
-        history, so that sample grows one session at a time and cannot be
-        backfilled.
+        The same entitlement is what caps the one-second end of the interval
+        study above.
       </p>
     </li>
 
