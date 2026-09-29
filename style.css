@@ -800,6 +800,34 @@ footer p { margin: 0; }
   .teaser { grid-template-columns: 1fr; }
 }
 
+
+/* The robotics teaser, generated from the same linkage solver the walkthrough
+   uses and baked in, so the page gains a drawing rather than a script. */
+
+.teaser-r { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+.teaser-arm { display: block; width: 100%; height: auto; overflow: visible; }
+
+.teaser-arm .r-link { stroke: var(--ink); stroke-linecap: round; }
+.teaser-arm .r-l0 { stroke-width: 11; }
+.teaser-arm .r-l1 { stroke-width: 9; }
+.teaser-arm .r-l2 { stroke-width: 7; }
+.teaser-arm .r-l3 { stroke-width: 5; }
+.teaser-arm .r-finger { stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; }
+.teaser-arm .r-joint { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
+.teaser-arm .r-base { fill: var(--ink-soft); }
+.teaser-arm .r-bench { stroke: var(--rule); stroke-width: 1; }
+.teaser-arm .r-arm2 { stroke: var(--ink-faint); stroke-width: 6; opacity: 0.4; stroke-linecap: round; }
+.teaser-arm .r-path { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 2 4; }
+.teaser-arm .r-cone { fill: #2a78d6; opacity: 0.12; }
+.teaser-arm .r-cam { fill: #2a78d6; }
+.teaser-arm .r-obj { fill: var(--accent); }
+.teaser-arm .r-ring { fill: none; stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.55; }
+
+@media (prefers-color-scheme: dark) {
+  .teaser-arm .r-cone { fill: #3987e5; }
+  .teaser-arm .r-cam { fill: #3987e5; }
+}
+
 /* ---------- print ---------- */
 
 @media print {

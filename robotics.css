@@ -1,48 +1,265 @@
-/* Page-specific styles for robotics.html. The panel frame, charts, controls,
-   tooltip and collapsible blocks all come from viz.css, which platform.html
-   uses too. Only what is particular to this page lives here. */
+/* robotics.html.
+ *
+ * The finance page is a dashboard. Cards, borders, a chart in every one. This
+ * page is meant to read as a set of engineering plates instead, because the
+ * subject is hardware and the drawings should look like drawings.
+ *
+ * What that means concretely, and what viz.css therefore gets overridden on:
+ *   - no card around a figure. A plate is framed by corner ticks and a rule.
+ *   - a faint drafting grid behind each plate.
+ *   - annotation in monospace, uppercase, letter-spaced. Prose stays in serif.
+ *   - plates alternate which side of the page their text sits on.
+ *   - the plate number is large and set in the margin rather than inline.
+ */
+
+/* ---------- plates ---------- */
+
+.plate {
+  max-width: 64rem;
+  margin: 0 auto 5.5rem;
+  padding-top: 1rem;
+}
+
+.plate .body {
+  max-width: 34rem;
+}
+
+/* Alternating sides. A page of plates all ranged left reads as a list; this
+   reads as a document that was laid out. */
+.plate:nth-of-type(even) .body {
+  margin-left: auto;
+  text-align: left;
+}
+
+.plate h2 {
+  max-width: 34rem;
+  margin-top: 0;
+}
+.plate:nth-of-type(even) h2 { margin-left: auto; }
+
+.plate-num {
+  display: block;
+  margin: 0 0 0.1rem;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 2.4rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--rule);
+}
+.plate:nth-of-type(even) .plate-num { text-align: right; max-width: 34rem; margin-left: auto; }
+
+.plate-kicker {
+  display: block;
+  margin: 0 0 1rem;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.plate:nth-of-type(even) .plate-kicker { text-align: right; max-width: 34rem; margin-left: auto; }
+
+.plate .lede { max-width: 34rem; color: var(--ink-soft); }
+.plate:nth-of-type(even) .lede { margin-left: auto; }
+
+.plate .me { color: var(--ink); }
+
+/* ---------- the drawing frame ---------- */
+
+figure.plate-fig {
+  position: relative;
+  margin: 1.8rem 0 0;
+  padding: 1.4rem 1.2rem 0.6rem;
+  border: none;
+  border-radius: 0;
+  background:
+    repeating-linear-gradient(0deg, var(--drafting) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(90deg, var(--drafting) 0 1px, transparent 1px 28px);
+  background-color: transparent;
+}
+
+/* Corner ticks, the way a drawing is cropped rather than boxed. */
+figure.plate-fig::before,
+figure.plate-fig::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--ink-faint);
+}
+figure.plate-fig::before { top: 0; left: 0; border-right: none; border-bottom: none; }
+figure.plate-fig::after { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+figure.plate-fig svg,
+figure.plate-fig canvas { display: block; width: 100%; height: auto; }
+
+figure.plate-fig figcaption {
+  margin-top: 1rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--rule);
+  max-width: 40rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--ink-faint);
+}
+
+/* The plate's own title block, bottom left of the drawing, like a drawing has. */
+.plate-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.4rem;
+  margin-top: 0.7rem;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.plate-title b { font-weight: 600; color: var(--ink-soft); }
+
+/* ---------- controls, in the drawing register ---------- */
+
+.plate .controls { margin-top: 1.2rem; }
+
+.plate .controls button {
+  border-radius: 2px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.plate .control-label {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ---------- the hero ---------- */
+
+.hero-plate {
+  max-width: 64rem;
+  margin: 2.5rem auto 0;
+}
+
+/* ---------- defect panel ---------- */
 
 .mismatch-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: 1.6rem;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 2rem;
   align-items: start;
 }
 
-/* A defect that is currently switched on gets its explanation marked, so the
-   drawing and the words never disagree about what is being shown. */
 .bug-on dt { color: var(--accent); }
 .bug-off dt { color: var(--ink-faint); }
-.bug-off dd { opacity: 0.55; }
+.bug-off dd { opacity: 0.5; }
+
+.reading-list dt {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 
 .bug-err {
   display: block;
-  margin-top: 0.25rem;
-  font-size: 0.82rem;
+  margin-top: 0.3rem;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.74rem;
   color: var(--ink-faint);
+}
+
+/* ---------- spec block, instead of stat tiles ---------- */
+
+.spec {
+  max-width: 64rem;
+  margin: 1.6rem 0 0;
+  border-top: 1px solid var(--ink-faint);
+  border-bottom: 1px solid var(--rule);
+}
+
+.spec-row {
+  display: grid;
+  grid-template-columns: 8rem 1fr auto;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.9rem;
+  align-items: baseline;
+}
+.spec-row:last-child { border-bottom: none; }
+
+.spec-row .k {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.spec-row .v { color: var(--ink); }
+.spec-row .n {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- drafting grid colour ---------- */
+
+:root { --drafting: rgba(22, 24, 28, 0.045); }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) { --drafting: rgba(231, 233, 236, 0.05); }
+}
+:root[data-theme="dark"] { --drafting: rgba(231, 233, 236, 0.05); }
+
+@media (max-width: 54rem) {
+  .mismatch-layout { grid-template-columns: 1fr; }
+  .plate:nth-of-type(even) .body,
+  .plate:nth-of-type(even) h2,
+  .plate:nth-of-type(even) .lede,
+  .plate:nth-of-type(even) .plate-num,
+  .plate:nth-of-type(even) .plate-kicker { margin-left: 0; text-align: left; }
+  .spec-row { grid-template-columns: 1fr auto; }
+  .spec-row .k { grid-column: 1 / -1; }
+}
+
+/* ---------- the constraints list ---------- */
+
 .constraint-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  gap: 0.9rem 1.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem 2rem;
   margin: 0;
-  padding: 0.3rem 0;
+  padding: 0.4rem 0 0.2rem;
 }
 
 .constraint-list dt {
-  font-weight: 600;
-  font-size: 0.93rem;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
 .constraint-list dd {
-  margin: 0.15rem 0 0;
-  font-size: 0.87rem;
+  margin: 0.3rem 0 0;
+  padding-left: 0.8rem;
+  border-left: 1px solid var(--rule);
+  font-size: 0.88rem;
   line-height: 1.5;
   color: var(--ink-soft);
 }
 
-@media (max-width: 54rem) {
-  .mismatch-layout { grid-template-columns: 1fr; }
+/* ---------- the slider ---------- */
+
+/* The slider in the hero controls, kept in the same register as the buttons. */
+.controls input[type="range"] {
+  flex: 1 1 14rem;
+  max-width: 22rem;
+  accent-color: var(--accent);
 }
+
+/* viz.css frames every figure as a card. Plates are not cards, so the card
+   rules are unset here rather than fought with elsewhere. */
+.plate figure.viz { border: none; background: none; padding: 0; }

@@ -46,6 +46,26 @@
   </aside>
 </header>
 
+<div class="hero-plate">
+  <div class="controls" id="arm-controls"></div>
+  <figure class="plate-fig">
+    <canvas id="arm-canvas" height="380"
+      aria-label="Schematic of a robot arm reaching for an object being handed over by a second arm, annotated with the grasp tolerance, the wrist camera, the control rate and the inference time"></canvas>
+    <div class="plate-title">
+      <span><b>Plate 00</b></span>
+      <span>Handover, planar schematic</span>
+      <span>Franka FR3, 7 axes drawn as 4</span>
+      <span>Not to scale</span>
+    </div>
+    <figcaption>
+      Drag the slider to move the object along the handover path and the arm
+      poses onto it. The linkage is solved rather than drawn, so the reach is a
+      real reach, but the proportions are a sketch and the joint count is
+      reduced to keep the linkage legible.
+    </figcaption>
+  </figure>
+</div>
+
 <nav class="sections panel-nav" aria-label="Panels">
   <ul>
     <li><a href="#problem">The problem</a></li>
@@ -63,22 +83,23 @@
 <main class="viz-root">
 
 <!-- 1 ------------------------------------------------------------------ -->
-<section class="panel" id="problem">
-  <p class="panel-num">01</p>
+<section class="plate" id="problem">
+  <p class="plate-num">01</p>
+  <span class="plate-kicker">Problem statement</span>
   <h2>Why handover is the hard case</h2>
-  <p class="panel-lede">
+  <p class="lede">
     One robot holds an object. Another has to take it. On the ground you can
     retry, and a person can step in. In orbit you cannot do either, and a failed
     grasp can put the object somewhere nobody can reach.
   </p>
-  <p class="panel-lede me">
+  <p class="lede me">
     I came into this expecting the difficulty to be in the policy. Most of my
     time has gone into everything around it.
   </p>
 
   <div class="stat-row" id="stat-row"></div>
 
-  <figure class="viz">
+  <figure class="plate-fig">
     <div id="constraints"></div>
     <figcaption>
       In-space servicing, assembly and manufacturing sets the constraints. They
@@ -99,17 +120,18 @@
 </section>
 
 <!-- 2 ------------------------------------------------------------------ -->
-<section class="panel" id="data">
-  <p class="panel-num">02</p>
+<section class="plate" id="data">
+  <p class="plate-num">02</p>
+  <span class="plate-kicker">Data pipeline</span>
   <h2>From a handheld demonstration to a training set</h2>
-  <p class="panel-lede">
+  <p class="lede">
     Demonstrations are collected with a handheld gripper rather than by moving
     the robot, which is faster and does not need the robot present. The cost is
     that every demonstration has to be reconstructed into robot terms before
     anything can learn from it.
   </p>
 
-  <figure class="viz">
+  <figure class="plate-fig">
     <div id="pipeline"></div>
     <figcaption>
       215 demonstrations and 265,000 frames through this path. Every step is
@@ -136,10 +158,11 @@
 </section>
 
 <!-- 3 ------------------------------------------------------------------ -->
-<section class="panel" id="model">
-  <p class="panel-num">03</p>
+<section class="plate" id="model">
+  <p class="plate-num">03</p>
+  <span class="plate-kicker">Model selection</span>
   <h2>Changing the model, and having to justify it</h2>
-  <p class="panel-lede">
+  <p class="lede">
     The stack ran on a 171-million-parameter U-Net diffusion policy. It now runs
     on a 3-billion-parameter vision-language-action model. The reason was not
     that bigger is better. It was that the diffusion policy did not generalise
@@ -147,7 +170,7 @@
   </p>
 
   <div class="controls" id="model-controls"></div>
-  <figure class="viz">
+  <figure class="plate-fig">
     <canvas id="model-canvas" height="300" aria-label="In-distribution and out-of-distribution performance for the two policies"></canvas>
     <figcaption>
       Illustrative. Both policies do well on the distribution they were trained
@@ -170,17 +193,18 @@
 </section>
 
 <!-- 4 ------------------------------------------------------------------ -->
-<section class="panel" id="loop">
-  <p class="panel-num">04</p>
+<section class="plate" id="loop">
+  <p class="plate-num">04</p>
+  <span class="plate-kicker">Control timing</span>
   <h2>Closing the loop on real hardware</h2>
-  <p class="panel-lede">
+  <p class="lede">
     Inference takes about 125 milliseconds on the GPU. The arm wants a command
     every millisecond. Those two numbers do not meet, and everything in this
     panel exists to bridge them.
   </p>
 
   <div class="controls" id="loop-controls"></div>
-  <figure class="viz">
+  <figure class="plate-fig">
     <canvas id="loop-canvas" height="260" aria-label="Timing of the control loop, from inference through action chunking to the controller"></canvas>
     <figcaption>
       The policy emits a chunk of future actions rather than one. The client
@@ -202,15 +226,16 @@
 </section>
 
 <!-- 5 ------------------------------------------------------------------ -->
-<section class="panel wide" id="mismatch">
-  <p class="panel-num">05</p>
+<section class="plate" id="mismatch">
+  <p class="plate-num">05</p>
+  <span class="plate-kicker">Failure modes</span>
   <h2>The gap between training and deployment</h2>
-  <p class="panel-lede">
+  <p class="lede">
     This is the panel I would show first. Three defects, all in the deployment
     client rather than the model, each one individually plausible and quiet.
     Turn them on and watch what they do to the same policy.
   </p>
-  <p class="panel-lede me">
+  <p class="lede me">
     Every one of these looked like a model problem when I first met it. That is
     what made them expensive.
   </p>
@@ -218,7 +243,7 @@
   <div class="controls" id="bug-controls"></div>
 
   <div class="mismatch-layout">
-    <figure class="viz">
+    <figure class="plate-fig">
       <canvas id="traj-canvas" height="380" aria-label="A reach and grasp trajectory with deployment defects applied"></canvas>
       <figcaption>
         Illustrative. The dashed path is the demonstration, the solid path is
@@ -255,17 +280,18 @@
 </section>
 
 <!-- 6 ------------------------------------------------------------------ -->
-<section class="panel" id="compression">
-  <p class="panel-num">06</p>
+<section class="plate" id="compression">
+  <p class="plate-num">06</p>
+  <span class="plate-kicker">Domain shift</span>
   <h2>Video compression as domain shift</h2>
-  <p class="panel-lede">
+  <p class="lede">
     The demonstrations are video. Video gets compressed. The policy trains on the
     compressed frames and then runs on frames from a live camera, which are not
     compressed the same way, and the difference is a domain shift nobody wrote
     down.
   </p>
 
-  <figure class="viz">
+  <figure class="plate-fig">
     <svg id="checkpoints-svg" viewBox="0 0 720 300" role="img"
          aria-label="Prediction error against training checkpoint for the original and rebuilt data pipelines"></svg>
     <figcaption>
@@ -286,17 +312,18 @@
 </section>
 
 <!-- 7 ------------------------------------------------------------------ -->
-<section class="panel" id="evaluation">
-  <p class="panel-num">07</p>
+<section class="plate" id="evaluation">
+  <p class="plate-num">07</p>
+  <span class="plate-kicker">Measurement</span>
   <h2>One rollout tells you almost nothing</h2>
-  <p class="panel-lede">
+  <p class="lede">
     A diffusion policy samples. Run the same policy on the same episode twice
     and you get two different trajectories. Compare two policies on one rollout
     each and you are mostly comparing two samples.
   </p>
 
   <div class="controls" id="eval-controls"></div>
-  <figure class="viz">
+  <figure class="plate-fig">
     <svg id="rollouts-svg" viewBox="0 0 720 320" role="img"
          aria-label="Final error across repeated rollouts for two policies, with the spread shown"></svg>
     <figcaption>
@@ -318,10 +345,11 @@
 </section>
 
 <!-- 8 ------------------------------------------------------------------ -->
-<section class="panel" id="quantum">
-  <p class="panel-num">08</p>
+<section class="plate" id="quantum">
+  <p class="plate-num">08</p>
+  <span class="plate-kicker">Parameter study</span>
   <h2>Do quantum layers buy parameter efficiency</h2>
-  <p class="panel-lede">
+  <p class="lede">
     A separate question inside the same stack. If parameterised quantum circuits
     replaced the attention projections in a vision transformer policy, would
     accuracy hold at fewer parameters. The comparison was pre-registered, with
@@ -331,7 +359,7 @@
   </p>
 
   <div class="controls" id="ladder-controls"></div>
-  <figure class="viz">
+  <figure class="plate-fig">
     <svg id="ladder-svg" viewBox="0 0 720 340" role="img"
          aria-label="Held-out error against parameter count for the quantum and classical arms across a width ladder"></svg>
     <figcaption>
@@ -358,10 +386,11 @@
 </section>
 
 <!-- 9 ------------------------------------------------------------------ -->
-<section class="panel" id="next">
-  <p class="panel-num">09</p>
+<section class="plate" id="next">
+  <p class="plate-num">09</p>
+  <span class="plate-kicker">Open work</span>
   <h2>What is next</h2>
-  <p class="panel-lede">
+  <p class="lede">
     Roughly the order I would pick it up.
   </p>
 

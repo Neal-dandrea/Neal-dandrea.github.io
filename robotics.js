@@ -84,21 +84,259 @@
     }
   }
 
+  /* ------------------------------------------------------------- the arm --
+
+     A drawn schematic rather than a chart, because the subject is hardware and
+     a reader should be able to see the thing being described. It is a planar
+     four-link stand-in for a seven-axis arm, posed by inverse kinematics onto a
+     reach point, with the wrist camera and its field of view drawn on.
+
+     Not a rendering. The proportions are a sketch, the joint count is reduced
+     so the linkage is legible, and every annotation on it is a real number from
+     the work. */
+
+  /* ⚠️ THE TARGET HAS TO BE INSIDE THE REACH. The first version put the
+     handover path 408 units from a base with 300 units of link, so the solver
+     did the only thing it could and stretched every joint straight at it. The
+     drawing was a stick. Link lengths sum to 314 and the path sits between 199
+     and 297 away, which keeps the elbow bent through the whole sweep. */
+  const ARM = {
+    base: { x: 150, y: 300 },
+    links: [100, 92, 74, 48],
+    camFov: 0.72,
+  };
+
+  /* Cyclic coordinate descent. Simple, converges fast enough to run on every
+     frame of a drag, and needs no Jacobian. */
+  function poseArm(target, seedAngles) {
+    const a = seedAngles.slice();
+    const fk = (angles) => {
+      const pts = [{ x: ARM.base.x, y: ARM.base.y }];
+      let th = 0;
+      angles.forEach((d, i) => {
+        th += d;
+        pts.push({
+          x: pts[i].x + Math.cos(th) * ARM.links[i],
+          y: pts[i].y + Math.sin(th) * ARM.links[i],
+        });
+      });
+      return pts;
+    };
+    for (let iter = 0; iter < 24; iter++) {
+      for (let j = a.length - 1; j >= 0; j--) {
+        const pts = fk(a);
+        const piv = pts[j], end = pts[pts.length - 1];
+        const a1 = Math.atan2(end.y - piv.y, end.x - piv.x);
+        const a2 = Math.atan2(target.y - piv.y, target.x - piv.x);
+        let d = a2 - a1;
+        while (d > Math.PI) d -= 2 * Math.PI;
+        while (d < -Math.PI) d += 2 * Math.PI;
+        a[j] += clamp(d, -0.35, 0.35);
+      }
+    }
+    return { angles: a, pts: fk(a) };
+  }
+
+  const heroState = { t: 0.55, seed: [-0.9, 0.7, 0.5, 0.2] };
+
+  function drawArmPlate() {
+    const canvas = document.getElementById("arm-canvas");
+    if (!canvas) return;
+    const { ctx, w, h } = fitCanvas(canvas, 380);
+    ctx.clearRect(0, 0, w, h);
+
+    const S = w / 720;                        // the drawing is authored at 720
+    const sx = (x) => x * S, sy = (y) => y * S;
+
+    const ink = cssVar("--ink"), soft = cssVar("--ink-soft"),
+          faint = cssVar("--ink-faint"), rule = cssVar("--rule"),
+          accent = cssVar("--accent"), blue = cssVar("--series-1");
+
+    const mono = (px) => `${px * S}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+
+    // The object travels along the handover path as the slider moves.
+    const from = { x: 400, y: 140 }, to = { x: 330, y: 215 };
+    const target = {
+      x: lerp(from.x, to.x, heroState.t),
+      y: lerp(from.y, to.y, heroState.t),
+    };
+    const sol = poseArm(target, heroState.seed);
+    const pts = sol.pts;
+
+    // Bench line and base.
+    ctx.strokeStyle = rule;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(sx(40), sy(340)); ctx.lineTo(sx(690), sy(340));
+    ctx.stroke();
+    ctx.fillStyle = soft;
+    ctx.fillRect(sx(ARM.base.x - 34), sy(300), sx(68), sy(40));
+    ctx.strokeStyle = faint;
+    for (let i = 0; i < 6; i++) {
+      ctx.beginPath();
+      ctx.moveTo(sx(ARM.base.x - 34 + i * 13), sy(340));
+      ctx.lineTo(sx(ARM.base.x - 44 + i * 13), sy(352));
+      ctx.stroke();
+    }
+
+    // Links, drawn as a linkage rather than a silhouette.
+    ctx.lineCap = "round";
+    for (let i = 0; i < pts.length - 1; i++) {
+      ctx.strokeStyle = ink;
+      ctx.lineWidth = Math.max(2, (11 - i * 1.8) * S);
+      ctx.beginPath();
+      ctx.moveTo(sx(pts[i].x), sy(pts[i].y));
+      ctx.lineTo(sx(pts[i + 1].x), sy(pts[i + 1].y));
+      ctx.stroke();
+    }
+    pts.slice(0, -1).forEach((p, i) => {
+      ctx.fillStyle = cssVar("--paper");
+      ctx.strokeStyle = ink;
+      ctx.lineWidth = 1.5 * S;
+      ctx.beginPath();
+      ctx.arc(sx(p.x), sy(p.y), Math.max(3, (7 - i) * S), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    // Gripper fingers at the tool point, opened around the object.
+    const tip = pts[pts.length - 1], wrist = pts[pts.length - 2];
+    const th = Math.atan2(tip.y - wrist.y, tip.x - wrist.x);
+    const nx = -Math.sin(th), ny = Math.cos(th);
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 2.5 * S;
+    [-1, 1].forEach((sgn) => {
+      ctx.beginPath();
+      ctx.moveTo(sx(tip.x + nx * 11 * sgn), sy(tip.y + ny * 11 * sgn));
+      ctx.lineTo(sx(tip.x + nx * 11 * sgn + Math.cos(th) * 20),
+                 sy(tip.y + ny * 11 * sgn + Math.sin(th) * 20));
+      ctx.stroke();
+    });
+
+    // Wrist camera and its cone.
+    const camAt = { x: wrist.x + (tip.x - wrist.x) * 0.45 + nx * 16,
+                    y: wrist.y + (tip.y - wrist.y) * 0.45 + ny * 16 };
+    ctx.fillStyle = blue;
+    ctx.beginPath();
+    ctx.arc(sx(camAt.x), sy(camAt.y), 4 * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.12;
+    ctx.beginPath();
+    ctx.moveTo(sx(camAt.x), sy(camAt.y));
+    ctx.lineTo(sx(camAt.x + Math.cos(th - ARM.camFov / 2) * 150),
+               sy(camAt.y + Math.sin(th - ARM.camFov / 2) * 150));
+    ctx.lineTo(sx(camAt.x + Math.cos(th + ARM.camFov / 2) * 150),
+               sy(camAt.y + Math.sin(th + ARM.camFov / 2) * 150));
+    ctx.closePath();
+    ctx.fillStyle = blue;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // The object, and the grasp tolerance drawn to the same scale.
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.arc(sx(target.x), sy(target.y), 6 * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = accent;
+    ctx.globalAlpha = 0.5;
+    ctx.setLineDash([3 * S, 3 * S]);
+    ctx.beginPath();
+    ctx.arc(sx(target.x), sy(target.y), 17 * S, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    // The handover path the object is travelling along.
+    ctx.strokeStyle = faint;
+    ctx.setLineDash([2 * S, 4 * S]);
+    ctx.beginPath();
+    ctx.moveTo(sx(from.x), sy(from.y));
+    ctx.lineTo(sx(to.x), sy(to.y));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // The other arm, sketched, because handover is two of these.
+    ctx.strokeStyle = faint;
+    ctx.lineWidth = 6 * S;
+    ctx.globalAlpha = 0.45;
+    ctx.beginPath();
+    ctx.moveTo(sx(660), sy(330));
+    ctx.lineTo(sx(600), sy(180));
+    ctx.lineTo(sx(from.x + 14), sy(from.y - 10));
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = 1;
+
+    // ---- annotation, in the drafting register
+    ctx.font = mono(9.5);
+    ctx.fillStyle = faint;
+
+    function leader(x1, y1, x2, y2, text, align) {
+      ctx.strokeStyle = faint;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(sx(x1), sy(y1));
+      ctx.lineTo(sx(x2), sy(y2));
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(sx(x1), sy(y1), 1.6 * S, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.textAlign = align || "left";
+      ctx.fillText(text, sx(x2 + (align === "right" ? -4 : 4)), sy(y2 + 3));
+      ctx.textAlign = "left";
+    }
+
+    leader(camAt.x, camAt.y, 250, 78, "WRIST CAMERA");
+    leader(target.x, target.y - 17, 450, 64, "GRASP TOLERANCE 30 MM");
+    leader(pts[1].x, pts[1].y, 54, 196, "7 AXES, SHOWN AS 4", "left");
+    leader(612, 210, 660, 258, "SECOND ARM");
+    leader(ARM.base.x, 322, 246, 366, "IMPEDANCE CONTROL 1 KHZ");
+
+    ctx.textAlign = "right";
+    ctx.fillText("POLICY INFERENCE 125 MS", sx(700), sy(30));
+    ctx.fillText("ACTION CHUNK, SUBSAMPLED", sx(700), sy(44));
+    ctx.textAlign = "left";
+  }
+
+  function heroControls() {
+    const host = document.getElementById("arm-controls");
+    if (!host) return;
+    host.innerHTML = '<span class="control-label">Handover</span>'
+      + '<input type="range" id="arm-slide" min="0" max="100" value="55" '
+      + 'aria-label="Position along the handover path">'
+      + '<span class="control-label" id="arm-read"></span>';
+    const slide = document.getElementById("arm-slide");
+    const read = document.getElementById("arm-read");
+    const upd = () => {
+      heroState.t = slide.value / 100;
+      read.textContent = heroState.t < 0.15 ? "object held by the other arm"
+        : heroState.t > 0.85 ? "grasp closed" : "approach";
+      drawArmPlate();
+    };
+    slide.addEventListener("input", upd);
+    upd();
+  }
+
   /* ------------------------------------------------------- 01 the problem */
 
   function renderStats() {
     const host = document.getElementById("stat-row");
     if (!host) return;
+    // A specification table rather than stat tiles. The finance page uses
+    // tiles, and this page should not look like that page.
+    host.className = "spec";
     host.innerHTML = [
-      { v: "215", u: "", l: "demonstrations collected" },
-      { v: "265", u: "k", l: "frames after validation" },
-      { v: "125", u: "ms", l: "policy inference" },
-      { v: "1", u: "kHz", l: "controller underneath" },
-      { v: "3", u: "B", l: "parameters in the policy" },
-    ].map((s) => `
-      <div class="stat">
-        <span class="value">${s.v}<span class="unit">${s.u}</span></span>
-        <span class="label">${s.l}</span>
+      ["Demonstrations", "collected by hand, handheld gripper", "215"],
+      ["Frames", "after per-step validation", "265,000"],
+      ["Policy", "vision-language-action, on the arm", "3B params"],
+      ["Inference", "on a workstation GPU", "125 ms"],
+      ["Controller", "Cartesian impedance", "1 kHz"],
+      ["Tolerance", "grasp, on the target object", "30 mm"],
+    ].map(([k, v, n]) => `
+      <div class="spec-row">
+        <span class="k">${k}</span>
+        <span class="v">${v}</span>
+        <span class="n">${n}</span>
       </div>`).join("");
   }
 
@@ -341,7 +579,8 @@
 
   window.__robotics = { rng, gauss, clamp, lerp, cssVar, el, clear, showTip,
     hideTip, fitCanvas, axes, renderStats, renderConstraints, renderPipeline,
-    drawModel, modelControls, drawLoop, loopControls };
+    drawModel, modelControls, drawLoop, loopControls,
+    drawArmPlate, heroControls };
 })();
 
 /* ---------------------------------------------------------------------- */
@@ -752,6 +991,7 @@
   /* -------------------------------------------------------------- wiring */
 
   function drawAll() {
+    R.drawArmPlate();
     R.renderStats();
     R.renderConstraints();
     R.renderPipeline();
@@ -790,6 +1030,7 @@
   })();
 
   function init() {
+    R.heroControls();
     R.modelControls();
     R.loopControls();
     bugControls();
