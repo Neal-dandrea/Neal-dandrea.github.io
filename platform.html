@@ -63,6 +63,7 @@
     <li><a href="#ablation">Ablation</a></li>
     <li><a href="#breadth">Breadth</a></li>
     <li><a href="#trade">Worked trade</a></li>
+    <li><a href="#next">What is next</a></li>
   </ul>
 </nav>
 
@@ -480,6 +481,90 @@
       through the level, the sign held in both halves.
     </p>
   </details>
+</section>
+
+<section class="panel" id="next">
+  <p class="panel-num">10</p>
+  <h2>What is next</h2>
+  <p class="panel-lede">
+    The real list, not a tidy one. Two of these are waiting on somebody else to
+    make a decision, one is waiting on a driver signature, and one is waiting on
+    the market to give us enough data to ask the question with.
+  </p>
+
+  <ol class="next-list">
+    <li>
+      <h3>More independent evidence, not more inputs</h3>
+      <p>
+        The breadth panel says the binding constraint is evidence rather than
+        feature count, and the ablation says the same thing from the other
+        direction. So the work is pooled training across symbols and longer
+        samples, and re-running the leave-one-out test before any new feed gets
+        wired in. Adding columns is the thing that already did not work.
+      </p>
+    </li>
+
+    <li>
+      <h3>Settling two indicator definitions</h3>
+      <p>
+        One signal function has an ambiguous direction and another diverges from
+        its published formulation on 153 of 185 values. Both get settled the
+        same way, by a hand-built prototype on real data that the code has to
+        reproduce exactly. Neither is mine to decide, and nothing downstream
+        should be trusted until they are decided.
+      </p>
+    </li>
+
+    <li>
+      <h3>The whole option universe, not one index</h3>
+      <p>
+        Mapping a symbol to every option listed against it, with expirations and
+        strikes, so the surface work runs past the names it runs on today.
+      </p>
+    </li>
+
+    <li>
+      <h3>A real print tape</h3>
+      <p>
+        Bars are built from top-of-book updates because the credential carries
+        no per-trade entitlement. That is enough for most of what is on this
+        page and not enough for microstructure, where what you want is the
+        prints themselves. It is a procurement problem rather than a coding one,
+        which makes it easy to keep postponing.
+      </p>
+      <p>
+        The same constraint caps the one-second end of the interval study.
+        Sub-minute bars are accumulated from ticks rather than fetched from
+        history, so that sample grows one session at a time and cannot be
+        backfilled.
+      </p>
+    </li>
+
+    <li>
+      <h3>The sweep on the GPU</h3>
+      <p>
+        The parameter-sweep kernel is written and checked against the reference
+        implementation. The card is sitting in the machine waiting on a driver
+        signature that has to be enrolled at the console, and the sweep switches
+        over without a code change once it is.
+      </p>
+    </li>
+
+    <li>
+      <h3>Alerting that reaches a person</h3>
+      <p>
+        The capture health check writes to a system log. An outage should
+        interrupt somebody instead, and until it does the check is only useful
+        after the fact. This is the least interesting item here and probably the
+        one that would save the most hours.
+      </p>
+    </li>
+  </ol>
+
+  <p class="panel-lede me">
+    If this page is out of date when you read it, the odds are that the first
+    item is still the first item.
+  </p>
 </section>
 
 <section class="panel closing">
