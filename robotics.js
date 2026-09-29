@@ -257,16 +257,23 @@
     const nx = -Math.sin(th), ny = Math.cos(th);
     const along = (p, d) => ({ x: p.x + Math.cos(th) * d, y: p.y + Math.sin(th) * d });
 
-    // Flange, then the hand body, then two fingers on a rail.
-    capsule(along(tip, -2), along(tip, 4), 11, body, edge);
-    capsule(along(tip, 4), along(tip, 15), 9, body, edge);
-    // The rail the fingers ride on.
-    capsule({ x: tip.x + Math.cos(th) * 15 + nx * 10, y: tip.y + Math.sin(th) * 15 + ny * 10 },
-            { x: tip.x + Math.cos(th) * 15 - nx * 10, y: tip.y + Math.sin(th) * 15 - ny * 10 },
-            3, body, edge);
+    /* ⚠️ THE GRASP POINT IS BETWEEN THE FINGERTIPS, NOT AT THE FLANGE. The
+       solver poses the last link onto the object, so drawing the hand forward
+       from there put the whole hand past the object and left it sitting at the
+       wrist with the fingers reaching into empty space. The hand is drawn back
+       from the solved point by its own length instead, which lands the
+       fingertips on the object and puts the flange where a flange goes. */
+    const HAND = 33;
+    const hb = along(tip, -HAND);
+
+    capsule(along(hb, -2), along(hb, 4), 11, body, edge);      // flange
+    capsule(along(hb, 4), along(hb, 15), 9, body, edge);       // hand body
+    capsule({ x: hb.x + Math.cos(th) * 15 + nx * 10, y: hb.y + Math.sin(th) * 15 + ny * 10 },
+            { x: hb.x + Math.cos(th) * 15 - nx * 10, y: hb.y + Math.sin(th) * 15 - ny * 10 },
+            3, body, edge);                                     // the finger rail
     [-1, 1].forEach((sgn) => {
-      const root = { x: tip.x + Math.cos(th) * 15 + nx * 9 * sgn,
-                     y: tip.y + Math.sin(th) * 15 + ny * 9 * sgn };
+      const root = { x: hb.x + Math.cos(th) * 15 + nx * 9 * sgn,
+                     y: hb.y + Math.sin(th) * 15 + ny * 9 * sgn };
       capsule(root, along(root, 18), 3, body, edge);
       // The pad on the inside face of each finger.
       ctx.strokeStyle = band;
@@ -280,8 +287,13 @@
     });
 
     // Wrist camera and its cone.
-    const camAt = { x: tip.x + Math.cos(th) * 6 + nx * 13,
-                    y: tip.y + Math.sin(th) * 6 + ny * 13 };
+    /* The camera sits on the far side of the hand and BEHIND the fingers, on
+       the hand body where it actually mounts. Forward of the fingers it landed
+       on the object and inside the tolerance ring, which is both wrong and
+       unreadable. From back here the cone opens along the tool axis and
+       contains the grasp, which is what a wrist camera is for. */
+    const camAt = { x: hb.x + Math.cos(th) * 7 - nx * 14,
+                    y: hb.y + Math.sin(th) * 7 - ny * 14 };
     ctx.fillStyle = blue;
     ctx.beginPath();
     ctx.arc(sx(camAt.x), sy(camAt.y), 4 * S, 0, Math.PI * 2);
@@ -898,8 +910,10 @@
       ctx.globalAlpha = 1;
       ctx.fillStyle = faint;
       ctx.fillText("TRACKING VALIDATED PER STEP", sx(60), sy(120));
+      // Below where a dropped frame lands. Frames fall to y 230 and stand 30
+      // tall, so a label at 264 sat on the bottom edge of the first one.
       ctx.fillStyle = accent;
-      ctx.fillText("DROPPED, POSE DRIFTED", sx(60), sy(264));
+      ctx.fillText("DROPPED, POSE DRIFTED", sx(60), sy(292));
       say([
         "A DROPPED FRAME IS OBVIOUS. A DRIFTED POSE IS NOT,",
         "AND IT TEACHES A POSE THE GRIPPER WAS NEVER AT.",
