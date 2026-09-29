@@ -324,6 +324,58 @@ figure.viz figcaption {
   color: var(--ink-faint);
 }
 
+/* ---------- equations ---------- */
+
+.eq {
+  margin: 0 0 0.9rem;
+  padding: 0.3rem 0 0.3rem 0.9rem;
+  border-left: 2px solid var(--rule);
+  overflow-x: auto;
+  overflow-y: hidden;      /* or a long equation grows a vertical scrollbar too */
+}
+
+/* Block-level MathML is centred by default. Everything else on this page is
+   ranged left, and a centred equation inside a left-ranged step reads as a
+   quotation from somewhere else. */
+.eq math {
+  display: block;
+  width: fit-content;      /* text-align alone does not beat the UA centring */
+  margin: 0;
+  font-size: 1.12rem;
+  color: var(--ink);
+}
+
+/* MathML inherits the page serif, which is what makes it read as typeset maths
+   rather than as a screenshot of some other document. */
+.eq math, .eq math * { font-family: inherit; }
+
+.eq mi { font-style: italic; }
+.eq mn, .eq mo { font-style: normal; }
+
+/* Two display equations in one block sit closer together than two paragraphs. */
+.eq math + math { margin-top: 0.35rem; }
+
+.eq-plain {
+  display: none;
+  margin: 0;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  white-space: pre-wrap;
+}
+
+.no-mathml .eq math { display: none; }
+.no-mathml .eq-plain { display: block; }
+
+.eq-nums {
+  margin: -0.4rem 0 0.9rem;
+  padding-left: 0.9rem;
+  font-size: 0.86rem;
+  color: var(--ink-faint);
+}
+.eq-nums strong { color: var(--ink-soft); }
+
 /* ---------- worked trade ---------- */
 
 .trade-layout {
@@ -531,11 +583,24 @@ table.nums td.v { font-variant-numeric: tabular-nums; }
 }
 .legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
 .legend i {
-  width: 0.85rem;
-  height: 0.2rem;
+  width: 0.9rem;
+  height: 0.16rem;
   border-radius: 2px;
   background: currentColor;
 }
+.legend i.dot { width: 0.4rem; height: 0.4rem; border-radius: 50%; }
+.legend i.sq { width: 0.7rem; height: 0.7rem; border-radius: 2px; }
+
+/* Each key takes the colour of the thing it stands for, and the words stay in
+   text ink, so identity is never carried by colour alone. */
+.lg-slice { color: var(--series-1); }
+.lg-quote { color: var(--ink); }
+.lg-sheet { color: var(--seq-3); }
+.legend span { color: var(--ink-soft); }
+.legend i { color: inherit; }
+.lg-slice i { background: var(--series-1); }
+.lg-quote i { background: var(--ink); }
+.lg-sheet i { background: var(--seq-3); }
 
 /* ---------- closing ---------- */
 

@@ -951,8 +951,8 @@
       const mid = project(slice[2].k, smile.T, slice[2].v, vlo, vhi, fit);
       ctx.fillStyle = cssVar("--series-1");
       ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
-      ctx.fillText(`${Math.round(smile.T * 365)}d, shown below`,
-                   clamp(mid.x - 4, 6, w - 120), mid.y - 7);
+      ctx.fillText(`${Math.round(smile.T * 365)}d, shown in the panel below`,
+                   clamp(mid.x - 4, 6, w - 190), mid.y - 7);
     }
 
     if (surf.cue === "skew") ribbon(g[3], "one expiry: the skew");
@@ -1010,7 +1010,7 @@
             <tr><td>Butterfly, min g(k)</td>
                 <td class="v">${a.minG.toFixed(4)} ${flag(a.gOk)}</td></tr>
           </table>
-          <pre>g(k) = (1 − k·w′/2w)² − (w′/4)(1/w + ¼) + w″/2</pre>
+          ${eq("durrleman")}
           <p class="aside">Total variance must not fall with maturity, or a
              calendar spread is free money on paper. Durrleman&rsquo;s g must
              stay non-negative, or the smile implies a negative probability
@@ -1729,6 +1729,104 @@
        </p>`;
   }
 
+  /* ------------------------------------------------------- formulas ------
+
+     MathML rather than a maths library or a picture. It renders like typeset
+     maths, scales with the surrounding text, stays selectable and searchable,
+     survives dark mode, and adds nothing to the page. A picture would be none
+     of those things, and loading a typesetting library to set six equations
+     would be a few hundred kilobytes of dependency on a site whose point is
+     that it has none.
+
+     Every equation carries a plain-text twin. A browser without MathML renders
+     the tags' contents as one run-on line rather than as an equation, so the
+     script tags the document and the stylesheet swaps the twin in. */
+
+  const M = {
+    forward: `
+      <math display="block"><mrow>
+        <mi>F</mi><mo>=</mo><mi>S</mi>
+        <msup><mi>e</mi><mrow><mi>r</mi><mi>T</mi></mrow></msup>
+      </mrow></math>`,
+
+    strike: `
+      <math display="block"><mrow>
+        <msub><mi>K</mi><mrow><mn>25</mn><mi>&#x0394;</mi></mrow></msub><mo>=</mo>
+        <mi>F</mi><mo>&#x2062;</mo>
+        <mi>exp</mi><mo>&#x2061;</mo><mo>(</mo>
+        <mfrac><mrow><msup><mi>&#x03C3;</mi><mn>2</mn></msup><mi>T</mi></mrow><mn>2</mn></mfrac>
+        <mo>&#x2213;</mo>
+        <mi>z</mi><mi>&#x03C3;</mi><msqrt><mi>T</mi></msqrt>
+        <mo>)</mo>
+      </mrow></math>`,
+
+    d12: `
+      <math display="block"><mrow>
+        <msub><mi>d</mi><mn>1</mn></msub><mo>=</mo>
+        <mfrac>
+          <mrow>
+            <mi>ln</mi><mo>&#x2061;</mo><mo>(</mo><mi>F</mi><mo>/</mo><mi>K</mi><mo>)</mo>
+            <mo>+</mo>
+            <mfrac><mn>1</mn><mn>2</mn></mfrac>
+            <msup><mi>&#x03C3;</mi><mn>2</mn></msup><mi>T</mi>
+          </mrow>
+          <mrow><mi>&#x03C3;</mi><msqrt><mi>T</mi></msqrt></mrow>
+        </mfrac>
+        <mspace width="2em"/>
+        <msub><mi>d</mi><mn>2</mn></msub><mo>=</mo>
+        <msub><mi>d</mi><mn>1</mn></msub><mo>&#x2212;</mo>
+        <mi>&#x03C3;</mi><msqrt><mi>T</mi></msqrt>
+      </mrow></math>`,
+
+    prices: `
+      <math display="block"><mrow>
+        <mi>C</mi><mo>=</mo>
+        <msup><mi>e</mi><mrow><mo>&#x2212;</mo><mi>r</mi><mi>T</mi></mrow></msup>
+        <mo>[</mo><mi>F</mi><mo>&#x2062;</mo><mi>N</mi><mo>&#x2061;</mo>
+        <mo>(</mo><msub><mi>d</mi><mn>1</mn></msub><mo>)</mo>
+        <mo>&#x2212;</mo><mi>K</mi><mo>&#x2062;</mo><mi>N</mi><mo>&#x2061;</mo>
+        <mo>(</mo><msub><mi>d</mi><mn>2</mn></msub><mo>)</mo><mo>]</mo>
+      </mrow></math>
+      <math display="block"><mrow>
+        <mi>P</mi><mo>=</mo>
+        <msup><mi>e</mi><mrow><mo>&#x2212;</mo><mi>r</mi><mi>T</mi></mrow></msup>
+        <mo>[</mo><mi>K</mi><mo>&#x2062;</mo><mi>N</mi><mo>&#x2061;</mo>
+        <mo>(</mo><mo>&#x2212;</mo><msub><mi>d</mi><mn>2</mn></msub><mo>)</mo>
+        <mo>&#x2212;</mo><mi>F</mi><mo>&#x2062;</mo><mi>N</mi><mo>&#x2061;</mo>
+        <mo>(</mo><mo>&#x2212;</mo><msub><mi>d</mi><mn>1</mn></msub><mo>)</mo><mo>]</mo>
+      </mrow></math>`,
+
+    durrleman: `
+      <math display="block"><mrow>
+        <mi>g</mi><mo>&#x2061;</mo><mo>(</mo><mi>k</mi><mo>)</mo><mo>=</mo>
+        <msup>
+          <mrow><mo>(</mo><mn>1</mn><mo>&#x2212;</mo>
+            <mfrac><mrow><mi>k</mi><msup><mi>w</mi><mo>&#x2032;</mo></msup></mrow>
+                   <mrow><mn>2</mn><mi>w</mi></mrow></mfrac>
+          <mo>)</mo></mrow>
+          <mn>2</mn>
+        </msup>
+        <mo>&#x2212;</mo>
+        <mfrac><msup><mi>w</mi><mo>&#x2032;</mo></msup><mn>4</mn></mfrac>
+        <mo>(</mo><mfrac><mn>1</mn><mi>w</mi></mfrac><mo>+</mo>
+        <mfrac><mn>1</mn><mn>4</mn></mfrac><mo>)</mo>
+        <mo>+</mo>
+        <mfrac><msup><mi>w</mi><mo>&#x2033;</mo></msup><mn>2</mn></mfrac>
+        <mo>&#x2265;</mo><mn>0</mn>
+      </mrow></math>`,
+  };
+
+  const PLAIN = {
+    forward: "F = S \u00b7 e^(rT)",
+    strike: "K(25\u0394) = F \u00b7 exp(\u00bd\u03c3\u00b2T \u2213 z\u00b7\u03c3\u221aT)",
+    d12: "d1 = [ln(F/K) + \u00bd\u03c3\u00b2T] / (\u03c3\u221aT)      d2 = d1 \u2212 \u03c3\u221aT",
+    prices: "C = e^(\u2212rT)[F\u00b7N(d1) \u2212 K\u00b7N(d2)]\nP = e^(\u2212rT)[K\u00b7N(\u2212d2) \u2212 F\u00b7N(\u2212d1)]",
+    durrleman: "g(k) = (1 \u2212 k\u00b7w\u2032/2w)\u00b2 \u2212 (w\u2032/4)(1/w + \u00bc) + w\u2033/2 \u2265 0",
+  };
+
+  const eq = (name) =>
+    `<div class="eq">${M[name]}<pre class="eq-plain">${PLAIN[name]}</pre></div>`;
+
   /* ------------------------------------------------ 09 the worked trade --
 
      Black-76 on the forward, which is the right frame for options on an index
@@ -1840,14 +1938,15 @@
              and the forward is <strong>${money2(t.F)}</strong>. Strikes below are
              quoted against that, so financing is stated once rather than
              leaking into each greek.</p>
-          <pre>F = S·e^(rT) = ${t.S} × e^(${R}×${TRADE_T}) = ${t.F.toFixed(2)}</pre>
+          ${eq("forward")}
+          <p class="eq-nums">F = ${t.S} × e<sup>${R} × ${TRADE_T}</sup> = <strong>${t.F.toFixed(2)}</strong></p>
         </li>
         <li>
           <h4>2. Ask the surface for the 25-delta strikes</h4>
           <p>The strike and its volatility depend on each other, so this is
              solved rather than looked up. Guess a vol, get a strike, read the
              surface there, repeat. It settles in three passes.</p>
-          <pre>K = F·exp(½σ²T ∓ 0.6745·σ√T)</pre>
+          ${eq("strike")}
           <table class="nums">
             <tr><th></th><th>strike</th><th>vol from the surface</th></tr>
             <tr><td>25-delta put</td><td>${t.put.K.toFixed(2)}</td><td>${pc(t.put.vol)}</td></tr>
@@ -1860,9 +1959,8 @@
         <li>
           <h4>3. Price both legs</h4>
           <p>Black-76, one contract of each, 100 shares a contract.</p>
-          <pre>d₁ = [ln(F/K) + ½σ²T] / σ√T        d₂ = d₁ − σ√T
-call = e^(−rT)[F·N(d₁) − K·N(d₂)]
-put  = e^(−rT)[K·N(−d₂) − F·N(−d₁)]</pre>
+          ${eq("d12")}
+          ${eq("prices")}
           <table class="nums">
             <tr><th></th><th>d₁</th><th>d₂</th><th>price</th><th>per contract</th></tr>
             <tr><td>put, ${t.put.K.toFixed(0)}</td><td>${t.pLeg.d1.toFixed(3)}</td>
@@ -2002,6 +2100,12 @@ put  = e^(−rT)[K·N(−d₂) − F·N(−d₁)]</pre>
   }
 
   function init() {
+    // Chromium before 109 and a few mobile browsers have no MathML, and there
+    // is no CSS feature query for it, so the check happens here and the
+    // stylesheet reacts to the class.
+    if (!("MathMLElement" in window)) {
+      document.documentElement.classList.add("no-mathml");
+    }
     P.tapeInit();
     P.tapeControls();
     surfaceControls();

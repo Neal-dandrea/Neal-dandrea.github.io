@@ -177,13 +177,17 @@
   <div class="surface-layout">
     <figure class="viz">
       <canvas id="surface-canvas" height="420" aria-label="A three dimensional implied volatility surface across strike and time to expiry. Drag to rotate."></canvas>
+      <p class="legend">
+        <span class="lg-slice"><i></i> the expiry drawn in the smile panel below</span>
+        <span class="lg-quote"><i class="dot"></i> the mid of one listed option</span>
+        <span class="lg-sheet"><i class="sq"></i> the fitted surface</span>
+      </p>
       <figcaption>
-        Drag to rotate. Height and colour both encode implied volatility. The
-        dots are the mid of each listed option. Hover one for its market, click
-        one to open that expiry in the panel below, and zoom in to see every
-        strike rather than every second one. The expiry axis is dated from the
-        as-of date, so it names actual expirations. The blue line is whichever
-        slice is currently showing below.
+        Drag to rotate. Hover a quote for its market, click one to open that
+        expiry in the panel below, and zoom in to see every strike rather than
+        every second one. Height and colour both encode implied volatility, and
+        the expiry axis is dated from the as-of date so it names actual
+        expirations.
       </figcaption>
     </figure>
 
