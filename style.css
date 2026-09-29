@@ -820,121 +820,282 @@ footer p { margin: 0; }
 }
 
 
-/* The robotics teaser, generated from the same linkage solver the walkthrough
-   uses and baked in, so the page gains a drawing rather than a script. Links
-   are capsules, which means each one is two strokes, a fat edge under a
-   thinner body. A single stroke reads as a stick figure. */
+/* The robotics teaser. A jointed linkage rather than a flipbook, so the motion
+   is continuous instead of stepped. Each joint is a group nested inside the one
+   above it, and CSS rotates it within its parent's frame, which is why the
+   angles baked in below are differences from the link above rather than
+   absolute headings. The object carries its own track, sampled off the same
+   interpolated angles so it stays in whichever gripper is holding it.
+
+   transform-box is set to view-box so that transform-origin lands on the
+   group's own local origin, which is the joint. Leave it out and every link
+   pivots around the corner of the drawing.
+
+   The timing has to stay linear. The object's track was sampled against
+   linearly interpolated joint angles, so easing the joints without easing the
+   object the same way would let the two drift apart mid-reach and the object
+   would float outside the gripper. */
 
 .teaser-r { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
 .teaser-arm { display: block; width: 100%; height: auto; overflow: visible; }
 
-/* The surface changing state rather than sitting still. Four configurations of
-   the same model, the quiet day, an event in the front month, a selloff and the
-   collapse afterwards, crossfading in turn.
-
-   ⚠️ ONE SHARED HEIGHT SCALE ACROSS ALL FOUR. Normalizing each state to its own
-   range would draw the selloff at the same height as the quiet day, which is
-   the opposite of what the sequence is for. The selloff is taller because it is
-   taller.
-
-   A crossfade rather than a geometric morph. Morphing the paths needs SMIL,
-   which no media query can switch off, and this has to be able to stop for
-   anyone who asks for less motion. */
-.teaser-surface .vs-state {
-  opacity: 0;
-  animation: vs-state 8.8s ease-in-out infinite;
+.teaser-arm .j,
+.teaser-arm .grip,
+.teaser-arm .r-obj {
+  transform-box: view-box;
+  transform-origin: 0 0;
 }
 
-@keyframes vs-state {
-  0%   { opacity: 0; }
-  4%   { opacity: 1; }
-  21%  { opacity: 1; }
-  25%  { opacity: 0; }
-  100% { opacity: 0; }
+.teaser-arm .link   { stroke: var(--ink); stroke-width: 9; stroke-linecap: round; }
+.teaser-arm .wrist  { stroke: var(--ink); stroke-width: 6; stroke-linecap: round; }
+.teaser-arm .finger { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; }
+.teaser-arm .hub    { fill: var(--paper); stroke: var(--ink); stroke-width: 3; }
+.teaser-arm .r-table { fill: var(--rule); }
+.teaser-arm .r-obj  { fill: var(--accent); }
+
+.teaser-arm .j-a1 { animation: arm-a1 14s linear infinite; }
+.teaser-arm .j-a2 { animation: arm-a2 14s linear infinite; }
+.teaser-arm .j-a3 { animation: arm-a3 14s linear infinite; }
+.teaser-arm .g-a    { animation: grip-a    14s linear infinite; }
+.teaser-arm .g-a-lo { animation: grip-a-lo 14s linear infinite; }
+.teaser-arm .j-b1 { animation: arm-b1 14s linear infinite; }
+.teaser-arm .j-b2 { animation: arm-b2 14s linear infinite; }
+.teaser-arm .j-b3 { animation: arm-b3 14s linear infinite; }
+.teaser-arm .g-b    { animation: grip-b    14s linear infinite; }
+.teaser-arm .g-b-lo { animation: grip-b-lo 14s linear infinite; }
+.teaser-arm .r-obj  { animation: arm-obj  14s linear infinite; }
+
+@keyframes arm-a1 {
+  0% { transform: rotate(-84.02deg) }
+  6% { transform: rotate(-84.02deg) }
+  21% { transform: rotate(-45.14deg) }
+  31% { transform: rotate(-45.14deg) }
+  46% { transform: rotate(-84.02deg) }
+  56% { transform: rotate(-84.02deg) }
+  71% { transform: rotate(-45.14deg) }
+  81% { transform: rotate(-45.14deg) }
+  96% { transform: rotate(-84.02deg) }
+  100% { transform: rotate(-84.02deg) }
 }
 
-/* Hovering holds one state so two of them can be compared. The strips have to
-   be painted before the states, because the rule below reaches forward from the
-   hovered strip, and the states have to ignore the pointer or they would sit on
-   top of the strips and swallow the hover. */
-.teaser-surface .vs-state { pointer-events: none; }
-.teaser-surface .vs-h { fill: transparent; pointer-events: all; }
+@keyframes arm-a2 {
+  0% { transform: rotate(77.03deg) }
+  6% { transform: rotate(77.03deg) }
+  21% { transform: rotate(36.45deg) }
+  31% { transform: rotate(36.45deg) }
+  46% { transform: rotate(77.03deg) }
+  56% { transform: rotate(77.03deg) }
+  71% { transform: rotate(36.45deg) }
+  81% { transform: rotate(36.45deg) }
+  96% { transform: rotate(77.03deg) }
+  100% { transform: rotate(77.03deg) }
+}
 
-.teaser-surface:hover .vs-state { animation: none; opacity: 0; }
-.teaser-surface .vs-h1:hover ~ .vs-1,
-.teaser-surface .vs-h2:hover ~ .vs-2,
-.teaser-surface .vs-h3:hover ~ .vs-3,
-.teaser-surface .vs-h4:hover ~ .vs-4 { opacity: 1; }
+@keyframes arm-a3 {
+  0% { transform: rotate(7deg) }
+  6% { transform: rotate(7deg) }
+  21% { transform: rotate(8.69deg) }
+  31% { transform: rotate(8.69deg) }
+  46% { transform: rotate(7deg) }
+  56% { transform: rotate(7deg) }
+  71% { transform: rotate(8.69deg) }
+  81% { transform: rotate(8.69deg) }
+  96% { transform: rotate(7deg) }
+  100% { transform: rotate(7deg) }
+}
+
+@keyframes grip-a {
+  0% { transform: rotate(8deg) }
+  26% { transform: rotate(8deg) }
+  31% { transform: rotate(34deg) }
+  71% { transform: rotate(34deg) }
+  76% { transform: rotate(8deg) }
+  100% { transform: rotate(8deg) }
+}
+
+@keyframes grip-a-lo {
+  0% { transform: rotate(-8deg) }
+  26% { transform: rotate(-8deg) }
+  31% { transform: rotate(-34deg) }
+  71% { transform: rotate(-34deg) }
+  76% { transform: rotate(-8deg) }
+  100% { transform: rotate(-8deg) }
+}
+
+@keyframes arm-b1 {
+  0% { transform: rotate(-95.98deg) }
+  6% { transform: rotate(-95.98deg) }
+  21% { transform: rotate(-134.86deg) }
+  31% { transform: rotate(-134.86deg) }
+  46% { transform: rotate(-95.98deg) }
+  56% { transform: rotate(-95.98deg) }
+  71% { transform: rotate(-134.86deg) }
+  81% { transform: rotate(-134.86deg) }
+  96% { transform: rotate(-95.98deg) }
+  100% { transform: rotate(-95.98deg) }
+}
+
+@keyframes arm-b2 {
+  0% { transform: rotate(-77.03deg) }
+  6% { transform: rotate(-77.03deg) }
+  21% { transform: rotate(-36.45deg) }
+  31% { transform: rotate(-36.45deg) }
+  46% { transform: rotate(-77.03deg) }
+  56% { transform: rotate(-77.03deg) }
+  71% { transform: rotate(-36.45deg) }
+  81% { transform: rotate(-36.45deg) }
+  96% { transform: rotate(-77.03deg) }
+  100% { transform: rotate(-77.03deg) }
+}
+
+@keyframes arm-b3 {
+  0% { transform: rotate(353deg) }
+  6% { transform: rotate(353deg) }
+  21% { transform: rotate(351.31deg) }
+  31% { transform: rotate(351.31deg) }
+  46% { transform: rotate(353deg) }
+  56% { transform: rotate(353deg) }
+  71% { transform: rotate(351.31deg) }
+  81% { transform: rotate(351.31deg) }
+  96% { transform: rotate(353deg) }
+  100% { transform: rotate(353deg) }
+}
+
+@keyframes grip-b {
+  0% { transform: rotate(34deg) }
+  21% { transform: rotate(34deg) }
+  26% { transform: rotate(8deg) }
+  76% { transform: rotate(8deg) }
+  81% { transform: rotate(34deg) }
+  100% { transform: rotate(34deg) }
+}
+
+@keyframes grip-b-lo {
+  0% { transform: rotate(-34deg) }
+  21% { transform: rotate(-34deg) }
+  26% { transform: rotate(-8deg) }
+  76% { transform: rotate(-8deg) }
+  81% { transform: rotate(-34deg) }
+  100% { transform: rotate(-34deg) }
+}
+
+@keyframes arm-obj {
+  0% { transform: translate(245px, 104px) }
+  1% { transform: translate(245px, 104px) }
+  2% { transform: translate(245px, 104px) }
+  3% { transform: translate(245px, 104px) }
+  4% { transform: translate(245px, 104px) }
+  5% { transform: translate(245px, 104px) }
+  6% { transform: translate(245px, 104px) }
+  7% { transform: translate(249.11px, 104.37px) }
+  8% { transform: translate(253.19px, 104.93px) }
+  9% { transform: translate(257.24px, 105.68px) }
+  10% { transform: translate(261.23px, 106.61px) }
+  11% { transform: translate(265.18px, 107.72px) }
+  12% { transform: translate(269.07px, 109px) }
+  13% { transform: translate(272.88px, 110.47px) }
+  14% { transform: translate(276.62px, 112.1px) }
+  15% { transform: translate(280.27px, 113.9px) }
+  16% { transform: translate(283.83px, 115.87px) }
+  17% { transform: translate(287.29px, 117.99px) }
+  18% { transform: translate(290.65px, 120.28px) }
+  19% { transform: translate(293.89px, 122.71px) }
+  20% { transform: translate(297.01px, 125.28px) }
+  21% { transform: translate(300px, 128px) }
+  22% { transform: translate(300px, 128px) }
+  23% { transform: translate(300px, 128px) }
+  24% { transform: translate(300px, 128px) }
+  25% { transform: translate(300px, 128px) }
+  26% { transform: translate(300px, 128px) }
+  27% { transform: translate(300px, 128px) }
+  28% { transform: translate(300px, 128px) }
+  29% { transform: translate(300px, 128px) }
+  30% { transform: translate(300px, 128px) }
+  31% { transform: translate(300px, 128px) }
+  32% { transform: translate(302.99px, 125.28px) }
+  33% { transform: translate(306.11px, 122.71px) }
+  34% { transform: translate(309.35px, 120.28px) }
+  35% { transform: translate(312.71px, 117.99px) }
+  36% { transform: translate(316.17px, 115.87px) }
+  37% { transform: translate(319.73px, 113.9px) }
+  38% { transform: translate(323.38px, 112.1px) }
+  39% { transform: translate(327.12px, 110.47px) }
+  40% { transform: translate(330.93px, 109px) }
+  41% { transform: translate(334.82px, 107.72px) }
+  42% { transform: translate(338.77px, 106.61px) }
+  43% { transform: translate(342.76px, 105.68px) }
+  44% { transform: translate(346.81px, 104.93px) }
+  45% { transform: translate(350.89px, 104.37px) }
+  46% { transform: translate(355px, 104px) }
+  47% { transform: translate(355px, 104px) }
+  48% { transform: translate(355px, 104px) }
+  49% { transform: translate(355px, 104px) }
+  50% { transform: translate(355px, 104px) }
+  51% { transform: translate(355px, 104px) }
+  52% { transform: translate(355px, 104px) }
+  53% { transform: translate(355px, 104px) }
+  54% { transform: translate(355px, 104px) }
+  55% { transform: translate(355px, 104px) }
+  56% { transform: translate(355px, 104px) }
+  57% { transform: translate(350.89px, 104.37px) }
+  58% { transform: translate(346.81px, 104.93px) }
+  59% { transform: translate(342.76px, 105.68px) }
+  60% { transform: translate(338.77px, 106.61px) }
+  61% { transform: translate(334.82px, 107.72px) }
+  62% { transform: translate(330.93px, 109px) }
+  63% { transform: translate(327.12px, 110.47px) }
+  64% { transform: translate(323.38px, 112.1px) }
+  65% { transform: translate(319.73px, 113.9px) }
+  66% { transform: translate(316.17px, 115.87px) }
+  67% { transform: translate(312.71px, 117.99px) }
+  68% { transform: translate(309.35px, 120.28px) }
+  69% { transform: translate(306.11px, 122.71px) }
+  70% { transform: translate(302.99px, 125.28px) }
+  71% { transform: translate(300px, 128px) }
+  72% { transform: translate(300px, 128px) }
+  73% { transform: translate(300px, 128px) }
+  74% { transform: translate(300px, 128px) }
+  75% { transform: translate(300px, 128px) }
+  76% { transform: translate(300px, 128px) }
+  77% { transform: translate(300px, 128px) }
+  78% { transform: translate(300px, 128px) }
+  79% { transform: translate(300px, 128px) }
+  80% { transform: translate(300px, 128px) }
+  81% { transform: translate(300px, 128px) }
+  82% { transform: translate(297.01px, 125.28px) }
+  83% { transform: translate(293.89px, 122.71px) }
+  84% { transform: translate(290.65px, 120.28px) }
+  85% { transform: translate(287.29px, 117.99px) }
+  86% { transform: translate(283.83px, 115.87px) }
+  87% { transform: translate(280.27px, 113.9px) }
+  88% { transform: translate(276.62px, 112.1px) }
+  89% { transform: translate(272.88px, 110.47px) }
+  90% { transform: translate(269.07px, 109px) }
+  91% { transform: translate(265.18px, 107.72px) }
+  92% { transform: translate(261.23px, 106.61px) }
+  93% { transform: translate(257.24px, 105.68px) }
+  94% { transform: translate(253.19px, 104.93px) }
+  95% { transform: translate(249.11px, 104.37px) }
+  96% { transform: translate(245px, 104px) }
+  97% { transform: translate(245px, 104px) }
+  98% { transform: translate(245px, 104px) }
+  99% { transform: translate(245px, 104px) }
+  100% { transform: translate(245px, 104px) }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .teaser-surface .vs-state { animation: none; opacity: 0; }
-  .teaser-surface .vs-state:first-child { opacity: 1; }
-}
-
-}
-
-
-/* The receiving arm is seven poses along the handover path, shown in turn so
-   it reaches. A flipbook rather than interpolation, because the inverse
-   kinematics that produced each pose is not something CSS can run, and seven
-   poses at 0.42s is close enough to motion at this size. The giving arm and the
-   furniture are drawn once underneath. */
-.teaser-arm .ar-f {
-  opacity: 0;
-  animation: ar-frame 2.94s linear infinite;
-}
-
-/* A hard cut, not a fade. Seven frames on a 2.94s cycle is one seventh each,
-   and any overlap at the edges shows two poses at once, which reads as a ghost
-   rather than as motion. */
-@keyframes ar-frame {
-  0%     { opacity: 1; }
-  13.9%  { opacity: 1; }
-  14.0%  { opacity: 0; }
-  100%   { opacity: 0; }
-}
-
-.teaser-arm .r-arm2 { opacity: 0.4; }
-
-/* Hover to drive it yourself. Seven transparent strips lie across the drawing,
-   and hovering one stops the loop and shows that pose, so moving the pointer
-   left to right walks the arm along the handover path. Still no script.
-
-   The strips have to come BEFORE the poses in the document, because the
-   selector reaches forward from the hovered strip to its pose, and the poses
-   have to ignore the pointer or they would sit on top of the strips and eat
-   the hover, since SVG hit testing follows paint order. */
-.teaser-arm .ar-f { pointer-events: none; }
-.teaser-arm .ar-h { fill: transparent; pointer-events: all; }
-
-.teaser-arm:hover .ar-f { animation: none; opacity: 0; }
-.teaser-arm .ar-h1:hover ~ .ar-1,
-.teaser-arm .ar-h2:hover ~ .ar-2,
-.teaser-arm .ar-h3:hover ~ .ar-3,
-.teaser-arm .ar-h4:hover ~ .ar-4,
-.teaser-arm .ar-h5:hover ~ .ar-5,
-.teaser-arm .ar-h6:hover ~ .ar-6,
-.teaser-arm .ar-h7:hover ~ .ar-7 { opacity: 1; }
-
-@media (prefers-reduced-motion: reduce) {
-  .teaser-arm .ar-f { animation: none; opacity: 0; }
-  .teaser-arm .ar-4 { opacity: 1; }
-}
-
-.teaser-arm .cap-edge { stroke: var(--ink); stroke-linecap: round; }
-.teaser-arm .cap-body { stroke: var(--paper); stroke-linecap: round; }
-.teaser-arm .r-band { fill: none; stroke: var(--ink-soft); stroke-width: 1.6; opacity: 0.5; }
-.teaser-arm .r-table { fill: none; stroke: var(--rule); stroke-width: 1; }
-.teaser-arm .r-hatch { stroke: var(--ink-faint); stroke-width: 1; opacity: 0.45; }
-.teaser-arm .r-arm2 { stroke: var(--ink-faint); stroke-width: 7; opacity: 0.35; stroke-linecap: round; }
-.teaser-arm .r-cone { fill: #2a78d6; opacity: 0.12; }
-.teaser-arm .r-cam { fill: #2a78d6; }
-.teaser-arm .r-obj { fill: var(--accent); }
-.teaser-arm .r-ring { fill: none; stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.55; }
-
-@media (prefers-color-scheme: dark) {
-  .teaser-arm .r-cone { fill: #3987e5; }
-  .teaser-arm .r-cam { fill: #3987e5; }
+  .teaser-arm .j, .teaser-arm .grip, .teaser-arm .r-obj { animation: none; }
+  .teaser-arm .j-a1 { transform: rotate(-84.02deg) }
+  .teaser-arm .j-a2 { transform: rotate(77.03deg) }
+  .teaser-arm .j-a3 { transform: rotate(7deg) }
+  .teaser-arm .g-a    { transform: rotate(8deg) }
+  .teaser-arm .g-a-lo { transform: rotate(-8deg) }
+  .teaser-arm .j-b1 { transform: rotate(-95.98deg) }
+  .teaser-arm .j-b2 { transform: rotate(-77.03deg) }
+  .teaser-arm .j-b3 { transform: rotate(353deg) }
+  .teaser-arm .g-b    { transform: rotate(34deg) }
+  .teaser-arm .g-b-lo { transform: rotate(-34deg) }
+  .teaser-arm .r-obj { transform: translate(245px, 104px) }
 }
 
 
