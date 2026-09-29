@@ -127,10 +127,11 @@
 
   /* Cyclic coordinate descent. Simple, converges fast enough to run on every
      frame of a drag, and needs no Jacobian. */
-  function poseArm(target, seedAngles) {
+  function poseArm(target, seedAngles, base) {
+    base = base || ARM.base;
     const a = seedAngles.slice();
     const fk = (angles) => {
-      const pts = [{ x: ARM.base.x, y: ARM.base.y }];
+      const pts = [{ x: base.x, y: base.y }];
       let th = 0;
       angles.forEach((d, i) => {
         th += d;
@@ -156,6 +157,17 @@
     return { angles: a, pts: fk(a) };
   }
 
+  /* Two arms now, because handover is two of them and a sketch of a second one
+     was not carrying its half of the idea.
+
+     ⚠️ THE PATH HAS TO BE INSIDE BOTH REACHES, which is a tighter constraint
+     than one arm. Bases are 470 apart and each reaches 322, so the overlap is a
+     lens in the middle, and the path runs from 415,155 to 355,205, which sits
+     inside it end to end. Move either base or either endpoint without checking
+     and one of the two arms starts stretching straight at a point it cannot
+     get to, which is the failure this plate had on its first day. */
+  const ARM_B = { base: { x: 620, y: 300 }, seed: [-1.85, -0.55, -0.62, -0.3, -0.1] };
+
   const heroState = { t: 0.55, seed: [-1.35, 0.55, 0.62, 0.3, 0.1] };
 
   function drawArmPlate() {
@@ -174,7 +186,7 @@
     const mono = (px) => `${px * S}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
 
     // The object travels along the handover path as the slider moves.
-    const from = { x: 400, y: 140 }, to = { x: 330, y: 215 };
+    const from = { x: 415, y: 155 }, to = { x: 355, y: 205 };
     const target = {
       x: lerp(from.x, to.x, heroState.t),
       y: lerp(from.y, to.y, heroState.t),
@@ -222,69 +234,84 @@
 
     const body = cssVar("--surface-panel"), edge = ink, band = soft;
 
-    // Pedestal, two stacked cylinders, the way the arm is actually mounted.
-    capsule({ x: ARM.base.x, y: 338 }, { x: ARM.base.x, y: 318 }, 26, body, edge);
-    capsule({ x: ARM.base.x, y: 322 }, { x: ARM.base.x, y: 306 }, 19, body, edge);
+    /* One arm, given its solved points. Both arms are the same machine, so the
+       drawing is the same code, and the second one is drawn faintly because a
+       page with two equally loud robots on it has no subject. */
+    function drawArm(pts, base, dim) {
+      const a = dim ? 0.45 : 1;
+      ctx.globalAlpha = a;
 
-    ctx.lineCap = "round";
-    for (let i = 0; i < pts.length - 1; i++) {
-      capsule(pts[i], pts[i + 1], ARM.widths[i] / 2, body, edge);
+      // Pedestal, two stacked cylinders, the way the arm is actually mounted.
+      capsule({ x: base.x, y: 338 }, { x: base.x, y: 318 }, 26, body, edge);
+      capsule({ x: base.x, y: 322 }, { x: base.x, y: 306 }, 19, body, edge);
+
+      ctx.lineCap = "round";
+      for (let i = 0; i < pts.length - 1; i++) {
+        capsule(pts[i], pts[i + 1], ARM.widths[i] / 2, body, edge);
+      }
+
+      // Joint housings, drawn across the link rather than along it, which is
+      // what makes the elbow look like an elbow.
+      pts.slice(0, -1).forEach((p, i) => {
+        const nxt = pts[i + 1];
+        const ang = Math.atan2(nxt.y - p.y, nxt.x - p.x);
+        const hw = ARM.widths[i] / 2 + 2.5;
+        const ux = Math.cos(ang + Math.PI / 2), uy = Math.sin(ang + Math.PI / 2);
+        capsule({ x: p.x - ux * hw * 0.55, y: p.y - uy * hw * 0.55 },
+                { x: p.x + ux * hw * 0.55, y: p.y + uy * hw * 0.55 }, hw, body, edge);
+        ctx.strokeStyle = band;
+        ctx.globalAlpha = a * 0.5;
+        ctx.lineWidth = 1.6 * S;
+        ctx.beginPath();
+        ctx.arc(sx(p.x), sy(p.y), hw * 0.62 * S, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = a;
+      });
+
+      // The hand, drawn BACK from the solved point by its own length, so the
+      // fingertips land on the object rather than reaching past it.
+      const tipL = pts[pts.length - 1], wristL = pts[pts.length - 2];
+      const thL = Math.atan2(tipL.y - wristL.y, tipL.x - wristL.x);
+      const nxL = -Math.sin(thL), nyL = Math.cos(thL);
+      const alongL = (p, d) => ({ x: p.x + Math.cos(thL) * d, y: p.y + Math.sin(thL) * d });
+      const HAND = 33;
+      const hbL = alongL(tipL, -HAND);
+
+      capsule(alongL(hbL, -2), alongL(hbL, 4), 11, body, edge);
+      capsule(alongL(hbL, 4), alongL(hbL, 15), 9, body, edge);
+      capsule({ x: hbL.x + Math.cos(thL) * 15 + nxL * 10, y: hbL.y + Math.sin(thL) * 15 + nyL * 10 },
+              { x: hbL.x + Math.cos(thL) * 15 - nxL * 10, y: hbL.y + Math.sin(thL) * 15 - nyL * 10 },
+              3, body, edge);
+      [-1, 1].forEach((sgn) => {
+        const root = { x: hbL.x + Math.cos(thL) * 15 + nxL * 9 * sgn,
+                       y: hbL.y + Math.sin(thL) * 15 + nyL * 9 * sgn };
+        capsule(root, alongL(root, 18), 3, body, edge);
+        ctx.strokeStyle = band;
+        ctx.lineWidth = 2 * S;
+        ctx.beginPath();
+        ctx.moveTo(sx(root.x - nxL * 2.5 * sgn + Math.cos(thL) * 6),
+                   sy(root.y - nyL * 2.5 * sgn + Math.sin(thL) * 6));
+        ctx.lineTo(sx(root.x - nxL * 2.5 * sgn + Math.cos(thL) * 16),
+                   sy(root.y - nyL * 2.5 * sgn + Math.sin(thL) * 16));
+        ctx.stroke();
+      });
+
+      ctx.globalAlpha = 1;
+      return { tip: tipL, th: thL, nx: nxL, ny: nyL, hb: hbL };
     }
 
-    // Joint housings, drawn across the link rather than along it, which is what
-    // makes the elbow look like an elbow.
-    pts.slice(0, -1).forEach((p, i) => {
-      const nxt = pts[i + 1];
-      const a = Math.atan2(nxt.y - p.y, nxt.x - p.x);
-      const hw = ARM.widths[i] / 2 + 2.5;
-      const ux = Math.cos(a + Math.PI / 2), uy = Math.sin(a + Math.PI / 2);
-      capsule({ x: p.x - ux * hw * 0.55, y: p.y - uy * hw * 0.55 },
-              { x: p.x + ux * hw * 0.55, y: p.y + uy * hw * 0.55 },
-              hw, body, edge);
-      // The dark band around each joint.
-      ctx.strokeStyle = band;
-      ctx.globalAlpha = 0.5;
-      ctx.lineWidth = 1.6 * S;
-      ctx.beginPath();
-      ctx.arc(sx(p.x), sy(p.y), hw * 0.62 * S, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    });
+    /* The giving arm holds the object from its own side rather than reaching
+       the identical point, or the two hands occupy the same space and the
+       drawing turns into one knot. Its target is the object, pulled 17 units
+       back along the line to its own base. */
+    const dxB = ARM_B.base.x - target.x, dyB = ARM_B.base.y - target.y;
+    const nB = Math.hypot(dxB, dyB) || 1;
+    const targetB = { x: target.x + dxB / nB * 17, y: target.y + dyB / nB * 17 };
 
-    /* ---- the hand -------------------------------------------------------- */
-    const tip = pts[pts.length - 1], wrist = pts[pts.length - 2];
-    const th = Math.atan2(tip.y - wrist.y, tip.x - wrist.x);
-    const nx = -Math.sin(th), ny = Math.cos(th);
-    const along = (p, d) => ({ x: p.x + Math.cos(th) * d, y: p.y + Math.sin(th) * d });
-
-    /* ⚠️ THE GRASP POINT IS BETWEEN THE FINGERTIPS, NOT AT THE FLANGE. The
-       solver poses the last link onto the object, so drawing the hand forward
-       from there put the whole hand past the object and left it sitting at the
-       wrist with the fingers reaching into empty space. The hand is drawn back
-       from the solved point by its own length instead, which lands the
-       fingertips on the object and puts the flange where a flange goes. */
-    const HAND = 33;
-    const hb = along(tip, -HAND);
-
-    capsule(along(hb, -2), along(hb, 4), 11, body, edge);      // flange
-    capsule(along(hb, 4), along(hb, 15), 9, body, edge);       // hand body
-    capsule({ x: hb.x + Math.cos(th) * 15 + nx * 10, y: hb.y + Math.sin(th) * 15 + ny * 10 },
-            { x: hb.x + Math.cos(th) * 15 - nx * 10, y: hb.y + Math.sin(th) * 15 - ny * 10 },
-            3, body, edge);                                     // the finger rail
-    [-1, 1].forEach((sgn) => {
-      const root = { x: hb.x + Math.cos(th) * 15 + nx * 9 * sgn,
-                     y: hb.y + Math.sin(th) * 15 + ny * 9 * sgn };
-      capsule(root, along(root, 18), 3, body, edge);
-      // The pad on the inside face of each finger.
-      ctx.strokeStyle = band;
-      ctx.lineWidth = 2 * S;
-      ctx.beginPath();
-      ctx.moveTo(sx(root.x - nx * 2.5 * sgn + Math.cos(th) * 6),
-                 sy(root.y - ny * 2.5 * sgn + Math.sin(th) * 6));
-      ctx.lineTo(sx(root.x - nx * 2.5 * sgn + Math.cos(th) * 16),
-                 sy(root.y - ny * 2.5 * sgn + Math.sin(th) * 16));
-      ctx.stroke();
-    });
+    const solB = poseArm(targetB, ARM_B.seed, ARM_B.base);
+    drawArm(solB.pts, ARM_B.base, true);
+    const handA = drawArm(pts, ARM.base, false);
+    const tip = handA.tip, th = handA.th, nx = handA.nx, ny = handA.ny, hb = handA.hb;
 
     // Wrist camera and its cone.
     /* The camera sits on the far side of the hand and BEHIND the fingers, on
@@ -333,17 +360,6 @@
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // The other arm, sketched, because handover is two of these.
-    ctx.strokeStyle = faint;
-    ctx.lineWidth = 6 * S;
-    ctx.globalAlpha = 0.45;
-    ctx.beginPath();
-    ctx.moveTo(sx(660), sy(330));
-    ctx.lineTo(sx(600), sy(180));
-    ctx.lineTo(sx(from.x + 14), sy(from.y - 10));
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    ctx.lineWidth = 1;
 
     // ---- annotation, in the drafting register
     ctx.font = mono(9.5);
@@ -367,8 +383,8 @@
     leader(camAt.x, camAt.y, 250, 78, "WRIST CAMERA");
     leader(target.x, target.y - 17, 450, 64, "GRASP TOLERANCE 30 MM");
     leader(pts[1].x, pts[1].y, 54, 196, "7 AXES, SHOWN AS 5", "left");
-    leader(612, 210, 660, 258, "SECOND ARM");
-    leader(ARM.base.x, 322, 246, 366, "IMPEDANCE CONTROL 1 KHZ");
+    leader(ARM_B.base.x - 36, 240, 700, 276, "SECOND ARM, GIVING", "right");
+    leader(ARM.base.x, 322, 232, 366, "IMPEDANCE CONTROL 1 KHZ");
 
     ctx.textAlign = "right";
     ctx.fillText("POLICY INFERENCE 125 MS", sx(700), sy(30));
