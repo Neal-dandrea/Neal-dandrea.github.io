@@ -883,9 +883,29 @@ footer p { margin: 0; }
 
 .teaser-arm .r-arm2 { opacity: 0.4; }
 
+/* Hover to drive it yourself. Seven transparent strips lie across the drawing,
+   and hovering one stops the loop and shows that pose, so moving the pointer
+   left to right walks the arm along the handover path. Still no script.
+
+   The strips have to come BEFORE the poses in the document, because the
+   selector reaches forward from the hovered strip to its pose, and the poses
+   have to ignore the pointer or they would sit on top of the strips and eat
+   the hover, since SVG hit testing follows paint order. */
+.teaser-arm .ar-f { pointer-events: none; }
+.teaser-arm .ar-h { fill: transparent; pointer-events: all; }
+
+.teaser-arm:hover .ar-f { animation: none; opacity: 0; }
+.teaser-arm .ar-h1:hover ~ .ar-1,
+.teaser-arm .ar-h2:hover ~ .ar-2,
+.teaser-arm .ar-h3:hover ~ .ar-3,
+.teaser-arm .ar-h4:hover ~ .ar-4,
+.teaser-arm .ar-h5:hover ~ .ar-5,
+.teaser-arm .ar-h6:hover ~ .ar-6,
+.teaser-arm .ar-h7:hover ~ .ar-7 { opacity: 1; }
+
 @media (prefers-reduced-motion: reduce) {
   .teaser-arm .ar-f { animation: none; opacity: 0; }
-  .teaser-arm .ar-f:nth-of-type(4) { opacity: 1; }
+  .teaser-arm .ar-4 { opacity: 1; }
 }
 
 .teaser-arm .cap-edge { stroke: var(--ink); stroke-linecap: round; }
