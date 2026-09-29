@@ -57,6 +57,17 @@
   }
   const hideTip = () => { tip.dataset.open = "false"; };
 
+  /* ⚠️ A DRAWING AUTHORED AT A FIXED SIZE NEEDS A PROPORTIONAL BOX. Both plate
+     drawings are laid out at 720 wide and scale x by the canvas width, so
+     holding the height at a constant number of pixels crops the bottom of the
+     frame off at any width above 720. The bench line, the base and the counters
+     were all being drawn below the visible area. Pass the authored size and the
+     canvas takes the matching height. */
+  function fitAspect(canvas, authoredW, authoredH) {
+    const w = canvas.clientWidth || authoredW;
+    return fitCanvas(canvas, Math.round(w * authoredH / authoredW));
+  }
+
   function fitCanvas(canvas, cssHeight) {
     const dpr = window.devicePixelRatio || 1;
     const w = canvas.clientWidth || 640;
@@ -142,7 +153,7 @@
   function drawArmPlate() {
     const canvas = document.getElementById("arm-canvas");
     if (!canvas) return;
-    const { ctx, w, h } = fitCanvas(canvas, 380);
+    const { ctx, w, h } = fitAspect(canvas, 720, 380);
     ctx.clearRect(0, 0, w, h);
 
     const S = w / 720;                        // the drawing is authored at 720
@@ -362,52 +373,6 @@
       </dl>`;
   }
 
-  /* --------------------------------------------------------- 02 pipeline */
-
-  function renderPipeline() {
-    const host = document.getElementById("pipeline");
-    if (!host) return;
-    clear(host);
-    const W = 720, H = 150;
-    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
-      "aria-label": "Handheld demonstration through visual tracking, per-step "
-        + "validation and conversion into the training format" }, host);
-    const ink = cssVar("--ink-soft"), faint = cssVar("--ink-faint"),
-          rule = cssVar("--rule"), accent = cssVar("--accent");
-
-    const stages = [
-      { t: "Handheld demo", s: "video and grasp width" },
-      { t: "Visual tracking", s: "gripper pose" },
-      { t: "Per-step validation", s: "drop what failed" },
-      { t: "Training format", s: "pose actions, language" },
-      { t: "Policy", s: "trained" },
-    ];
-    const w = 124, gap = 25;
-    stages.forEach((st, i) => {
-      const x = 10 + i * (w + gap);
-      const isVal = i === 2;
-      el("rect", { x, y: 44, width: w, height: 50, rx: 4, fill: "none",
-        stroke: isVal ? accent : rule, "stroke-width": isVal ? 1.5 : 1 }, svg);
-      const a = el("text", { x: x + w / 2, y: 68, "text-anchor": "middle",
-        "font-size": 12.5, fill: ink }, svg);
-      a.textContent = st.t;
-      const b = el("text", { x: x + w / 2, y: 84, "text-anchor": "middle",
-        "font-size": 10.5, fill: faint }, svg);
-      b.textContent = st.s;
-      if (i < stages.length - 1) {
-        const x1 = x + w + 4, x2 = x + w + gap - 4;
-        el("line", { x1, y1: 69, x2, y2: 69, stroke: rule }, svg);
-        el("path", { d: `M${x2 - 5},65 L${x2},69 L${x2 - 5},73`, fill: "none", stroke: rule }, svg);
-      }
-    });
-
-    const drop = el("text", { x: 10 + 2 * (w + gap) + w / 2, y: 118,
-      "text-anchor": "middle", "font-size": 11, fill: accent }, svg);
-    drop.textContent = "tracking failures dropped here";
-    const note = el("text", { x: 10, y: 140, "font-size": 11, fill: faint }, svg);
-    note.textContent = "Validation is per step rather than per episode, because a drifted pose looks like a good one.";
-  }
-
   /* ---------------------------------------------- 03 the model change ---- */
 
   const modelState = { view: "both" };
@@ -578,9 +543,9 @@
   }
 
   window.__robotics = { rng, gauss, clamp, lerp, cssVar, el, clear, showTip,
-    hideTip, fitCanvas, axes, renderStats, renderConstraints, renderPipeline,
+    hideTip, fitCanvas, fitAspect, axes, renderStats, renderConstraints,
     drawModel, modelControls, drawLoop, loopControls,
-    drawArmPlate, heroControls };
+    drawArmPlate, heroControls, poseArm, ARM };
 })();
 
 /* ---------------------------------------------------------------------- */
@@ -588,7 +553,325 @@
   "use strict";
   const R = window.__robotics;
   const { rng, gauss, clamp, lerp, cssVar, el, clear, showTip, hideTip,
-          fitCanvas, axes } = R;
+          fitCanvas, fitAspect, axes } = R;
+
+  /* ------------------------------------------------ 02 the pipeline, moving
+
+     The plate used to be five labelled boxes with arrows, which says the order
+     of the steps and nothing about what happens inside any of them. This runs
+     instead. Four stages, each drawn from the same state the prose describes,
+     cycling on a timer.
+
+     It respects a reduced-motion preference by not starting itself, since an
+     animation that loops forever beside body text is exactly what that setting
+     is asking not to have. The stage buttons still work. */
+
+  const FLOW = [
+    { key: "collect",  name: "Collection",  ms: 5200 },
+    { key: "validate", name: "Validation",  ms: 4600 },
+    { key: "train",    name: "Training",    ms: 5000 },
+    { key: "simulate", name: "Simulation",  ms: 5600 },
+  ];
+
+  const flow = {
+    i: 0, t0: 0, playing: true, manual: false,
+    reduced: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  };
+
+  function flowStrip(ctx, w, S, p) {
+    const faint = cssVar("--ink-faint"), rule = cssVar("--rule"),
+          accent = cssVar("--accent");
+    const cw = (w - 24 * S) / FLOW.length;
+    ctx.font = `${9.5 * S}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+    FLOW.forEach((st, i) => {
+      const x = 12 * S + i * cw;
+      const on = i === flow.i, done = i < flow.i;
+      ctx.strokeStyle = on ? accent : rule;
+      ctx.lineWidth = on ? 2 : 1;
+      ctx.beginPath();
+      ctx.moveTo(x, 26 * S);
+      ctx.lineTo(x + cw - 10 * S, 26 * S);
+      ctx.stroke();
+      if (on) {                                  // progress along the current stage
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(x, 26 * S);
+        ctx.lineTo(x + (cw - 10 * S) * p, 26 * S);
+        ctx.stroke();
+      }
+      ctx.fillStyle = on ? accent : (done ? cssVar("--ink-soft") : faint);
+      ctx.fillText(`0${i + 1}  ${st.name.toUpperCase()}`, x, 18 * S);
+    });
+  }
+
+  function drawFlow(now) {
+    const canvas = document.getElementById("flow-canvas");
+    if (!canvas) return;
+    const { ctx, w, h } = fitAspect(canvas, 720, 360);
+    const S = w / 720;
+    const sx = (x) => x * S, sy = (y) => y * S;
+    ctx.clearRect(0, 0, w, h);
+
+    const st = FLOW[flow.i];
+    const p = flow.playing && !flow.manual
+      ? clamp((now - flow.t0) / st.ms, 0, 1)
+      : 0.62;                                    // a representative frame when paused
+
+    flowStrip(ctx, w, S, p);
+
+    const ink = cssVar("--ink"), soft = cssVar("--ink-soft"),
+          faint = cssVar("--ink-faint"), rule = cssVar("--rule"),
+          accent = cssVar("--accent"), blue = cssVar("--series-1"),
+          good = cssVar("--good");
+    const mono = (px) => `${px * S}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+    ctx.font = mono(10);
+
+    const say = (lines) => {
+      ctx.fillStyle = faint;
+      lines.forEach((l, i) => ctx.fillText(l, sx(14), sy(330 + i * 14)));
+    };
+
+    if (st.key === "collect") {
+      // A handheld gripper traced along a demonstration, laying down samples.
+      const path = (u) => ({
+        x: 80 + u * 520,
+        y: 200 - Math.sin(u * Math.PI) * 90 + Math.sin(u * 9) * 6,
+      });
+      ctx.strokeStyle = rule;
+      ctx.setLineDash([2 * S, 4 * S]);
+      ctx.beginPath();
+      for (let u = 0; u <= 1.001; u += 0.01) {
+        const q = path(u);
+        u === 0 ? ctx.moveTo(sx(q.x), sy(q.y)) : ctx.lineTo(sx(q.x), sy(q.y));
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      for (let u = 0; u <= p; u += 0.02) {
+        const q = path(u);
+        ctx.fillStyle = blue;
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.arc(sx(q.x), sy(q.y), 2.2 * S, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      const g = path(p);
+      const ahead = path(Math.min(1, p + 0.02));
+      const th = Math.atan2(ahead.y - g.y, ahead.x - g.x);
+      ctx.strokeStyle = ink;
+      ctx.lineWidth = 2.5 * S;
+      ctx.lineCap = "round";
+      [-1, 1].forEach((sg) => {
+        const nx = -Math.sin(th) * 12 * sg, ny = Math.cos(th) * 12 * sg;
+        ctx.beginPath();
+        ctx.moveTo(sx(g.x + nx), sy(g.y + ny));
+        ctx.lineTo(sx(g.x + nx + Math.cos(th) * 18), sy(g.y + ny + Math.sin(th) * 18));
+        ctx.stroke();
+      });
+      ctx.beginPath();
+      ctx.moveTo(sx(g.x - Math.cos(th) * 26), sy(g.y - Math.sin(th) * 26));
+      ctx.lineTo(sx(g.x), sy(g.y));
+      ctx.lineWidth = 6 * S;
+      ctx.stroke();
+
+      ctx.fillStyle = faint;
+      ctx.fillText("HANDHELD GRIPPER, NO ROBOT PRESENT", sx(g.x - 40), sy(g.y - 34));
+      say([
+        `DEMONSTRATION ${Math.round(1 + p * 214)} OF 215`,
+        `FRAMES CAPTURED ${Math.round(p * 265000).toLocaleString("en-US")}`,
+      ]);
+    }
+
+    if (st.key === "validate") {
+      // A strip of frames, some of which fail tracking and fall out.
+      const n = 26, fw = 22, gap = 4;
+      const r0 = rng(31);
+      const bad = [];
+      for (let i = 0; i < n; i++) bad.push(r0() < 0.16);
+      const shown = Math.floor(p * n);
+      for (let i = 0; i < n; i++) {
+        const x = 60 + i * (fw + gap);
+        const fell = bad[i] && i < shown;
+        const drop = fell ? Math.min(1, (p * n - i) / 3) : 0;
+        const y = 140 + drop * 90;
+        ctx.globalAlpha = i <= shown ? (fell ? 1 - drop * 0.7 : 1) : 0.18;
+        ctx.strokeStyle = fell ? accent : rule;
+        ctx.fillStyle = fell ? accent : cssVar("--surface-panel");
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(sx(x), sy(y), sx(fw), sy(30), 2);
+        fell ? (ctx.globalAlpha *= 0.25, ctx.fill(), ctx.globalAlpha /= 0.25) : ctx.fill();
+        ctx.stroke();
+        if (fell) {
+          ctx.strokeStyle = accent;
+          ctx.beginPath();
+          ctx.moveTo(sx(x + 5), sy(y + 8));
+          ctx.lineTo(sx(x + fw - 5), sy(y + 22));
+          ctx.moveTo(sx(x + fw - 5), sy(y + 8));
+          ctx.lineTo(sx(x + 5), sy(y + 22));
+          ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = faint;
+      ctx.fillText("TRACKING VALIDATED PER STEP", sx(60), sy(120));
+      ctx.fillStyle = accent;
+      ctx.fillText("DROPPED, POSE DRIFTED", sx(60), sy(264));
+      say([
+        "A DROPPED FRAME IS OBVIOUS. A DRIFTED POSE IS NOT,",
+        "AND IT TEACHES A POSE THE GRIPPER WAS NEVER AT.",
+      ]);
+    }
+
+    if (st.key === "train") {
+      const padL = 70, padR = 60, padT = 70, padB = 90;
+      const X = (u) => sx(padL + u * (720 - padL - padR));
+      const Y = (v) => sy(padT + (1 - v) * (360 - padT - padB));
+      ctx.strokeStyle = rule;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(1), Y(0));
+      ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(0), Y(1));
+      ctx.stroke();
+
+      const r0 = rng(7);
+      ctx.strokeStyle = blue;
+      ctx.lineWidth = 2 * S;
+      ctx.beginPath();
+      for (let u = 0; u <= p; u += 0.004) {
+        const loss = 0.12 + 0.82 * Math.exp(-4.2 * u) + (r0() - 0.5) * 0.035;
+        u === 0 ? ctx.moveTo(X(u), Y(loss)) : ctx.lineTo(X(u), Y(loss));
+      }
+      ctx.stroke();
+
+      [0.25, 0.5, 0.75, 1].forEach((u) => {
+        if (p < u) return;
+        ctx.strokeStyle = faint;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2 * S, 3 * S]);
+        ctx.beginPath();
+        ctx.moveTo(X(u), Y(0)); ctx.lineTo(X(u), Y(1));
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = faint;
+        ctx.fillText("CKPT", X(u) + 3 * S, Y(1) - 4 * S);
+      });
+
+      ctx.fillStyle = faint;
+      ctx.fillText("LOSS", sx(24), sy(padT + 10));
+      ctx.fillText(`EPOCH ${Math.round(1 + p * 39)} OF 40`, X(0), sy(360 - padB + 22));
+      say([
+        "CHECKPOINTS ARE KEPT SO A LATER COMPARISON",
+        "CAN BE RUN AT EVERY ONE RATHER THAN ONLY AT THE END.",
+      ]);
+    }
+
+    if (st.key === "simulate") {
+      // The solved arm runs a reach against a held-out episode.
+      const target = { x: 330 + Math.cos(p * 4) * 4, y: 215 };
+      const sol = R.poseArm(target, [-0.9, 0.7, 0.5, 0.2]);
+      const pts = sol.pts;
+      const reach = clamp(p * 1.35, 0, 1);
+
+      ctx.strokeStyle = rule;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(sx(40), sy(56), sx(640), sy(230));
+      ctx.fillStyle = faint;
+      ctx.fillText("SIMULATION, HELD-OUT EPISODE", sx(48), sy(72));
+
+      ctx.lineCap = "round";
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i], b = pts[i + 1];
+        const bx = lerp(a.x, b.x, reach), by = lerp(a.y, b.y, reach);
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = Math.max(2, (10 - i * 1.7) * S);
+        ctx.beginPath();
+        ctx.moveTo(sx(a.x), sy(a.y));
+        ctx.lineTo(sx(reach >= 1 ? b.x : bx), sy(reach >= 1 ? b.y : by));
+        ctx.stroke();
+      }
+      pts.slice(0, -1).forEach((q, i) => {
+        ctx.fillStyle = cssVar("--paper");
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = 1.4 * S;
+        ctx.beginPath();
+        ctx.arc(sx(q.x), sy(q.y), Math.max(3, (6.5 - i) * S), 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+      });
+
+      ctx.fillStyle = accent;
+      ctx.beginPath();
+      ctx.arc(sx(target.x), sy(target.y), 5 * S, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = accent;
+      ctx.globalAlpha = 0.5;
+      ctx.setLineDash([3 * S, 3 * S]);
+      ctx.beginPath();
+      ctx.arc(sx(target.x), sy(target.y), 17 * S, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      const err = Math.max(4, 120 * Math.exp(-3.4 * p));
+      ctx.fillStyle = err <= 30 ? good : accent;
+      ctx.font = mono(12);
+      ctx.fillText(`${err.toFixed(0)} MM FROM THE OBJECT`, sx(430), sy(96));
+      ctx.font = mono(10);
+      ctx.fillStyle = faint;
+      ctx.fillText(`TOLERANCE 30 MM  ${err <= 30 ? "INSIDE" : "OUTSIDE"}`, sx(430), sy(112));
+      ctx.fillText(`EPISODE ${Math.round(1 + p * 19)} OF 20`, sx(430), sy(128));
+      say([
+        "TWENTY HELD-OUT EPISODES, NOT ONE, BECAUSE A POLICY",
+        "THAT SAMPLES GIVES A DIFFERENT ANSWER EACH RUN.",
+      ]);
+    }
+
+    const nm = document.getElementById("flow-stage-name");
+    if (nm) nm.textContent = st.name;
+  }
+
+  function flowControls() {
+    const host = document.getElementById("flow-controls");
+    if (!host) return;
+    host.innerHTML = '<span class="control-label">Stage</span>'
+      + FLOW.map((s, i) =>
+        `<button type="button" data-f="${i}" aria-pressed="${i === 0}">${s.name}</button>`).join("")
+      + `<button type="button" id="flow-play" aria-pressed="${!flow.reduced}">${
+          flow.reduced ? "Play" : "Pause"}</button>`;
+
+    host.querySelectorAll("[data-f]").forEach((b) =>
+      b.addEventListener("click", () => {
+        flow.i = parseInt(b.dataset.f, 10);
+        flow.manual = true;
+        flow.playing = false;
+        document.getElementById("flow-play").textContent = "Play";
+        document.getElementById("flow-play").setAttribute("aria-pressed", "false");
+        host.querySelectorAll("[data-f]").forEach((o) =>
+          o.setAttribute("aria-pressed", String(o === b)));
+        drawFlow(performance.now());
+      }));
+
+    document.getElementById("flow-play").addEventListener("click", function () {
+      flow.playing = !flow.playing;
+      flow.manual = !flow.playing;
+      if (flow.playing) flow.t0 = performance.now();
+      this.textContent = flow.playing ? "Pause" : "Play";
+      this.setAttribute("aria-pressed", String(flow.playing));
+    });
+
+    if (flow.reduced) { flow.playing = false; flow.manual = true; }
+    flow.t0 = performance.now();
+  }
+
+  function markFlowStage() {
+    const host = document.getElementById("flow-controls");
+    if (!host) return;
+    host.querySelectorAll("[data-f]").forEach((o) =>
+      o.setAttribute("aria-pressed", String(parseInt(o.dataset.f, 10) === flow.i)));
+  }
 
   /* ------------------------------------------- 05 train-deploy mismatch --
 
@@ -992,9 +1275,9 @@
 
   function drawAll() {
     R.drawArmPlate();
+    drawFlow(performance.now());
     R.renderStats();
     R.renderConstraints();
-    R.renderPipeline();
     R.drawModel();
     R.drawLoop();
     drawTraj();
@@ -1031,6 +1314,7 @@
 
   function init() {
     R.heroControls();
+    flowControls();
     R.modelControls();
     R.loopControls();
     bugControls();
@@ -1046,6 +1330,32 @@
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     (mq.addEventListener ? mq.addEventListener.bind(mq, "change")
                          : mq.addListener.bind(mq))(drawAll);
+
+    // The sequence runs only while it is on screen and the tab is visible.
+    // A loop animating behind a reader who has scrolled past it is a battery
+    // bill and nothing else.
+    let onScreen = false;
+    const flowEl = document.getElementById("flow-canvas");
+    if (window.IntersectionObserver && flowEl) {
+      new IntersectionObserver((es) => { onScreen = es[0].isIntersecting; },
+        { threshold: 0.15 }).observe(flowEl);
+    } else {
+      onScreen = true;
+    }
+
+    (function tick(now) {
+      if (onScreen && !document.hidden) {
+        if (flow.playing && !flow.manual) {
+          if (now - flow.t0 > FLOW[flow.i].ms) {
+            flow.i = (flow.i + 1) % FLOW.length;
+            flow.t0 = now;
+            markFlowStage();
+          }
+          drawFlow(now);
+        }
+      }
+      requestAnimationFrame(tick);
+    })(performance.now());
   }
 
   if (document.readyState === "loading") {

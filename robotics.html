@@ -131,12 +131,20 @@
     anything can learn from it.
   </p>
 
+  <div class="controls" id="flow-controls"></div>
   <figure class="plate-fig">
-    <div id="pipeline"></div>
+    <canvas id="flow-canvas" height="360"
+      aria-label="An animated walkthrough of the pipeline, from collecting a handheld demonstration through validation and training to evaluation in simulation"></canvas>
+    <div class="plate-title">
+      <span><b>Plate 02</b></span>
+      <span>Collection to validation</span>
+      <span id="flow-stage-name">Collection</span>
+      <span>Runs on its own</span>
+    </div>
     <figcaption>
-      215 demonstrations and 265,000 frames through this path. Every step is
-      validated, and a step that fails validation is dropped rather than
-      repaired.
+      215 demonstrations and 265,000 frames through this path. It cycles on its
+      own, or pick a stage. The arm in the last stage is the same solved linkage
+      as the plate above, executing a reach rather than being drawn into one.
     </figcaption>
   </figure>
 
