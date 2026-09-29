@@ -498,6 +498,7 @@
   const surf = {
     yaw: -0.85, tilt: 0.52, cue: null, drag: null, mode: "both",
     zoom: 1, panX: 0, panY: 0,        // view transform, applied after the auto-fit
+    axes: true,
     hit: [], hover: -1,               // projected quotes, and which one is under the cursor
   };
   const NK = 30, NT = 20;
@@ -668,7 +669,11 @@
       x0 = Math.min(x0, r.x); x1 = Math.max(x1, r.x);
       y0 = Math.min(y0, r.y); y1 = Math.max(y1, r.y);
     }));
-    const padX = 30, padTop = 34, padBot = 38;
+    // With the frame on, the floor labels sit outside the surface itself, so
+    // the box it is fitted into has to leave room for them or the dates print
+    // off the edge of the canvas.
+    const padX = surf.axes ? 58 : 30;
+    const padTop = 34, padBot = surf.axes ? 52 : 38;
     const availW = w - 2 * padX, availH = h - padTop - padBot;
     const s = Math.min(availW / Math.max(x1 - x0, 1e-6), availH / Math.max(y1 - y0, 1e-6));
     return {
@@ -705,6 +710,124 @@
 
   let lastQuotes = [];
 
+  /* ------------------------------------------------- the axis frame ------
+
+     Until this existed the panel showed a shape with no scale on it, which is
+     a picture rather than a chart. The frame is drawn on the floor of the box,
+     under the sheet, and its labels follow the rotation.
+
+     The expiry axis carries REAL DATES rather than tenors, worked forward from
+     the as-of date in the picker. Tenors would say 3m where the board says the
+     third Friday, and the point of the panel is that the market is a set of
+     listed dates rather than a continuum. */
+
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  function expiryLabel(T) {
+    const base = new Date(market.date + "T00:00:00");
+    const d = new Date(base.getTime() + Math.round(T * 365) * 86400000);
+    return `${d.getDate()} ${MONTHS[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
+  }
+
+  /* Two passes. The lines belong under the sheet, or the frame looks like it is
+     floating in front of the data. The labels belong on top of it, because the
+     sheet sits close to the floor near the money and hides the upside strike
+     labels completely from most angles. */
+  function drawAxes(ctx, w, h, vlo, vhi, fit, pass) {
+    const lines = pass !== "labels", text = pass !== "lines";
+    const faint = cssVar("--ink-faint");
+    const grid = cssVar("--grid");
+    const floor = (k, T) => project(k, T, vlo, vlo, vhi, fit);
+
+    ctx.lineWidth = 1;
+    ctx.font = "10.5px ui-sans-serif, system-ui, sans-serif";
+
+    // Which way the box is turned decides which edges are nearest the reader,
+    // and therefore where the labels can sit without being behind the sheet.
+    const leftIsNear = Math.sin(surf.yaw) < 0;
+
+    // Floor lines along the strike axis, one per labelled expiry. The seven-day
+    // slice is drawn but not labelled, because at this scale its label lands on
+    // top of the one-month label.
+    const marks = [28, 91, 189, 350, 545].map((d) => d / 365)
+      .filter((T) => T >= T_MIN && T <= T_MAX);
+
+    marks.forEach((T) => {
+      const a = floor(K_MIN, T), b = floor(K_MAX, T);
+      if (lines) {
+        ctx.strokeStyle = grid;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+      if (!text) return;
+
+      // ⚠️ Anchored OUTSIDE the data range on purpose. Placed on the edge
+      //    itself, these labels pile onto the moneyness labels at the corner
+      //    where the two floor edges meet.
+      const end = floor(leftIsNear ? K_MIN - 0.07 : K_MAX + 0.07, T);
+      ctx.fillStyle = faint;
+      ctx.textAlign = leftIsNear ? "right" : "left";
+      ctx.fillText(expiryLabel(T), end.x, end.y + 3);
+    });
+
+    // Floor lines along the expiry axis, at round distances from the forward.
+    const ks = [-0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3].filter((k) => k >= K_MIN && k <= K_MAX);
+    ks.forEach((k) => {
+      const a = floor(k, T_MIN), b = floor(k, T_MAX);
+      if (lines) {
+        ctx.strokeStyle = k === 0 ? cssVar("--muted-mark") : grid;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+      if (!text) return;
+
+      const lab = floor(k, Math.max(T_MIN - 0.05, 0.001));
+      const t = k === 0 ? "ATM" : `${k > 0 ? "+" : ""}${(k * 100).toFixed(0)}%`;
+      ctx.textAlign = "center";
+      ctx.strokeStyle = cssVar("--surface-panel");
+      ctx.lineWidth = 3;
+      ctx.strokeText(t, lab.x, lab.y + 12);
+      ctx.fillStyle = faint;
+      ctx.fillText(t, lab.x, lab.y + 12);
+      ctx.lineWidth = 1;
+    });
+
+    // The volatility axis, stood up at the far corner so the sheet does not
+    // cross it. Ticks are in whole volatility points.
+    const cornerK = leftIsNear ? K_MAX : K_MIN;
+    const base = project(cornerK, T_MAX, vlo, vlo, vhi, fit);
+    const top = project(cornerK, T_MAX, vhi, vlo, vhi, fit);
+    if (lines) {
+      ctx.strokeStyle = grid;
+      ctx.beginPath();
+      ctx.moveTo(base.x, base.y);
+      ctx.lineTo(top.x, top.y);
+      ctx.stroke();
+    }
+
+    const lo = Math.ceil(vlo * 100 / 5) * 5, hi = Math.floor(vhi * 100 / 5) * 5;
+    ctx.textAlign = leftIsNear ? "left" : "right";
+    for (let v = lo; v <= hi; v += 5) {
+      const p = project(cornerK, T_MAX, v / 100, vlo, vhi, fit);
+      if (lines) {
+        ctx.strokeStyle = grid;
+        ctx.beginPath();
+        ctx.moveTo(p.x - 3, p.y);
+        ctx.lineTo(p.x + 3, p.y);
+        ctx.stroke();
+      }
+      if (!text) continue;
+      ctx.fillStyle = faint;
+      ctx.fillText(`${v}%`, p.x + (leftIsNear ? 7 : -7), p.y + 3);
+    }
+    ctx.textAlign = "left";
+  }
+
   function drawSurface() {
     const canvas = document.getElementById("surface-canvas");
     if (!canvas) return;
@@ -716,6 +839,7 @@
 
     ctx.clearRect(0, 0, w, h);
     const fit = fitFor(g, w, h, vlo, vhi);
+    if (surf.axes) drawAxes(ctx, w, h, vlo, vhi, fit, "lines");
 
     // Painter's algorithm. Each cell is one quad; sorting by mean depth is
     // enough here because the surface is a height field and cannot self-occlude
@@ -811,18 +935,16 @@
       ribbon(col, "one strike: the term structure");
     }
 
+    if (surf.axes) drawAxes(ctx, w, h, vlo, vhi, fit, "labels");
+
     ctx.fillStyle = cssVar("--ink-faint");
     ctx.font = "11.5px ui-sans-serif, system-ui, sans-serif";
-    ctx.fillText("strike, away from the forward →", 10, h - 8);
     ctx.fillText(`implied vol ${(vlo * 100).toFixed(0)}% to ${(vhi * 100).toFixed(0)}%`, 10, 16);
     if (surf.zoom !== 1) {
       ctx.textAlign = "right";
       ctx.fillText(`${surf.zoom.toFixed(1)}x`, w - 10, 16);
       ctx.textAlign = "left";
     }
-    ctx.textAlign = "right";
-    ctx.fillText("← more time to expiry", w - 10, h - 8);
-    ctx.textAlign = "left";
   }
 
   function resetView() {
@@ -887,6 +1009,7 @@
       + '<button type="button" data-zoom="in" title="Zoom in">Zoom in</button>'
       + '<button type="button" data-zoom="out" title="Zoom out">Zoom out</button>'
       + '<button type="button" data-zoom="reset">Reset</button>'
+      + `<button type="button" data-axes="1" aria-pressed="${surf.axes}">Axes</button>`
       + '<span class="control-label">drag to rotate, shift-drag to pan, ctrl-scroll or double-click to zoom</span>'
       + '</div>'
       + '<div class="picker"><span class="control-label">Show</span>'
@@ -914,6 +1037,13 @@
         const cx = c.clientWidth / 2, cy = parseFloat(c.style.height) / 2;
         if (b.dataset.zoom === "reset") resetView();
         else zoomAbout(cx, cy, b.dataset.zoom === "in" ? 1.4 : 1 / 1.4, cx, cy);
+        drawSurface();
+      }));
+
+    host.querySelectorAll("[data-axes]").forEach((b) =>
+      b.addEventListener("click", () => {
+        surf.axes = !surf.axes;
+        b.setAttribute("aria-pressed", String(surf.axes));
         drawSurface();
       }));
 

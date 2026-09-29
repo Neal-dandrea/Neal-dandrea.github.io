@@ -166,7 +166,8 @@
       <figcaption>
         Drag to rotate. Height and colour both encode implied volatility. The
         dots are the mid of each listed option. Hover one for its market, and
-        zoom in to see every strike rather than every second one.
+        zoom in to see every strike rather than every second one. The expiry
+        axis is dated from the as-of date, so it names actual expirations.
       </figcaption>
     </figure>
 
@@ -175,8 +176,10 @@
       <dl class="reading-list">
         <dt>The floor is the money</dt>
         <dd>
-          Strike relative to the forward on one axis, time to expiry on the
-          other. The middle of the strike axis is at the money.
+          Strike relative to the forward on one axis, expiry on the other,
+          volatility as height. The expiry axis carries dates rather than
+          tenors, worked forward from the as-of date, because the board is a
+          set of listed expirations and not a continuum.
         </dd>
 
         <dt>The tilt is the skew</dt>
