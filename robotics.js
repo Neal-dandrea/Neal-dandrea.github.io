@@ -688,11 +688,45 @@
     };
 
     if (st.key === "collect") {
-      // A handheld gripper traced along a demonstration, laying down samples.
+      /* The handheld gripper, drawn after the Universal Manipulation Interface
+         rather than as a generic pair of jaws, because the specific design is
+         the reason the data is worth anything.
+
+         What is on it and why, from the UMI paper:
+           155 degree fisheye on a wrist-mounted action camera, so the view
+             carries context without undistortion
+           mirrors in the camera's peripheral view, which act as virtual
+             cameras and give implicit stereo from one monocular image
+           the camera's own IMU, for tracking through fast motion and for
+             recovering absolute scale
+           a fiducial on the finger, so width is tracked continuously instead
+             of as open or closed
+           soft printed fingers, ribbed to stay rigid at the tip while
+             conforming to the object
+         The same fingers and the same camera position go onto the robot, which
+         is the whole trick. The observation does not change embodiment. */
+
+      const cap = (a, b, hw, body, edgeC) => {
+        ctx.lineCap = "round";
+        ctx.strokeStyle = edgeC;
+        ctx.lineWidth = (hw * 2 + 2) * S;
+        ctx.beginPath();
+        ctx.moveTo(sx(a.x), sy(a.y)); ctx.lineTo(sx(b.x), sy(b.y));
+        ctx.stroke();
+        ctx.strokeStyle = body;
+        ctx.lineWidth = hw * 2 * S;
+        ctx.beginPath();
+        ctx.moveTo(sx(a.x), sy(a.y)); ctx.lineTo(sx(b.x), sy(b.y));
+        ctx.stroke();
+      };
+      const shell = cssVar("--surface-panel");
+
       const path = (u) => ({
-        x: 80 + u * 520,
-        y: 200 - Math.sin(u * Math.PI) * 90 + Math.sin(u * 9) * 6,
+        x: 110 + u * 350,
+        y: 220 - Math.sin(u * Math.PI) * 74 + Math.sin(u * 9) * 5,
       });
+
+      // The demonstration, and the samples already recorded along it.
       ctx.strokeStyle = rule;
       ctx.setLineDash([2 * S, 4 * S]);
       ctx.beginPath();
@@ -702,38 +736,129 @@
       }
       ctx.stroke();
       ctx.setLineDash([]);
-
-      for (let u = 0; u <= p; u += 0.02) {
+      ctx.globalAlpha = 0.45;
+      ctx.fillStyle = blue;
+      for (let u = 0; u <= p; u += 0.025) {
         const q = path(u);
-        ctx.fillStyle = blue;
-        ctx.globalAlpha = 0.5;
         ctx.beginPath();
-        ctx.arc(sx(q.x), sy(q.y), 2.2 * S, 0, Math.PI * 2);
+        ctx.arc(sx(q.x), sy(q.y), 2 * S, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
 
       const g = path(p);
-      const ahead = path(Math.min(1, p + 0.02));
-      const th = Math.atan2(ahead.y - g.y, ahead.x - g.x);
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 2.5 * S;
-      ctx.lineCap = "round";
-      [-1, 1].forEach((sg) => {
-        const nx = -Math.sin(th) * 12 * sg, ny = Math.cos(th) * 12 * sg;
-        ctx.beginPath();
-        ctx.moveTo(sx(g.x + nx), sy(g.y + ny));
-        ctx.lineTo(sx(g.x + nx + Math.cos(th) * 18), sy(g.y + ny + Math.sin(th) * 18));
-        ctx.stroke();
-      });
+      const ah = path(Math.min(1, p + 0.02));
+      const th = Math.atan2(ah.y - g.y, ah.x - g.x);
+      const fx = Math.cos(th), fy = Math.sin(th);     // forward, toward the object
+      const ux = -Math.sin(th), uy = Math.cos(th);    // across the jaws
+      // One scale for the whole tool. Drawn at its authored size the details
+      // that make it a UMI gripper rather than any gripper were a few pixels
+      // across and invisible.
+      const G = 1.85;
+      const at = (f, a) => ({ x: g.x + (fx * f + ux * a) * G,
+                              y: g.y + (fy * f + uy * a) * G });
+
+      // Fisheye cone first, so the hardware sits on top of it.
+      const lens = at(-16, 0);
+      const FOV = 155 * Math.PI / 180;
+      ctx.fillStyle = blue;
+      ctx.globalAlpha = 0.07;
       ctx.beginPath();
-      ctx.moveTo(sx(g.x - Math.cos(th) * 26), sy(g.y - Math.sin(th) * 26));
-      ctx.lineTo(sx(g.x), sy(g.y));
-      ctx.lineWidth = 6 * S;
-      ctx.stroke();
+      ctx.moveTo(sx(lens.x), sy(lens.y));
+      ctx.lineTo(sx(lens.x + Math.cos(th - FOV / 2) * 130), sy(lens.y + Math.sin(th - FOV / 2) * 130));
+      ctx.lineTo(sx(lens.x + Math.cos(th + FOV / 2) * 130), sy(lens.y + Math.sin(th + FOV / 2) * 130));
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Mirrors, sitting in the camera's peripheral view, and the narrow
+      // reflected views that give the stereo.
+      [-1, 1].forEach((sg) => {
+        const m0 = at(-6, 20 * sg), m1 = at(4, 27 * sg);
+        ctx.strokeStyle = blue;
+        ctx.lineWidth = 2.6 * S;
+        ctx.beginPath();
+        ctx.moveTo(sx(m0.x), sy(m0.y)); ctx.lineTo(sx(m1.x), sy(m1.y));
+        ctx.stroke();
+        ctx.globalAlpha = 0.11;
+        ctx.fillStyle = blue;
+        ctx.beginPath();
+        ctx.moveTo(sx(m1.x), sy(m1.y));
+        ctx.lineTo(sx(m1.x + Math.cos(th - 0.3 * sg) * 84), sy(m1.y + Math.sin(th - 0.3 * sg) * 84));
+        ctx.lineTo(sx(m1.x + Math.cos(th + 0.16 * sg) * 84), sy(m1.y + Math.sin(th + 0.16 * sg) * 84));
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+
+      // Handle, body, and the camera on its mount.
+      cap(at(-46, 0), at(-26, 0), 7 * G, shell, ink);      // handle
+      cap(at(-26, 0), at(-4, 0), 10 * G, shell, ink);      // body
+      cap(at(-22, 0), at(-12, 0), 11 * G, shell, ink);     // camera block
+      ctx.fillStyle = shell; ctx.strokeStyle = ink; ctx.lineWidth = 1.4 * S;
+      ctx.beginPath();
+      ctx.arc(sx(lens.x), sy(lens.y), 5 * G * S, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = blue;
+      ctx.beginPath();
+      ctx.arc(sx(lens.x), sy(lens.y), 2.4 * G * S, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Soft ribbed fingers, opening and closing as the demonstration runs.
+      const open = 11 + 5 * Math.sin(p * 7);
+      [-1, 1].forEach((sg) => {
+        const root = at(-4, open * sg), tipF = at(30, open * 0.8 * sg);
+        cap(root, tipF, 3.4 * G, shell, ink);
+        ctx.strokeStyle = soft;
+        ctx.globalAlpha = 0.55;
+        ctx.lineWidth = 1.1 * S;
+        for (let k = 1; k <= 4; k++) {                      // the rib pattern
+          const t = k / 5;
+          const a = { x: lerp(root.x, tipF.x, t) - ux * 3.4 * G * sg,
+                      y: lerp(root.y, tipF.y, t) - uy * 3.4 * G * sg };
+          const b = { x: lerp(root.x, tipF.x, t) + ux * 3.4 * G * sg,
+                      y: lerp(root.y, tipF.y, t) + uy * 3.4 * G * sg };
+          ctx.beginPath();
+          ctx.moveTo(sx(a.x), sy(a.y)); ctx.lineTo(sx(b.x), sy(b.y));
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      });
+
+      // The fiducial on one finger, which is how width is read off the video.
+      const fid = at(16, open * 0.9);
+      ctx.save();
+      ctx.translate(sx(fid.x), sy(fid.y));
+      ctx.rotate(th);
+      ctx.fillStyle = ink;
+      for (let a = 0; a < 3; a++) {
+        for (let b = 0; b < 3; b++) {
+          if ((a + b) % 2 === 0) ctx.fillRect((a - 1.5) * 2.4 * G * S, (b - 1.5) * 2.4 * G * S, 2.4 * G * S, 2.4 * G * S);
+        }
+      }
+      ctx.restore();
+
+      // ---- annotation
+      ctx.font = mono(9);
+      const lead = (from, to, text, align) => {
+        ctx.strokeStyle = faint;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx(from.x), sy(from.y)); ctx.lineTo(sx(to.x), sy(to.y));
+        ctx.stroke();
+        ctx.fillStyle = faint;
+        ctx.textAlign = align || "left";
+        ctx.fillText(text, sx(to.x + (align === "right" ? -4 : 4)), sy(to.y + 3));
+        ctx.textAlign = "left";
+      };
+      lead(lens, { x: 150, y: 62 }, "155\u00b0 FISHEYE, IMU FOR SCALE");
+      lead(at(4, 27), { x: 470, y: 78 }, "MIRRORS, IMPLICIT STEREO");
+      lead(fid, { x: 545, y: 300 }, "FIDUCIAL, CONTINUOUS FINGER WIDTH", "right");
+      lead(at(30, -open * 0.8), { x: 120, y: 300 }, "SOFT RIBBED FINGERS", "left");
 
       ctx.fillStyle = faint;
-      ctx.fillText("HANDHELD GRIPPER, NO ROBOT PRESENT", sx(g.x - 40), sy(g.y - 34));
+      ctx.fillText("NO ROBOT PRESENT. THE SAME FINGERS AND THE SAME CAMERA POSITION GO ONTO THE ARM.",
+                   sx(14), sy(316));
       say([
         `DEMONSTRATION ${Math.round(1 + p * 214)} OF 215`,
         `FRAMES CAPTURED ${Math.round(p * 265000).toLocaleString("en-US")}`,
