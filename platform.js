@@ -1753,11 +1753,11 @@
       <math display="block"><mrow>
         <msub><mi>K</mi><mrow><mn>25</mn><mi>&#x0394;</mi></mrow></msub><mo>=</mo>
         <mi>F</mi><mo>&#x2062;</mo>
-        <mi>exp</mi><mo>&#x2061;</mo><mo>(</mo>
+        <mi>exp</mi><mo>&#x2061;</mo><mo lspace="0" rspace="0" stretchy="false">(</mo>
         <mfrac><mrow><msup><mi>&#x03C3;</mi><mn>2</mn></msup><mi>T</mi></mrow><mn>2</mn></mfrac>
         <mo>&#x2213;</mo>
         <mi>z</mi><mi>&#x03C3;</mi><msqrt><mi>T</mi></msqrt>
-        <mo>)</mo>
+        <mo lspace="0" rspace="0" stretchy="false">)</mo>
       </mrow></math>`,
 
     d12: `
@@ -1765,7 +1765,7 @@
         <msub><mi>d</mi><mn>1</mn></msub><mo>=</mo>
         <mfrac>
           <mrow>
-            <mi>ln</mi><mo>&#x2061;</mo><mo>(</mo><mi>F</mi><mo>/</mo><mi>K</mi><mo>)</mo>
+            <mi>ln</mi><mo>&#x2061;</mo><mo lspace="0" rspace="0" stretchy="false">(</mo><mi>F</mi><mo lspace="0" rspace="0">/</mo><mi>K</mi><mo lspace="0" rspace="0" stretchy="false">)</mo>
             <mo>+</mo>
             <mfrac><mn>1</mn><mn>2</mn></mfrac>
             <msup><mi>&#x03C3;</mi><mn>2</mn></msup><mi>T</mi>
@@ -1782,34 +1782,34 @@
       <math display="block"><mrow>
         <mi>C</mi><mo>=</mo>
         <msup><mi>e</mi><mrow><mo>&#x2212;</mo><mi>r</mi><mi>T</mi></mrow></msup>
-        <mo>[</mo><mi>F</mi><mo>&#x2062;</mo><mi>N</mi><mo>&#x2061;</mo>
-        <mo>(</mo><msub><mi>d</mi><mn>1</mn></msub><mo>)</mo>
+        <mo lspace="0" rspace="0">[</mo><mi>F</mi><mo>&#x2062;</mo><mi>N</mi><mo>&#x2061;</mo>
+        <mo lspace="0" rspace="0" stretchy="false">(</mo><msub><mi>d</mi><mn>1</mn></msub><mo lspace="0" rspace="0" stretchy="false">)</mo>
         <mo>&#x2212;</mo><mi>K</mi><mo>&#x2062;</mo><mi>N</mi><mo>&#x2061;</mo>
-        <mo>(</mo><msub><mi>d</mi><mn>2</mn></msub><mo>)</mo><mo>]</mo>
+        <mo lspace="0" rspace="0" stretchy="false">(</mo><msub><mi>d</mi><mn>2</mn></msub><mo lspace="0" rspace="0" stretchy="false">)</mo><mo lspace="0" rspace="0">]</mo>
       </mrow></math>
       <math display="block"><mrow>
         <mi>P</mi><mo>=</mo>
         <msup><mi>e</mi><mrow><mo>&#x2212;</mo><mi>r</mi><mi>T</mi></mrow></msup>
-        <mo>[</mo><mi>K</mi><mo>&#x2062;</mo><mi>N</mi><mo>&#x2061;</mo>
-        <mo>(</mo><mo>&#x2212;</mo><msub><mi>d</mi><mn>2</mn></msub><mo>)</mo>
+        <mo lspace="0" rspace="0">[</mo><mi>K</mi><mo>&#x2062;</mo><mi>N</mi><mo>&#x2061;</mo>
+        <mo lspace="0" rspace="0" stretchy="false">(</mo><mo>&#x2212;</mo><msub><mi>d</mi><mn>2</mn></msub><mo lspace="0" rspace="0" stretchy="false">)</mo>
         <mo>&#x2212;</mo><mi>F</mi><mo>&#x2062;</mo><mi>N</mi><mo>&#x2061;</mo>
-        <mo>(</mo><mo>&#x2212;</mo><msub><mi>d</mi><mn>1</mn></msub><mo>)</mo><mo>]</mo>
+        <mo lspace="0" rspace="0" stretchy="false">(</mo><mo>&#x2212;</mo><msub><mi>d</mi><mn>1</mn></msub><mo lspace="0" rspace="0" stretchy="false">)</mo><mo lspace="0" rspace="0">]</mo>
       </mrow></math>`,
 
     durrleman: `
       <math display="block"><mrow>
-        <mi>g</mi><mo>&#x2061;</mo><mo>(</mo><mi>k</mi><mo>)</mo><mo>=</mo>
+        <mi>g</mi><mo>&#x2061;</mo><mo lspace="0" rspace="0" stretchy="false">(</mo><mi>k</mi><mo lspace="0" rspace="0" stretchy="false">)</mo><mo>=</mo>
         <msup>
-          <mrow><mo>(</mo><mn>1</mn><mo>&#x2212;</mo>
+          <mrow><mo lspace="0" rspace="0">(</mo><mn>1</mn><mo>&#x2212;</mo>
             <mfrac><mrow><mi>k</mi><msup><mi>w</mi><mo>&#x2032;</mo></msup></mrow>
                    <mrow><mn>2</mn><mi>w</mi></mrow></mfrac>
-          <mo>)</mo></mrow>
+          <mo lspace="0" rspace="0">)</mo></mrow>
           <mn>2</mn>
         </msup>
         <mo>&#x2212;</mo>
         <mfrac><msup><mi>w</mi><mo>&#x2032;</mo></msup><mn>4</mn></mfrac>
-        <mo>(</mo><mfrac><mn>1</mn><mi>w</mi></mfrac><mo>+</mo>
-        <mfrac><mn>1</mn><mn>4</mn></mfrac><mo>)</mo>
+        <mo lspace="0" rspace="0">(</mo><mfrac><mn>1</mn><mi>w</mi></mfrac><mo>+</mo>
+        <mfrac><mn>1</mn><mn>4</mn></mfrac><mo lspace="0" rspace="0">)</mo>
         <mo>+</mo>
         <mfrac><msup><mi>w</mi><mo>&#x2033;</mo></msup><mn>2</mn></mfrac>
         <mo>&#x2265;</mo><mn>0</mn>

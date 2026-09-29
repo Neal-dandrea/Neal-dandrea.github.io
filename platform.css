@@ -345,12 +345,27 @@ figure.viz figcaption {
   color: var(--ink);
 }
 
-/* MathML inherits the page serif, which is what makes it read as typeset maths
-   rather than as a screenshot of some other document. */
-.eq math, .eq math * { font-family: inherit; }
+/* ⚠️ DO NOT SET font-family: inherit ON THE MATHS. That was the first attempt
+   and it is what made these look like italic prose rather than equations. A
+   maths font is not just a typeface. It carries the MATH table, which is what
+   tells the browser how tall to draw a radical, how far to raise a superscript,
+   how thick the fraction bar is and how much room an operator needs. Forcing
+   the page serif throws all of that away and leaves the browser guessing.
 
-.eq mi { font-style: italic; }
-.eq mn, .eq mo { font-style: normal; }
+   Latin Modern Math is the font TeX sets by default, which is why these now
+   look like LaTeX rather than like an approximation of it. It is served from
+   this repository rather than a CDN so the page keeps working whatever happens
+   to somebody else's host, and `math` is kept as the fallback so a reader gets
+   their system maths font while 380 kB arrives, or instead of it. */
+@font-face {
+  font-family: "Latin Modern Math";
+  src: url("fonts/latinmodern-math.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.eq math { font-family: "Latin Modern Math", math; }
 
 /* Two display equations in one block sit closer together than two paragraphs. */
 .eq math + math { margin-top: 0.35rem; }
