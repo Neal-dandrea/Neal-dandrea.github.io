@@ -1,0 +1,92 @@
+/* Page-specific styles for models.html. The panel frame, charts, controls and
+   collapsible blocks come from viz.css. */
+
+.roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.2rem;
+  margin-top: 1.4rem;
+}
+
+.roster-group {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--surface-panel);
+}
+
+.roster-group h3 {
+  margin: 0 0 0.2rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.roster-group .where {
+  display: block;
+  margin-bottom: 0.7rem;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+.roster-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roster-group li {
+  padding: 0.22rem 0;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--rule);
+}
+.roster-group li:last-child { border-bottom: none; }
+
+/* A model taken all the way to something that ran is worth distinguishing from
+   one used once in a notebook, and saying so is more honest than a flat list. */
+.roster-group li.shipped { color: var(--ink); }
+.roster-group li.shipped::after {
+  content: " deployed";
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--good);
+}
+
+.signal-bars { padding: 0.4rem 0; }
+
+.signal-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.55rem;
+  font-size: 0.87rem;
+  color: var(--ink-soft);
+}
+.signal-row .who { min-width: 11rem; }
+.signal-row .track {
+  position: relative;
+  flex: 1 1 auto;
+  height: 0.75rem;
+  border-radius: 2px;
+  background: var(--grid);
+}
+.signal-row .band {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--series-1);
+  opacity: 0.45;
+}
+.signal-row .mid {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: calc(100% + 4px);
+  background: var(--series-1);
+}
+.signal-row .num { min-width: 4.5rem; text-align: right; font-variant-numeric: tabular-nums; }

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Models — Neal D'Andrea</title>
+<meta name="description" content="Machine learning work organised by problem rather than by architecture. Sequence models on sensor data, feature ablation, reinforcement learning under transaction costs, parameter-efficient fine tuning, and retrieval.">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="viz.css">
+<link rel="stylesheet" href="models.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://neal-dandrea.github.io/models.html">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://neal-dandrea.github.io/models.html">
+<meta property="og:title" content="Models, organised by problem">
+<meta property="og:description" content="Sequence models on sensor data, feature ablation, reinforcement learning under costs, parameter-efficient fine tuning, and retrieval. What each model was for and what it cost.">
+<meta property="og:image" content="https://neal-dandrea.github.io/og-card.jpg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="platform">
+
+<header class="masthead platform-head">
+  <p class="backlink"><a href="./">&larr; Neal D&rsquo;Andrea</a></p>
+  <h1>Models, by problem</h1>
+  <p class="standfirst">
+    Organised by the question rather than by the architecture, because the
+    architecture is usually the least interesting decision in the project. Each
+    panel is a problem, what I tried on it, and what the comparison actually
+    said.
+  </p>
+
+  <aside class="disclaimer" role="note" aria-labelledby="disclaimer-title">
+    <h2 id="disclaimer-title">About the figures</h2>
+    <p>
+      <strong>Quoted numbers are measured.</strong> Where the prose gives a
+      figure, it came out of the work.
+    </p>
+    <p>
+      <strong>The charts are illustrative.</strong> They are generated in your
+      browser to show the shape of a tradeoff, not to report a result. Where a
+      panel has a measured conclusion, the prose states it and the chart is
+      there to make it legible.
+    </p>
+  </aside>
+</header>
+
+<nav class="sections panel-nav" aria-label="Panels">
+  <ul>
+    <li><a href="#roster">The models</a></li>
+    <li><a href="#sequences">Sensor sequences</a></li>
+    <li><a href="#ablation">Does this help</a></li>
+    <li><a href="#rl">Policies under cost</a></li>
+    <li><a href="#peft">Adapting an LLM</a></li>
+    <li><a href="#rag">Retrieval</a></li>
+    <li><a href="#signals">Physiological signals</a></li>
+    <li><a href="#next">What is next</a></li>
+  </ul>
+</nav>
+
+<main class="viz-root">
+
+<!-- 1 ------------------------------------------------------------------ -->
+<section class="panel wide" id="roster">
+  <p class="panel-num">01</p>
+  <h2>What I have actually built with</h2>
+  <p class="panel-lede">
+    The list first, since that is usually what a reader wants to check. Filter
+    it by family, or by where the work lives.
+  </p>
+  <p class="panel-lede me">
+    I would rather be asked about the four of these I have taken all the way to
+    a deployment than the twenty I could name.
+  </p>
+
+  <div class="controls" id="roster-controls"></div>
+  <div id="roster-grid" class="roster"></div>
+
+  <p class="panel-foot">
+    Two of these families have pages of their own. The manipulation policies are
+    in the <a href="robotics.html">robot learning walkthrough</a> and the
+    volatility and backtesting work is in the
+    <a href="platform.html">finance platform walkthrough</a>.
+  </p>
+</section>
+
+<!-- 2 ------------------------------------------------------------------ -->
+<section class="panel" id="sequences">
+  <p class="panel-num">02</p>
+  <h2>Predicting an outcome from a variable-length sequence</h2>
+  <p class="panel-lede">
+    Time-series sensor data, one series per experiment, and the series are not
+    the same length. The target is a single outcome per series rather than a
+    value per step, which rules out a lot of the obvious framings.
+  </p>
+
+  <div class="controls" id="arch-controls"></div>
+  <figure class="viz">
+    <svg id="arch-svg" viewBox="0 0 720 330" role="img"
+         aria-label="Held-out error, parameter count and training time for three architectures"></svg>
+    <figcaption>
+      Illustrative. Three architectures on the same split. The autoencoder is
+      there as a representation rather than a predictor, which is why it is
+      scored differently.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>Padding, and the compute I was throwing away</summary>
+    <p>
+      The obvious way to batch variable-length series is to pad them all to the
+      longest one. That works and it is wasteful, because most of the batch is
+      then padding and the recurrent layer walks through all of it.
+    </p>
+    <p>
+      Packed sequences fixed that. The saving is not small when the length
+      distribution is skewed, and it costs nothing in accuracy because the
+      padding was never information in the first place.
+    </p>
+  </details>
+
+  <details class="tried">
+    <summary>The NaN losses</summary>
+    <p>
+      Training would run for a while and then the loss would become NaN, which
+      is the least informative failure in the business. It was not one cause. It
+      was a learning rate that was fine at the start and not after the
+      scheduler moved, combined with an architecture that let activations grow
+      without anything holding them.
+    </p>
+    <p>
+      What fixed it was dropout, a plateau scheduler on the learning rate, and
+      systematic tuning across Adam and SGD rather than switching optimiser and
+      hoping. I also started exporting to ONNX and reading the graph in Netron,
+      because a computational graph you can look at answers questions that a
+      training curve cannot.
+    </p>
+  </details>
+</section>
+
+<!-- 3 ------------------------------------------------------------------ -->
+<section class="panel" id="ablation">
+  <p class="panel-num">03</p>
+  <h2>Does this feature block help</h2>
+  <p class="panel-lede">
+    The most useful model I run is a ridge regression, and it is not there to
+    predict anything. It is there to answer whether a block of features carries
+    information, cheaply enough that the answer arrives before anybody has built
+    on the assumption that it does.
+  </p>
+  <p class="panel-lede me">
+    This is the panel I would point a reviewer at. The finding is negative and I
+    think it is the best work on this page.
+  </p>
+
+  <div class="controls" id="abl-controls"></div>
+  <figure class="viz">
+    <svg id="abl-svg" viewBox="0 0 720 320" role="img"
+         aria-label="In-sample and out-of-sample fit as feature blocks are added"></svg>
+    <figcaption>
+      Measured. In-sample fit rises monotonically as blocks are added, from
+      0.0083 to 0.0145. Out of sample it falls, and every out-of-sample value
+      measured was negative.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>What the two blocks were, and why I expected them to work</summary>
+    <p>
+      One described the time of day and the position in the week as cyclical
+      features. The other described the shape of a volatility surface, which was
+      the only input in the set that said what the market expected rather than
+      what it had already done. I built the second one specifically because the
+      first failed, and I was confident about it in a way I am now suspicious of.
+    </p>
+    <p>
+      Both dropped out of sample. The honest reading is that roughly 3,100 daily
+      samples against 13 existing features does not have room for more columns,
+      and that adding them enlarges the surface to overfit against a signal
+      nobody had yet shown exists.
+    </p>
+  </details>
+
+  <details class="tried">
+    <summary>The change that made every previous comparison suspect</summary>
+    <p>
+      Adding an embargo between the training and testing windows, so a feature
+      with a fifty-bar lookback cannot see across the boundary. It made
+      out-of-sample results worse on every symbol. On one name it fell by more
+      than the gap between any two of the feature sets I had been comparing,
+      which means those comparisons had been reading differences smaller than
+      the bias they shared.
+    </p>
+  </details>
+</section>
+
+<!-- 4 ------------------------------------------------------------------ -->
+<section class="panel" id="rl">
+  <p class="panel-num">04</p>
+  <h2>A policy when every action costs money</h2>
+  <p class="panel-lede">
+    Reinforcement learning on a trading environment, with PPO and with DQN. The
+    interesting part is not the algorithm. It is that the reward has to carry
+    the cost of acting, and that an agent which is not charged for trading
+    learns to trade constantly.
+  </p>
+
+  <div class="controls" id="rl-controls"></div>
+  <figure class="viz">
+    <svg id="rl-svg" viewBox="0 0 720 320" role="img"
+         aria-label="Agent return against training episodes, with and without transaction costs in the reward"></svg>
+    <figcaption>
+      Illustrative. Without costs in the reward the agent looks excellent and is
+      not. With costs it converges on something close to holding, which is the
+      honest answer on this data.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>What convergence to buy and hold actually told me</summary>
+    <p>
+      My first reading was that the agent had failed. The better reading is that
+      the environment did not contain an exploitable edge at the cost level it
+      was charged, and the agent found the best available policy, which was to
+      sit still.
+    </p>
+    <p>
+      That is a result about the data rather than about the algorithm, and it is
+      the same conclusion the ablation reached from the other direction. Two
+      methods agreeing on a negative is worth more than either one alone.
+    </p>
+  </details>
+</section>
+
+<!-- 5 ------------------------------------------------------------------ -->
+<section class="panel" id="peft">
+  <p class="panel-num">05</p>
+  <h2>Adapting a language model on a small corpus</h2>
+  <p class="panel-lede">
+    An open-weight model, a domain corpus far too small to justify touching
+    every parameter, and a memory budget that rules out full fine tuning
+    anyway. LoRA and QLoRA through the HuggingFace trainer, then post-training
+    quantisation to get the result somewhere it can run.
+  </p>
+
+  <div class="controls" id="peft-controls"></div>
+  <figure class="viz">
+    <svg id="peft-svg" viewBox="0 0 720 320" role="img"
+         aria-label="Trainable parameters, memory and output quality across adapter ranks and quantisation levels"></svg>
+    <figcaption>
+      Illustrative. Rank buys capacity and memory in roughly equal measure, and
+      the quality curve flattens long before the memory curve does.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>Where quantisation stops being free</summary>
+    <p>
+      Compression is nearly free until it is suddenly not, and the point where
+      it stops being free depends on the task rather than on the model. Judging
+      it by perplexity alone missed it, because the number moved smoothly across
+      exactly the range where the outputs on my actual task started degrading.
+    </p>
+  </details>
+</section>
+
+<!-- 6 ------------------------------------------------------------------ -->
+<section class="panel" id="rag">
+  <p class="panel-num">06</p>
+  <h2>Answering questions over a document set</h2>
+  <p class="panel-lede">
+    Retrieval-augmented generation with a vector store in Postgres. Most of the
+    work here is not the generation. It is chunking, which sounds like a detail
+    and decides almost everything downstream.
+  </p>
+
+  <div class="controls" id="rag-controls"></div>
+  <figure class="viz">
+    <svg id="rag-svg" viewBox="0 0 720 320" role="img"
+         aria-label="Retrieval quality and answer accuracy against chunk size"></svg>
+    <figcaption>
+      Illustrative. Short chunks retrieve precisely and hand the model fragments
+      with no context. Long chunks carry context and bury the relevant sentence
+      among irrelevant ones.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>Measuring retrieval separately from the answer</summary>
+    <p>
+      For a while I evaluated the whole pipeline end to end and could not tell
+      whether a bad answer meant bad retrieval or a model that had been given
+      the right passage and used it badly. Separating them was the change that
+      made the rest of the tuning possible, because they move in opposite
+      directions as the chunk grows.
+    </p>
+  </details>
+</section>
+
+<!-- 7 ------------------------------------------------------------------ -->
+<section class="panel" id="signals">
+  <p class="panel-num">07</p>
+  <h2>Physiological signals across settings that differ</h2>
+  <p class="panel-lede">
+    Continuous glucose monitoring, in populations and environments the device
+    was not originally designed around. The modelling question is less about
+    accuracy on a benchmark and more about whether performance holds when the
+    setting changes, which is the same question as the deployment gap on the
+    robotics page wearing different clothes.
+  </p>
+
+  <figure class="viz">
+    <div id="signals-fig"></div>
+    <figcaption>
+      Illustrative. The same model evaluated across settings, where the
+      interesting number is the spread rather than the average.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>What I took from that work</summary>
+    <p>
+      That validation tooling is a deliverable rather than scaffolding. Being
+      able to re-run the same evaluation across several physiological streams
+      and several settings, and get a comparable answer each time, is what makes
+      a claim about adaptability checkable instead of anecdotal.
+    </p>
+  </details>
+</section>
+
+<!-- 8 ------------------------------------------------------------------ -->
+<section class="panel" id="next">
+  <p class="panel-num">08</p>
+  <h2>What is next</h2>
+  <p class="panel-lede">
+    Roughly the order I would pick it up.
+  </p>
+
+  <ol class="next-list">
+    <li>
+      <h3>Sample size rather than architecture</h3>
+      <p>
+        Everything on this page that returned a negative returned it for the
+        same reason, which is that there was not enough independent data to
+        support the model being asked for. Pooled training across symbols and
+        longer histories is the lever. A different architecture on the same
+        3,100 samples is not.
+      </p>
+    </li>
+    <li>
+      <h3>Evaluation that is decided in advance</h3>
+      <p>
+        The embargo finding means I cannot fully trust comparisons I ran before
+        it. Fixing that properly means the split, the embargo and the acceptance
+        criterion written down before the run rather than chosen while looking
+        at results.
+      </p>
+    </li>
+    <li>
+      <h3>Retrieval quality as its own benchmark</h3>
+      <p>
+        A small labelled set of questions with known correct passages, so
+        retrieval can be scored without a language model in the loop at all.
+      </p>
+    </li>
+  </ol>
+</section>
+
+<section class="panel closing">
+  <h2>Where the rest of it is</h2>
+  <p>
+    The manipulation policies have their own page, and so does the market data
+    work. This one is deliberately the leftovers, which is to say the models
+    that were chosen for a problem rather than the projects that grew around
+    one.
+  </p>
+  <p class="closing-links">
+    <a href="./">Back to the main page</a>
+    <span class="sep">&middot;</span>
+    <a href="robotics.html">Robot learning</a>
+    <span class="sep">&middot;</span>
+    <a href="platform.html">Finance platform</a>
+  </p>
+</section>
+
+</main>
+
+<footer>
+  <p>
+    Charts on this page are generated in your browser. Quoted numbers are
+    measured.
+    <span class="sep">&middot;</span>
+    <a href="./">neal-dandrea.github.io</a>
+  </p>
+</footer>
+
+<script src="models.js"></script>
+</body>
+</html>
