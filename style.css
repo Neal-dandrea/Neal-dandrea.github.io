@@ -853,6 +853,19 @@ footer p { margin: 0; }
   100% { opacity: 0; }
 }
 
+/* Hovering holds one state so two of them can be compared. The strips have to
+   be painted before the states, because the rule below reaches forward from the
+   hovered strip, and the states have to ignore the pointer or they would sit on
+   top of the strips and swallow the hover. */
+.teaser-surface .vs-state { pointer-events: none; }
+.teaser-surface .vs-h { fill: transparent; pointer-events: all; }
+
+.teaser-surface:hover .vs-state { animation: none; opacity: 0; }
+.teaser-surface .vs-h1:hover ~ .vs-1,
+.teaser-surface .vs-h2:hover ~ .vs-2,
+.teaser-surface .vs-h3:hover ~ .vs-3,
+.teaser-surface .vs-h4:hover ~ .vs-4 { opacity: 1; }
+
 @media (prefers-reduced-motion: reduce) {
   .teaser-surface .vs-state { animation: none; opacity: 0; }
   .teaser-surface .vs-state:first-child { opacity: 1; }
