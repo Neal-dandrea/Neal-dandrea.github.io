@@ -171,7 +171,7 @@ inverting them, and each bucket strokes itself so adjacent quads do not leave
 hairline gaps. Regenerating it means re-running the generator in the commit
 that added it; there is no build step that does it for you.
 
-Three things to know before editing `platform.js`:
+Four things to know before editing `platform.js`:
 
 - **The SVI wing slope has to carry a factor of T.** Total implied variance is
   roughly `T(atm + s·k)^2`, so `b` scales with time to expiry. A `b` that does
@@ -180,6 +180,13 @@ Three things to know before editing `platform.js`:
 - **Section ids and element ids share a namespace.** `renderBreadth` once
   replaced the whole section rather than its figure, because both carried
   `id="breadth"`, and the heading silently disappeared.
+- **`rho` is set by the butterfly constraint, not by eye.** At `-0.72 + 0.26T`
+  the index on a quiet day fails Durrleman's condition on the upside wing at
+  short maturities (min g = −0.056), because total variance is small there and
+  the `(w'/4)(1/w)` term dominates. `-0.86 + 0.34T` clears all 25 name-and-date
+  combinations. The arbitrage panel recomputes both checks over a 40×40 grid on
+  every market change, so a parameter change that breaks the surface shows up on
+  the page rather than in silence.
 - **The date multipliers are damped by each name's own level.** Volatility of
   volatility falls as the level rises, so a selloff roughly doubles the index
   and does much less to a name already trading at 42. Applied flat, the selloff

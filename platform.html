@@ -137,7 +137,9 @@
       <canvas id="surface-canvas" height="420" aria-label="A three dimensional implied volatility surface across strike and time to expiry. Drag to rotate."></canvas>
       <figcaption>
         Drag to rotate. Height and colour both encode implied volatility, so the
-        shape survives being printed in black and white.
+        shape survives being printed in black and white. The dots are the mid
+        of each listed option's market, every other strike, so you can see where
+        the quotes sit relative to the sheet that was fitted to them.
       </figcaption>
     </figure>
 
@@ -181,9 +183,25 @@
           gives one continuous surface you can differentiate, which is the next
           panel.
         </dd>
+
+        <dt>The sheet is smooth, the market is not</dt>
+        <dd>
+          Switch to <em>quotes only</em> and the continuum disappears. What is
+          actually listed is a handful of expiries, weeklies out to about a
+          month and then monthlies and quarterlies, on discrete strikes, with
+          holes in the wings where nobody makes a two-sided market. Everything
+          between those slices is an interpolation and should be read as one.
+        </dd>
       </dl>
     </div>
   </div>
+
+  <div class="diag" id="fit-diag"></div>
+  <p class="panel-foot">
+    A surface nobody checked is a decoration. These two numbers are what a
+    fitter reports before anyone is allowed to price off it, and they are
+    recomputed here every time the market changes rather than asserted once.
+  </p>
 </section>
 
 <!-- 4 ------------------------------------------------------------------ -->
@@ -191,10 +209,12 @@
   <p class="panel-num">04</p>
   <h2>Fitting one expiry: the smile</h2>
   <p class="panel-lede">
-    A single slice of that surface, fitted with SVI, a five-parameter form that
-    is standard in the literature and cheap to evaluate. The dots are quotes.
-    The line is the fit. The panel underneath is what the fit missed, which is
-    the part worth looking at.
+    A single listed expiry, fitted with SVI, a five-parameter form that is
+    standard in the literature and cheap to evaluate. Each vertical mark is one
+    option&rsquo;s market, drawn from its bid to its ask, because an implied
+    volatility is a band and not a number. The line is the fit, drawn across the
+    whole range including the stretches where nothing is listed. The panel
+    underneath is what the fit missed, which is the part worth looking at.
   </p>
 
   <div class="controls" id="smile-controls"></div>
@@ -202,9 +222,11 @@
     <svg id="smile-svg" viewBox="0 0 720 300" role="img" aria-label="Implied volatility against log moneyness, with quoted points and a fitted curve"></svg>
     <svg id="resid-svg" viewBox="0 0 720 120" role="img" aria-label="Fit residuals in volatility points"></svg>
     <figcaption>
-      Residuals are in volatility points. Structure in them means the model is
-      wrong in a way that will show up in every price you take off it. Noise in
-      them means you are fitting the market rather than the noise.
+      Residuals are in volatility points, measured from the mid. Structure in
+      them means the model is wrong in a way that will show up in every price
+      you take off it. Noise in them means you are fitting the market rather
+      than the noise. Notice they fan out in the wings, where the spread is
+      wide and the quote is stale.
     </figcaption>
   </figure>
 </section>

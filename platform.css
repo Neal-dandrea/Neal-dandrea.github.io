@@ -203,6 +203,59 @@ figure.viz figcaption {
 }
 .market-note strong { color: var(--ink); }
 
+/* ---------- fit diagnostics ---------- */
+
+.diag {
+  margin-top: 1.6rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--surface-panel);
+}
+
+.diag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: 1.6rem;
+}
+
+.diag h4 {
+  margin: 0 0 0.6rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.diag pre {
+  margin: 0 0 0.7rem;
+  padding: 0.5rem 0.7rem;
+  overflow-x: auto;
+  border-left: 2px solid var(--rule);
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.diag .aside {
+  margin: 0;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--accent);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.diag .pass { color: var(--good); font-weight: 600; }
+.diag .fail { color: var(--accent); font-weight: 600; }
+
+.panel-foot {
+  max-width: 34rem;
+  margin: 1rem 0 0;
+  font-size: 0.87rem;
+  color: var(--ink-faint);
+}
+
 /* ---------- worked trade ---------- */
 
 .trade-layout {

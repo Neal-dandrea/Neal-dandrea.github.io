@@ -137,7 +137,16 @@
     //    284% one-week wing, which is the sort of number a real surface fitter
     //    rejects rather than plots.
     const b = 2 * T * atm * ctx.skew;
-    const rho = clamp(-0.72 + 0.26 * T - (ctx.str ? 0.12 : 0), -0.92, -0.18);
+
+    // ⚠️ rho IS SET BY THE BUTTERFLY CONSTRAINT, not by eye. At -0.72 + 0.26T
+    //    the index on a quiet day fails Durrleman's condition on the upside
+    //    wing at short maturities (min g = -0.056): total variance is small
+    //    there, so the (w'/4)(1/w) term dominates and the implied density goes
+    //    negative. The upside slope is b(1 + rho), so pushing rho down fixes it.
+    //    At -0.86 + 0.34T all 25 name-and-date combinations pass, with the
+    //    index in January the tightest at g = +0.013, which is about where a
+    //    real index surface sits.
+    const rho = clamp(-0.86 + 0.34 * T - (ctx.str ? 0.12 : 0), -0.95, -0.18);
     const m = -0.012;
     const sigma = 0.055 + 0.16 * Math.sqrt(T);
     const w0 = T * atm * atm;
@@ -403,6 +412,8 @@
 
   const market = { sym: "SPX", date: "2025-01-17" };
 
+  const R_RATE = 0.043;          // one financing rate, used everywhere
+
   /* ⚠️ THE DATE MULTIPLIERS ARE DAMPED BY THE NAME'S OWN LEVEL, and without
      that the page prints numbers no surface has ever shown. A selloff roughly
      doubles index volatility, but it does not double a name already trading at
@@ -423,7 +434,7 @@
 
   /* ------------------------------------------------------- 03 vol surface */
 
-  const surf = { yaw: -0.85, tilt: 0.52, cue: null, drag: null };
+  const surf = { yaw: -0.85, tilt: 0.52, cue: null, drag: null, mode: "both" };
   const NK = 30, NT = 20;
 
   function surfaceGrid() {
@@ -438,6 +449,136 @@
       pts.push(row);
     }
     return pts;
+  }
+
+  /* ---------------------------------------------- the listed market ------
+
+     ⚠️ OPTIONS DO NOT EXIST ON A CONTINUUM, and drawing a surface as if they do
+     is the most common way these pictures mislead. The market lists weeklies
+     out to about a month, monthlies past that, and quarterlies at the long end.
+     Everything between two listed expiries is an interpolation, not an
+     observation. The slices below are the real listing structure, so the gaps
+     in the picture are the gaps in the market.
+
+     Strikes are discrete too, on an increment that depends on the level of the
+     underlying, so the quote grid gets coarser in log-moneyness as you go out. */
+
+  const LISTED_T = [7, 14, 21, 28, 35, 49, 63, 91, 119, 154, 189, 245, 350, 455, 545]
+    .map((d) => d / 365);
+
+  function strikeStep(spot) {
+    if (spot > 2000) return 25;
+    if (spot > 500) return 10;
+    if (spot > 100) return 2.5;
+    return 1;
+  }
+
+  /* A quote, as it actually arrives: a bid and an ask in volatility terms,
+     around a true level that is the fit plus microstructure noise. Wider and
+     noisier in the wings and at the long end, because that is where nobody is
+     trading and the last print is old. */
+  function quoteSurface() {
+    const ctx = marketCtx();
+    const spot = NAMES[market.sym].spot;
+    const step = strikeStep(spot);
+    const r = rng(market.sym.length * 977 + market.date.length * 31 + Math.round(spot));
+    const out = [];
+
+    LISTED_T.forEach((T) => {
+      const F = spot * Math.exp(R_RATE * T);
+      const kLo = F * Math.exp(K_MIN), kHi = F * Math.exp(K_MAX);
+      for (let K = Math.ceil(kLo / step) * step; K <= kHi; K += step) {
+        const k = Math.log(K / F);
+        const fit = sviVol(k, T, ctx);
+
+        // Distance from the money, in standard deviations. Liquidity falls off
+        // with it, and so does the reliability of the quote.
+        const sd = Math.abs(k) / (fit * Math.sqrt(T));
+        const thin = clamp(sd / 2.4, 0, 1) * 0.75 + clamp(T / 1.5, 0, 1) * 0.25;
+
+        // Liquidity holes. A far wing on a long-dated slice frequently has no
+        // two-sided market at all, and a surface drawn without them looks far
+        // better informed than the data supports.
+        if (r() < thin * 0.55) continue;
+
+        // Spread and noise in VOLATILITY POINTS, sized off what liquid listed
+        // options actually show: a few tenths of a point at the money, one to
+        // two points out in the wings and at the long end. An earlier pass used
+        // eight-point wings, which is a number you only see in a market that
+        // has stopped functioning, and it buried the surface underneath its own
+        // error bars.
+        const halfSpread = (0.0015 + 0.010 * thin) * (1 + 0.5 * r());
+        const noise = gauss(r) * (0.0015 + 0.006 * thin);
+        const mid = Math.max(0.01, fit + noise);
+        out.push({ k, T, K, mid, bid: mid - halfSpread, ask: mid + halfSpread,
+                   fit, thin, i: out.length });
+      }
+    });
+    return out;
+  }
+
+  /* --------------------------------------------- fit diagnostics ---------
+
+     What a fitter actually reports. RMSE is vega-weighted because a tenth of a
+     volatility point in the wing is worth far less money than a tenth at the
+     money, and an unweighted number lets the wings dominate a statistic that
+     nobody trades on. */
+  function fitDiagnostics(quotes) {
+    let n = 0, sse = 0, wsse = 0, wsum = 0, worst = 0, inside = 0;
+    quotes.forEach((q) => {
+      const e = (q.mid - q.fit) * 100;              // volatility points
+      const w = 1 / (1 + 6 * q.thin);               // a stand-in for vega weight
+      n++; sse += e * e; wsse += w * e * e; wsum += w;
+      worst = Math.max(worst, Math.abs(e));
+      if (q.fit >= q.bid && q.fit <= q.ask) inside++;
+    });
+    return {
+      n,
+      rmse: Math.sqrt(sse / Math.max(n, 1)),
+      wrmse: Math.sqrt(wsse / Math.max(wsum, 1e-9)),
+      worst,
+      insidePct: 100 * inside / Math.max(n, 1),
+    };
+  }
+
+  /* ------------------------------------------- no-arbitrage checks -------
+
+     Two conditions a surface has to satisfy before anyone prices off it.
+
+     CALENDAR. Total implied variance w = sigma^2 T must not fall as maturity
+     rises at a fixed log-moneyness. If it does, a calendar spread is free
+     money on paper, which in practice means the fit is wrong.
+
+     BUTTERFLY. Durrleman's condition. The risk-neutral density implied by the
+     smile must stay non-negative:
+
+       g(k) = (1 - k w'/(2w))^2 - (w'/4)(1/w + 1/4) + w''/2  >=  0
+
+     A negative g means the fitted smile implies a negative probability
+     somewhere, which is not a rounding problem, it is a broken surface. Both
+     are computed numerically here rather than asserted. */
+  function arbChecks() {
+    const ctx = marketCtx();
+    const w = (k, T) => Math.pow(sviVol(k, T, ctx), 2) * T;
+    let minCal = Infinity, minG = Infinity, calAt = null, gAt = null;
+
+    for (let i = 0; i < 40; i++) {
+      const k = lerp(K_MIN, K_MAX, i / 39);
+      for (let j = 0; j < 40; j++) {
+        const T = lerp(0.03, T_MAX, j / 39);
+        const dT = 0.004;
+        const dw = (w(k, T + dT) - w(k, T)) / dT;
+        if (dw < minCal) { minCal = dw; calAt = { k, T }; }
+
+        const h = 0.01;
+        const w0 = w(k, T), w1 = (w(k + h, T) - w(k - h, T)) / (2 * h);
+        const w2 = (w(k + h, T) - 2 * w0 + w(k - h, T)) / (h * h);
+        const g = Math.pow(1 - k * w1 / (2 * w0), 2)
+          - (w1 / 4) * (1 / w0 + 0.25) + w2 / 2;
+        if (g < minG) { minG = g; gAt = { k, T }; }
+      }
+    }
+    return { minCal, minG, calAt, gAt, calOk: minCal >= 0, gOk: minG >= 0 };
   }
 
   /* Two stages on purpose. `raw` projects into abstract units and knows nothing
@@ -477,9 +618,12 @@
     return { x: r.x * fit.s + fit.ox, y: r.y * fit.s + fit.oy, depth: r.depth };
   }
 
+  let lastQuotes = [];
+
   function drawSurface() {
     const canvas = document.getElementById("surface-canvas");
     if (!canvas) return;
+    if (!lastQuotes.length) lastQuotes = quoteSurface();
     const { ctx, w, h } = fitCanvas(canvas, Math.max(360, Math.min(480, canvas.clientWidth * 0.62)));
     const g = surfaceGrid();
     let vlo = Infinity, vhi = -Infinity;
@@ -501,19 +645,50 @@
                      depth: (pr[0].depth + pr[2].depth) / 2, i, j });
       }
     }
-    quads.sort((a, b) => a.depth - b.depth);
+    // Quotes go into the SAME depth-sorted list as the surface cells, so a
+    // quote behind the sheet is hidden by it and one in front is not. Drawing
+    // all the points after all the quads is the easy version and it looks
+    // wrong: every quote floats in front regardless of where it sits.
+    const items = surf.mode === "quotes" ? [] : quads.map((q) => ({ kind: "quad", ...q }));
+
+    if (surf.mode !== "fit") {
+      // ⚠️ MIDS ONLY UP HERE, and every other strike. The full board is ~1,600
+      //    lines; drawn as bid-to-ask segments in three dimensions they cover
+      //    the sheet completely and the picture says nothing. The width of the
+      //    market is shown in the smile panel below, where one slice has room
+      //    for it. This view answers a different question: where do the quotes
+      //    sit relative to the fitted sheet.
+      lastQuotes.forEach((q) => {
+        if (surf.mode === "both" && q.i % 2) return;
+        const p = project(q.k, q.T, q.mid, vlo, vhi, fit);
+        items.push({ kind: "quote", p, depth: p.depth, thin: q.thin });
+      });
+    }
+    items.sort((a, b) => a.depth - b.depth);
 
     const ruleCol = cssVar("--grid");
-    quads.forEach((q) => {
-      ctx.beginPath();
-      ctx.moveTo(q.pr[0].x, q.pr[0].y);
-      for (let n = 1; n < 4; n++) ctx.lineTo(q.pr[n].x, q.pr[n].y);
-      ctx.closePath();
-      ctx.fillStyle = seqColor(q.t);
-      ctx.fill();
-      ctx.strokeStyle = ruleCol;
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
+    const quoteCol = cssVar("--ink");
+    items.forEach((it) => {
+      if (it.kind === "quad") {
+        ctx.beginPath();
+        ctx.moveTo(it.pr[0].x, it.pr[0].y);
+        for (let n = 1; n < 4; n++) ctx.lineTo(it.pr[n].x, it.pr[n].y);
+        ctx.closePath();
+        ctx.fillStyle = seqColor(it.t);
+        ctx.globalAlpha = surf.mode === "both" ? 0.82 : 1;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = ruleCol;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      } else {
+        ctx.globalAlpha = 0.75 - 0.4 * it.thin;
+        ctx.fillStyle = quoteCol;
+        ctx.beginPath();
+        ctx.arc(it.p.x, it.p.y, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
     });
 
     // The cues draw one slice proud of the surface, which is what the prose on
@@ -549,6 +724,51 @@
     ctx.textAlign = "left";
   }
 
+  function renderDiagnostics() {
+    const host = document.getElementById("fit-diag");
+    if (!host) return;
+    const d = fitDiagnostics(lastQuotes);
+    const a = arbChecks();
+    const listed = LISTED_T.length;
+    const flag = (ok) => ok
+      ? '<span class="pass">passes</span>'
+      : '<span class="fail">FAILS</span>';
+
+    host.innerHTML = `
+      <div class="diag-grid">
+        <div>
+          <h4>Fit quality</h4>
+          <table class="nums">
+            <tr><td>Two-sided quotes on the board</td><td class="v">${d.n}</td></tr>
+            <tr><td>Listed expiries</td><td class="v">${listed}</td></tr>
+            <tr><td>RMSE, unweighted</td><td class="v">${d.rmse.toFixed(3)} vol pts</td></tr>
+            <tr class="hl"><td>RMSE, vega-weighted</td><td class="v">${d.wrmse.toFixed(3)} vol pts</td></tr>
+            <tr><td>Worst single quote</td><td class="v">${d.worst.toFixed(2)} vol pts</td></tr>
+            <tr><td>Fit inside the bid-ask</td><td class="v">${d.insidePct.toFixed(0)}%</td></tr>
+          </table>
+          <p class="aside">The weighted number is the one to quote. A tenth of a
+             volatility point in the wing is worth far less money than a tenth
+             at the money, so an unweighted RMSE lets the least tradeable
+             quotes dominate the statistic.</p>
+        </div>
+        <div>
+          <h4>No-arbitrage</h4>
+          <table class="nums">
+            <tr><td>Calendar, min &part;w/&part;T</td>
+                <td class="v">${a.minCal.toFixed(4)} ${flag(a.calOk)}</td></tr>
+            <tr><td>Butterfly, min g(k)</td>
+                <td class="v">${a.minG.toFixed(4)} ${flag(a.gOk)}</td></tr>
+          </table>
+          <pre>g(k) = (1 − k·w′/2w)² − (w′/4)(1/w + ¼) + w″/2</pre>
+          <p class="aside">Total variance must not fall with maturity, or a
+             calendar spread is free money on paper. And Durrleman&rsquo;s g must
+             stay non-negative, or the smile implies a negative probability
+             somewhere. Both are computed over a 40 by 40 grid every time the
+             market changes, not asserted once and forgotten.</p>
+        </div>
+      </div>`;
+  }
+
   function surfaceControls() {
     const host = document.getElementById("surface-controls");
     if (!host) return;
@@ -560,6 +780,11 @@
       + '<div class="picker"><span class="control-label">As of</span>'
       + Object.keys(DATES).map((k) =>
           `<button type="button" data-date="${k}" aria-pressed="${k === market.date}">${DATES[k].label}</button>`).join("")
+      + '</div>'
+      + '<div class="picker"><span class="control-label">Show</span>'
+      + [["both", "Fit and quotes"], ["fit", "Fitted surface"], ["quotes", "Quotes only"]]
+          .map(([k, lab]) =>
+            `<button type="button" data-mode="${k}" aria-pressed="${k === surf.mode}">${lab}</button>`).join("")
       + '</div>'
       + '<p class="market-note" id="market-note"></p>';
 
@@ -575,6 +800,13 @@
       b.addEventListener("click", () => pick("sym", "sym")(b)));
     host.querySelectorAll("[data-date]").forEach((b) =>
       b.addEventListener("click", () => pick("date", "date")(b)));
+    host.querySelectorAll("[data-mode]").forEach((b) =>
+      b.addEventListener("click", () => {
+        surf.mode = b.dataset.mode;
+        host.querySelectorAll("[data-mode]").forEach((o) =>
+          o.setAttribute("aria-pressed", String(o === b)));
+        drawSurface();
+      }));
 
     document.querySelectorAll(".cue").forEach((b) => {
       b.addEventListener("click", () => {
@@ -619,7 +851,9 @@
   }
 
   function redrawMarket() {
+    lastQuotes = quoteSurface();      // the quote set belongs to the market
     marketNote();
+    renderDiagnostics();
     drawSurface();
     drawSmile();
     drawResid();
@@ -628,24 +862,21 @@
 
   /* --------------------------------------------------------- 04 smile fit */
 
-  const smile = { T: 0.25, r: rng(4242) };
+  // The expiries are LISTED ones, taken from the same schedule the quote
+  // generator uses, so this panel is a slice of the surface above rather than a
+  // separate drawing that happens to look similar.
   const EXPIRIES = [
-    { label: "1 week", T: 0.02 }, { label: "1 month", T: 0.083 },
-    { label: "3 months", T: 0.25 }, { label: "6 months", T: 0.5 },
-    { label: "1 year", T: 1.0 },
+    { label: "1 week", T: 7 / 365 }, { label: "1 month", T: 28 / 365 },
+    { label: "3 months", T: 91 / 365 }, { label: "6 months", T: 189 / 365 },
+    { label: "1 year", T: 350 / 365 },
   ];
+  const smile = { T: 91 / 365 };
 
   function smileData() {
-    const r = rng(Math.round(smile.T * 1000) + market.sym.length * 17 + market.date.length);
-    const pts = [];
-    for (let i = 0; i < 26; i++) {
-      const k = lerp(K_MIN, K_MAX, i / 25);
-      const fit = sviVol(k, smile.T, marketCtx());
-      // Quotes are noisier in the wings, which is where the volume is thin.
-      const wing = 1 + 2.4 * Math.pow(Math.abs(k) / 0.42, 2);
-      pts.push({ k, fit, mkt: fit + gauss(r) * 0.0042 * wing });
-    }
-    return pts;
+    // Exactly the quotes on that expiry, bid and ask as they came, rather than
+    // a fresh set of points invented for this chart.
+    return lastQuotes.filter((q) => Math.abs(q.T - smile.T) < 1e-9)
+      .sort((a, b) => a.k - b.k);
   }
 
   function axes(svg, W, H, pad, xr, yr, xlab, ylab, yfmt) {
@@ -679,9 +910,9 @@
     if (!svg) return;
     clear(svg);
     smilePts = smileData();
+    if (!smilePts.length) return;
     const W = 720, H = 300, pad = { l: 52, r: 96, t: 26, b: 34 };
-    const ks = smilePts.map((p) => p.k);
-    const vs = smilePts.flatMap((p) => [p.fit, p.mkt]);
+    const vs = smilePts.flatMap((p) => [p.bid, p.ask]);
     const yr = [Math.min.apply(null, vs) * 0.97, Math.max.apply(null, vs) * 1.03];
     const X = (k) => pad.l + (k - K_MIN) / (K_MAX - K_MIN) * (W - pad.l - pad.r);
     const Y = (v) => pad.t + (1 - (v - yr[0]) / (yr[1] - yr[0])) * (H - pad.t - pad.b);
@@ -693,12 +924,24 @@
     el("line", { x1: X(0), y1: pad.t, x2: X(0), y2: H - pad.b,
       stroke: cssVar("--muted-mark"), "stroke-width": 1, "stroke-dasharray": "3 3" }, svg);
 
-    const d = smilePts.map((p, i) => `${i ? "L" : "M"}${X(p.k)},${Y(p.fit)}`).join("");
-    el("path", { d, fill: "none", stroke: cssVar("--series-1"), "stroke-width": 2 }, svg);
+    // The fit is drawn continuously across the whole strike range, including
+    // where there is no market. That gap is the reason a fit exists, and it is
+    // also where a fit is least trustworthy.
+    const fitPath = [];
+    for (let i = 0; i <= 80; i++) {
+      const k = lerp(K_MIN, K_MAX, i / 80);
+      fitPath.push(`${i ? "L" : "M"}${X(k)},${Y(sviVol(k, smile.T, marketCtx()))}`);
+    }
+    el("path", { d: fitPath.join(""), fill: "none",
+      stroke: cssVar("--series-1"), "stroke-width": 2 }, svg);
 
+    // ⚠️ A QUOTE IS A BAND, NOT A POINT. Drawing the mid as a dot hides the
+    //    width of the market, which is exactly the quantity that decides
+    //    whether any of this is tradeable.
     smilePts.forEach((p) => {
-      el("circle", { cx: X(p.k), cy: Y(p.mkt), r: 4,
-        fill: cssVar("--series-2"), stroke: cssVar("--surface-panel"), "stroke-width": 2 }, svg);
+      el("line", { x1: X(p.k), y1: Y(p.bid), x2: X(p.k), y2: Y(p.ask),
+        stroke: cssVar("--series-2"), "stroke-width": 1.5, opacity: 0.75 }, svg);
+      el("circle", { cx: X(p.k), cy: Y(p.mid), r: 2.4, fill: cssVar("--series-2") }, svg);
     });
 
     // Direct labels rather than a legend box, which is also the relief the
@@ -706,13 +949,13 @@
     const last = smilePts[smilePts.length - 1];
     // The fit runs through the quotes, so at the right edge these two labels
     // land on the same pixel. Push them apart rather than letting them stack.
-    const ly = Y(last.fit);
+    const ly = Y(sviVol(last.k, smile.T, marketCtx()));
     const l1 = el("text", { x: X(last.k) + 10, y: ly + 14, "font-size": 12,
       fill: cssVar("--series-1") }, svg);
     l1.textContent = "SVI fit";
     const l2 = el("text", { x: X(last.k) + 10, y: ly - 6, "font-size": 12,
       fill: cssVar("--series-2") }, svg);
-    l2.textContent = "quotes";
+    l2.textContent = "bid to ask";
 
     const atm = el("text", { x: X(0), y: pad.t - 10, "text-anchor": "middle",
       "font-size": 11, fill: cssVar("--ink-faint") }, svg);
@@ -727,10 +970,13 @@
       let best = smilePts[0];
       smilePts.forEach((p) => { if (Math.abs(p.k - kx) < Math.abs(best.k - kx)) best = p; });
       showTip(
-        `<span class="k">log-moneyness</span> ${fmt(best.k, 3)}<br>`
-        + `<span class="k">quote</span> ${(best.mkt * 100).toFixed(2)}%<br>`
+        `<span class="k">strike</span> ${best.K.toFixed(2)}<br>`
+        + `<span class="k">log-moneyness</span> ${fmt(best.k, 3)}<br>`
+        + `<span class="k">bid / ask</span> ${(best.bid * 100).toFixed(2)}% / ${(best.ask * 100).toFixed(2)}%<br>`
         + `<span class="k">fit</span> ${(best.fit * 100).toFixed(2)}%<br>`
-        + `<span class="k">residual</span> ${((best.mkt - best.fit) * 100).toFixed(2)} vol pts`,
+        + `<span class="k">residual</span> ${((best.mid - best.fit) * 100).toFixed(2)} vol pts<br>`
+        + (best.fit >= best.bid && best.fit <= best.ask
+            ? "Fit is inside the market." : "Fit is outside the market here."),
         e.clientX, e.clientY);
     });
     hit.addEventListener("pointerleave", hideTip);
@@ -741,7 +987,7 @@
     if (!svg || !smilePts.length) return;
     clear(svg);
     const W = 720, H = 120, pad = { l: 52, r: 96, t: 14, b: 26 };
-    const res = smilePts.map((p) => (p.mkt - p.fit) * 100);
+    const res = smilePts.map((p) => (p.mid - p.fit) * 100);
     const m = Math.max(0.6, Math.max.apply(null, res.map(Math.abs)) * 1.2);
     const X = (k) => pad.l + (k - K_MIN) / (K_MAX - K_MIN) * (W - pad.l - pad.r);
     const Y = (v) => pad.t + (1 - (v + m) / (2 * m)) * (H - pad.t - pad.b);
@@ -769,7 +1015,7 @@
     const host = document.getElementById("smile-controls");
     if (!host) return;
     host.innerHTML = '<span class="control-label">Expiry</span>'
-      + EXPIRIES.map((x, i) => `<button type="button" data-t="${x.T}" aria-pressed="${i === 2}">${x.label}</button>`).join("");
+      + EXPIRIES.map((x) => `<button type="button" data-t="${x.T}" aria-pressed="${Math.abs(x.T - smile.T) < 1e-9}">${x.label}</button>`).join("");
     host.querySelectorAll("[data-t]").forEach((b) => {
       b.addEventListener("click", () => {
         smile.T = parseFloat(b.dataset.t);
@@ -1110,7 +1356,7 @@
      the prices come from the closed form, and the "what the skew is worth"
      number is the same trade repriced with the smile switched off. */
 
-  const R = 0.043;          // financing rate, stated rather than hidden
+  const R = R_RATE;
   const Z25 = 0.6744897501960817;   // the standard normal quantile at 75%
 
   function normCdf(x) {
@@ -1359,7 +1605,9 @@ put  = e^(−rT)[K·N(−d₂) − F·N(−d₁)]</pre>
   /* -------------------------------------------------------------- wiring */
 
   function drawAll() {
+    lastQuotes = quoteSurface();
     marketNote();
+    renderDiagnostics();
     P.renderStats();
     P.renderPipeline();
     P.drawTape();
