@@ -219,6 +219,25 @@ html { scroll-behavior: smooth; }
   html { scroll-behavior: auto; }
 }
 
+
+/* A line at the top saying what this page is, and where the longer version
+   lives. It sits above the first section rather than inside the masthead, so
+   the masthead stays the person and this stays the navigation advice. */
+
+.page-note {
+  margin: 2.6rem 0 0;
+  padding-left: 0.95rem;
+  border-left: 2px solid var(--accent);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+@media (min-width: 82rem) {
+  /* main already carries the top margin the fixed nav vacated. */
+  .page-note { margin-top: 0; }
+}
+
 /* ---------- sections ---------- */
 
 section { margin-top: 4rem; }
