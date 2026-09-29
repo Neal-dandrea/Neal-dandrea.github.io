@@ -9,9 +9,13 @@ applications.
 build step and no framework, so the page renders as soon as the HTML arrives and
 there is nothing to break in six months.
 
-`platform.html`, `platform.css` and `platform.js` are a separate page, described
-at the bottom of this file. The main page loads no JavaScript beyond the small
-expand-and-collapse control.
+`platform.html`, `robotics.html` and `models.html` are three walkthrough pages,
+described at the bottom of this file. They share `viz.css` and each has its own
+JavaScript. The main page loads no JavaScript at all beyond the small
+expand-and-collapse control, so the three animated teasers on it are CSS only.
+
+`DESIGN-NOTES.md` records what was added and why one approach was taken over
+another. Read it before undoing something that looks arbitrary.
 
 ## Editing it
 
@@ -194,7 +198,7 @@ Four things to know before editing `platform.js`:
   number that discredits every other number on the page.
 
 Colors come from `style.css` where they can, and the chart palette in
-`platform.css` was checked against this site's own light and dark surfaces
+`viz.css` was checked against this site's own light and dark surfaces
 rather than assumed. Light mode is below the contrast threshold for two of the
 three series, which is why every series carries a direct label rather than
 relying on a legend.
