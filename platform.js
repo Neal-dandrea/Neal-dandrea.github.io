@@ -243,8 +243,18 @@
 
   /* -------------------------------------------------------- 02 live tape - */
 
+  // ⚠️ THE NUMBERS HERE ARE A LEGIBILITY CHOICE, NOT A MARKET ONE. At 30 ticks
+  //    to a bar and a 6-cent step, one tick moved the drawing by about two
+  //    pixels and took six seconds to complete a candle, so pausing looked
+  //    identical to running and the single-tick button appeared to do nothing.
+  //    Fifteen larger ticks make one step unmistakable, which is the whole
+  //    point of the panel.
+  const TICKS_PER_BAR = 15;
+  const TICK_MS = 190;
+
   const tape = {
-    bars: [], forming: null, price: 100, playing: true, r: rng(90210), ticks: 0,
+    bars: [], forming: null, price: 100, playing: true, r: rng(90210),
+    flash: 0,          // counts down after a step, so a single tick is visible
   };
 
   function newBar(px) {
@@ -256,8 +266,8 @@
     tape.price = 208.4;
     for (let i = 0; i < 34; i++) {
       const b = newBar(tape.price);
-      for (let j = 0; j < 30; j++) {
-        tape.price += gauss(tape.r) * 0.06 + 0.004;
+      for (let j = 0; j < TICKS_PER_BAR; j++) {
+        tape.price += gauss(tape.r) * 0.085 + 0.006;
         b.h = Math.max(b.h, tape.price);
         b.l = Math.min(b.l, tape.price);
       }
@@ -268,13 +278,14 @@
   }
 
   function tapeStep() {
-    tape.price += gauss(tape.r) * 0.06 + 0.004;
+    tape.price += gauss(tape.r) * 0.085 + 0.006;
     const f = tape.forming;
     f.c = tape.price;
     f.h = Math.max(f.h, tape.price);       // high and low only ever ratchet out
     f.l = Math.min(f.l, tape.price);
     f.n++;
-    if (f.n >= 30) {                        // the minute rolls over
+    tape.flash = 1;
+    if (f.n >= TICKS_PER_BAR) {             // the minute rolls over
       tape.bars.push(f);
       if (tape.bars.length > 34) tape.bars.shift();
       tape.forming = newBar(tape.price);
@@ -344,8 +355,42 @@
     ctx.textAlign = "right";
     ctx.fillText("forming", Math.min(fx - 6, w - padR - 4), padT + 10);
     ctx.textAlign = "left";
+
+    // The last price, drawn across the panel. One tick moves this line and its
+    // label, which is what makes a single step visible at all.
+    const py = y(tape.price);
+    ctx.strokeStyle = cssVar("--accent");
+    ctx.globalAlpha = 0.55;
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.moveTo(padL, py);
+    ctx.lineTo(w - padR, py);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = cssVar("--accent");
+    ctx.fillRect(w - padR + 2, py - 8, padR - 6, 16);
+    ctx.fillStyle = cssVar("--paper");
+    ctx.fillText(tape.price.toFixed(2), w - padR + 6, py + 4);
+
+    // A ring on the tick that just landed, so one step reads as an event.
+    if (tape.flash > 0) {
+      ctx.strokeStyle = cssVar("--accent");
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(fx, py, 6, 0, Math.PI * 2);
+      ctx.stroke();
+      tape.flash = Math.max(0, tape.flash - 0.34);
+    }
+
     ctx.fillStyle = cssVar("--ink-faint");
-    ctx.fillText(`tick ${tape.forming.n}/30 of this bar`, padL, h - 8);
+    ctx.fillText(`tick ${tape.forming.n} of ${TICKS_PER_BAR} in this bar`, padL, h - 8);
+
+    if (!tape.playing) {
+      ctx.fillStyle = cssVar("--accent");
+      ctx.fillText("PAUSED", padL, padT + 10);
+    }
   }
 
   function tapeControls() {
@@ -353,21 +398,37 @@
     if (!host) return;
     host.innerHTML = '<span class="control-label">Simulated tape</span>'
       + '<button type="button" id="tape-play" aria-pressed="true">Pause</button>'
-      + '<button type="button" id="tape-step">Single tick</button>';
-    document.getElementById("tape-play").addEventListener("click", function () {
+      + '<button type="button" id="tape-step">Single tick</button>'
+      + '<span class="control-label" id="tape-state" role="status">running</span>';
+
+    const state = () => {
+      const b = document.getElementById("tape-play");
+      b.textContent = tape.playing ? "Pause" : "Play";
+      b.setAttribute("aria-pressed", String(tape.playing));
+      document.getElementById("tape-state").textContent =
+        tape.playing ? "running" : "paused, one tick at a time";
+      drawTape();
+    };
+
+    document.getElementById("tape-play").addEventListener("click", () => {
       tape.playing = !tape.playing;
-      this.textContent = tape.playing ? "Pause" : "Play";
-      this.setAttribute("aria-pressed", String(tape.playing));
+      state();
     });
-    document.getElementById("tape-step").addEventListener("click", function () {
-      tapeStep(); drawTape();
+
+    // Stepping while it is running does nothing a viewer can see, because the
+    // next frame overwrites it immediately. So stepping pauses first.
+    document.getElementById("tape-step").addEventListener("click", () => {
+      tape.playing = false;
+      tapeStep();
+      state();
     });
   }
 
   window.__platform = { rng, gauss, clamp, lerp, fmt, comma, cssVar, el, clear,
     showTip, hideTip, fitCanvas, seqColor, mixHex, sviVol, sviParams, CTX, REGIMES,
     K_MIN, K_MAX, T_MIN, T_MAX, renderStats, renderPipeline,
-    tape, tapeInit, tapeStep, drawTape, tapeControls, tip };
+    tape, tapeInit, tapeStep, drawTape, tapeControls, tip,
+    TICKS_PER_BAR, TICK_MS };
 })();
 
 /* ---------------------------------------------------------------------- */
@@ -1785,7 +1846,7 @@ put  = e^(−rT)[K·N(−d₂) − F·N(−d₁)]</pre>
       const dt = now - last; last = now;
       if (P.tape.playing && onScreen && !document.hidden) {
         acc += dt;
-        while (acc > 220) { P.tapeStep(); acc -= 220; }
+        while (acc > P.TICK_MS) { P.tapeStep(); acc -= P.TICK_MS; }
         P.drawTape();
       }
       requestAnimationFrame(loop);
