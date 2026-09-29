@@ -24,8 +24,9 @@
   <h1>Market data platform</h1>
   <p class="standfirst">
     A walkthrough of the kind of work behind the market data platform I built at
-    EQ Risk Management Consulting. Eight panels, from a raw tick to a volatility
-    surface to a backtest that mostly says no.
+    EQ Risk Management Consulting. Nine panels, from a raw tick to a volatility
+    surface to a worked trade priced off it, by way of a backtest that mostly
+    says no.
   </p>
 
   <aside class="disclaimer" role="note" aria-labelledby="disclaimer-title">
@@ -61,6 +62,7 @@
     <li><a href="#backtest">Backtest</a></li>
     <li><a href="#ablation">Ablation</a></li>
     <li><a href="#breadth">Breadth</a></li>
+    <li><a href="#trade">Worked trade</a></li>
   </ul>
 </nav>
 
@@ -120,6 +122,12 @@
     across every strike and every expiry and you get a surface. It is the single
     most useful picture in options because it says what the market expects, not
     what already happened.
+  </p>
+  <p class="panel-lede">
+    Pick a name and a date. The five dates are months apart and were chosen
+    because the surfaces look nothing like each other. Everything below this
+    point, including the worked trade at the end, is priced off whichever one is
+    selected.
   </p>
 
   <div class="controls" id="surface-controls"></div>
@@ -284,6 +292,32 @@
       independent evidence about the ones you have.
     </figcaption>
   </figure>
+</section>
+
+<section class="panel wide" id="trade">
+  <p class="panel-num">09</p>
+  <h2>Using the surface: a worked trade, with the arithmetic</h2>
+  <p class="panel-lede">
+    A surface is only worth fitting if a number comes off it that you could act
+    on. This prices a three-month risk reversal on the selected name and date,
+    step by step, and then does the thing most write-ups skip, which is
+    subtracting what it costs to put on. Change the underlying or the date above
+    and every number here moves.
+  </p>
+
+  <div class="trade-layout">
+    <div id="trade-steps" class="trade-steps"></div>
+    <figure class="viz payoff">
+      <svg id="payoff-svg" viewBox="0 0 420 300" role="img"
+           aria-label="Profit and loss at expiry for a short put and long call against the underlying price"></svg>
+      <figcaption>
+        Flat between the strikes, because between them both options expire
+        worthless and you keep the premium. The line on the left has no floor,
+        which is the whole risk of the position and the reason the skew is
+        priced where it is.
+      </figcaption>
+    </figure>
+  </div>
 </section>
 
 <section class="panel closing">

@@ -186,6 +186,107 @@ figure.viz figcaption {
 
 .cue { margin-left: 0.3rem; padding: 0.1rem 0.55rem; font-size: 0.78rem; }
 
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+.picker + .picker { margin-left: 1.4rem; }
+
+.market-note {
+  flex-basis: 100%;
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+.market-note strong { color: var(--ink); }
+
+/* ---------- worked trade ---------- */
+
+.trade-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1.8rem;
+  align-items: start;
+  margin-top: 1.6rem;
+}
+
+.payoff { position: sticky; top: 1rem; margin-top: 0; }
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.steps > li {
+  padding: 0 0 1.4rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1.4rem;
+}
+.steps > li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.steps h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.steps p { margin: 0 0 0.7rem; font-size: 0.93rem; color: var(--ink-soft); }
+.steps p:last-child { margin-bottom: 0; }
+
+.steps pre {
+  margin: 0 0 0.8rem;
+  padding: 0.6rem 0.8rem;
+  overflow-x: auto;
+  border-left: 2px solid var(--rule);
+  background: var(--surface-panel);
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+table.nums {
+  width: 100%;
+  margin: 0 0 0.8rem;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+table.nums th {
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-align: right;
+  color: var(--ink-faint);
+}
+table.nums th:first-child { text-align: left; }
+table.nums td {
+  padding: 0.3rem 0.5rem 0.3rem 0;
+  border-bottom: 1px solid var(--rule);
+  text-align: right;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+table.nums td:first-child { text-align: left; }
+table.nums tr:last-child td { border-bottom: none; }
+table.nums tr.hl td { color: var(--ink); font-weight: 600; }
+table.nums td.v { font-variant-numeric: tabular-nums; }
+
+.steps .aside {
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--accent);
+  font-size: 0.89rem;
+}
+.steps .verdict {
+  font-weight: 600;
+  color: var(--ink);
+}
+
 /* ---------- stat tiles ---------- */
 
 .stat-row {
@@ -318,6 +419,9 @@ figure.viz figcaption {
 
 @media (max-width: 54rem) {
   .surface-layout { grid-template-columns: 1fr; }
+  .trade-layout { grid-template-columns: 1fr; }
+  .payoff { position: static; }
+  .picker + .picker { margin-left: 0; }
   .reading { padding-top: 0; }
 }
 

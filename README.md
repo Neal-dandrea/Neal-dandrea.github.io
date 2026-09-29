@@ -164,7 +164,14 @@ generator, so the page is identical for every visitor and nothing leaves it.
 The disclaimer at the top is not decoration; if the page ever gains a figure
 that is not synthetic, the disclaimer stops being true and has to change first.
 
-Two things to know before editing `platform.js`:
+The teaser surface on the main page is a still of the same model, generated
+once and baked into `index.html` as inline SVG. Its fills are fourteen buckets
+of one ramp, declared in `style.css` so dark mode restates them rather than
+inverting them, and each bucket strokes itself so adjacent quads do not leave
+hairline gaps. Regenerating it means re-running the generator in the commit
+that added it; there is no build step that does it for you.
+
+Three things to know before editing `platform.js`:
 
 - **The SVI wing slope has to carry a factor of T.** Total implied variance is
   roughly `T(atm + s·k)^2`, so `b` scales with time to expiry. A `b` that does
@@ -173,6 +180,11 @@ Two things to know before editing `platform.js`:
 - **Section ids and element ids share a namespace.** `renderBreadth` once
   replaced the whole section rather than its figure, because both carried
   `id="breadth"`, and the heading silently disappeared.
+- **The date multipliers are damped by each name's own level.** Volatility of
+  volatility falls as the level rises, so a selloff roughly doubles the index
+  and does much less to a name already trading at 42. Applied flat, the selloff
+  date put NVDA's three-month at-the-money vol at 94%, which is the kind of
+  number that discredits every other number on the page.
 
 Colours come from `style.css` where they can, and the chart palette in
 `platform.css` was checked against this site's own light and dark surfaces

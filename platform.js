@@ -107,10 +107,27 @@
      Implied vol is sqrt(w / T). This is the textbook form, and it is here
      because it produces the right SHAPE — a skewed smile that flattens with
      maturity — not because it is anybody's calibration. */
-  function sviParams(T, regime) {
-    const ev = regime === "event" ? Math.exp(-Math.pow((T - 0.06) / 0.05, 2)) * 0.075 : 0;
-    const stress = regime === "stress" ? 0.10 * Math.exp(-T * 0.9) : 0;
-    const atm = 0.175 + 0.045 * Math.sqrt(T) + ev + stress;      // ATM vol
+  /* A market context. The panels used to pass a regime name; they now pass one
+     of these, so a symbol and a date can move the surface independently.
+       base   ATM level at the short end
+       term   how fast ATM vol rises with maturity
+       skew   vol per unit log-moneyness, the steepness of the smile
+       evt    a bump localised near one expiry, an earnings date or a vote
+       str    a short-dated add-on, what a selloff does to the front of the curve
+  */
+  const CTX = (o) => Object.assign({ base: 0.175, term: 0.045, skew: 0.42, evt: 0, str: 0 }, o);
+
+  const REGIMES = {
+    calm:   CTX({}),
+    event:  CTX({ evt: 0.075 }),
+    stress: CTX({ str: 0.10, skew: 0.54 }),
+  };
+
+  function sviParams(T, ctx) {
+    ctx = ctx || REGIMES.calm;
+    const ev = ctx.evt ? Math.exp(-Math.pow((T - 0.06) / 0.05, 2)) * ctx.evt : 0;
+    const stress = ctx.str ? ctx.str * Math.exp(-T * 0.9) : 0;
+    const atm = ctx.base + ctx.term * Math.sqrt(T) + ev + stress;      // ATM vol
 
     // ⚠️ b SCALES WITH T, and getting this wrong is the classic way to draw a
     //    surface that looks plausible and is nonsense. Total variance w is
@@ -119,9 +136,8 @@
     //    short end. A first pass here held b nearly constant and produced a
     //    284% one-week wing, which is the sort of number a real surface fitter
     //    rejects rather than plots.
-    const skew = 0.42 + (regime === "stress" ? 0.12 : 0);        // vol per unit k
-    const b = 2 * T * atm * skew;
-    const rho = clamp(-0.72 + 0.26 * T - (regime === "stress" ? 0.12 : 0), -0.92, -0.18);
+    const b = 2 * T * atm * ctx.skew;
+    const rho = clamp(-0.72 + 0.26 * T - (ctx.str ? 0.12 : 0), -0.92, -0.18);
     const m = -0.012;
     const sigma = 0.055 + 0.16 * Math.sqrt(T);
     const w0 = T * atm * atm;
@@ -129,8 +145,8 @@
     return { a, b, rho, m, sigma };
   }
 
-  function sviVol(k, T, regime) {
-    const p = sviParams(T, regime || "calm");
+  function sviVol(k, T, ctx) {
+    const p = sviParams(T, ctx);
     const w = p.a + p.b * (p.rho * (k - p.m) + Math.sqrt((k - p.m) * (k - p.m) + p.sigma * p.sigma));
     return Math.sqrt(Math.max(w, 1e-6) / T);
   }
@@ -200,8 +216,11 @@
         // when the visitor has asked for less motion.
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
           const dot = el("circle", { r: 2.6, cy: 82, fill: accent, opacity: 0.85 }, svg);
+          // All five start together. Staggering them made the diagram look like
+          // five unrelated animations rather than one packet moving through a
+          // pipeline in step.
           const an = el("animate", { attributeName: "cx", from: x1, to: x2,
-            dur: "1.5s", begin: `${i * 0.38}s`, repeatCount: "indefinite" }, dot);
+            dur: "1.5s", begin: "0s", repeatCount: "indefinite" }, dot);
           an.setAttribute("keyTimes", "0;1");
         }
       }
@@ -337,7 +356,7 @@
   }
 
   window.__platform = { rng, gauss, clamp, lerp, fmt, comma, cssVar, el, clear,
-    showTip, hideTip, fitCanvas, seqColor, mixHex, sviVol, sviParams,
+    showTip, hideTip, fitCanvas, seqColor, mixHex, sviVol, sviParams, CTX, REGIMES,
     K_MIN, K_MAX, T_MIN, T_MAX, renderStats, renderPipeline,
     tape, tapeInit, tapeStep, drawTape, tapeControls, tip };
 })();
@@ -347,12 +366,64 @@
   "use strict";
   const P = window.__platform;
   const { clamp, lerp, fmt, comma, cssVar, el, clear, showTip, hideTip,
-          fitCanvas, seqColor, sviVol, rng, gauss,
+          fitCanvas, seqColor, sviVol, rng, gauss, CTX, REGIMES,
           K_MIN, K_MAX, T_MIN, T_MAX } = P;
+
+  /* ------------------------------------------------------------ markets --
+     Five names and five dates, months apart. The dates are chosen so the
+     surfaces do not look like each other: a quiet tape, a selloff, the run-up
+     to an earnings print, the collapse after it, and a nervous drift. Spot
+     levels are round numbers and are not anybody's marks. */
+
+  const NAMES = {
+    SPX:  { label: "SPX",  spot: 5480, base: 0.135, term: 0.055, skew: 0.62,
+            note: "An index, so the steepest skew on the board, because everyone hedges the same way" },
+    AAPL: { label: "AAPL", spot: 232,  base: 0.225, term: 0.040, skew: 0.34,
+            note: "A large-cap single name with a moderate tilt" },
+    XLE:  { label: "XLE",  spot: 92,   base: 0.255, term: 0.030, skew: 0.28,
+            note: "A sector ETF, flatter than the index and higher in level" },
+    NVDA: { label: "NVDA", spot: 128,  base: 0.425, term: 0.020, skew: 0.26,
+            note: "A high-beta single name, a tall surface with a near-symmetric smile" },
+    TSLA: { label: "TSLA", spot: 246,  base: 0.520, term: 0.010, skew: 0.20,
+            note: "The highest level here and the flattest tilt, because the fear is two-sided" },
+  };
+
+  const DATES = {
+    "2025-01-17": { label: "17 Jan 2025", lvl: 0.82, evt: 0,     str: 0,    skewMul: 0.95,
+                    note: "a quiet tape. Low level, upward-sloping term structure, textbook shape." },
+    "2025-04-04": { label: "4 Apr 2025",  lvl: 1.95, evt: 0,     str: 0.13, skewMul: 1.35,
+                    note: "a selloff. The whole surface lifts, the front lifts most, and the skew steepens." },
+    "2025-07-25": { label: "25 Jul 2025", lvl: 1.05, evt: 0.085, str: 0,    skewMul: 1.0,
+                    note: "an earnings print inside the front month. One expiry stands proud of its neighbours." },
+    "2025-10-31": { label: "31 Oct 2025", lvl: 0.74, evt: 0,     str: -0.035, skewMul: 0.9,
+                    note: "the crush after the event. The front end collapses and the term structure steepens upward." },
+    "2026-02-27": { label: "27 Feb 2026", lvl: 1.28, evt: 0.03,  str: 0.04, skewMul: 1.15,
+                    note: "a nervous drift. Elevated everywhere without a single dominant event." },
+  };
+
+  const market = { sym: "SPX", date: "2025-01-17" };
+
+  /* ⚠️ THE DATE MULTIPLIERS ARE DAMPED BY THE NAME'S OWN LEVEL, and without
+     that the page prints numbers no surface has ever shown. A selloff roughly
+     doubles index volatility, but it does not double a name already trading at
+     42, because volatility of volatility falls as the level rises. Applied
+     flat, the selloff date put NVDA's three-month at-the-money vol at 94%,
+     which is the sort of figure that discredits everything around it. */
+  function marketCtx(symKey, dateKey) {
+    const n = NAMES[symKey || market.sym], d = DATES[dateKey || market.date];
+    const damp = 0.22 / (0.12 + n.base);        // ~0.86 for the index, ~0.40 for NVDA
+    return CTX({
+      base: n.base * (1 + (d.lvl - 1) * damp),
+      term: n.term * (d.str < 0 ? 1.8 : 1),     // a crushed front end steepens the slope
+      skew: n.skew * d.skewMul,
+      evt: d.evt * (n.base / 0.2) * damp,       // an event moves a jumpy name further
+      str: d.str * damp,
+    });
+  }
 
   /* ------------------------------------------------------- 03 vol surface */
 
-  const surf = { yaw: -0.85, tilt: 0.52, regime: "calm", cue: null, drag: null };
+  const surf = { yaw: -0.85, tilt: 0.52, cue: null, drag: null };
   const NK = 30, NT = 20;
 
   function surfaceGrid() {
@@ -362,7 +433,7 @@
       const T = T_MIN + (T_MAX - T_MIN) * Math.pow(i / (NT - 1), 1.35);
       for (let j = 0; j < NK; j++) {
         const k = lerp(K_MIN, K_MAX, j / (NK - 1));
-        row.push({ k, T, v: sviVol(k, T, surf.regime) });
+        row.push({ k, T, v: sviVol(k, T, marketCtx()) });
       }
       pts.push(row);
     }
@@ -482,19 +553,28 @@
     const host = document.getElementById("surface-controls");
     if (!host) return;
     host.innerHTML =
-      '<span class="control-label">Market state</span>'
-      + '<button type="button" data-regime="calm" aria-pressed="true">Calm</button>'
-      + '<button type="button" data-regime="event">Event in the front month</button>'
-      + '<button type="button" data-regime="stress">Selloff</button>'
-      + '<span class="control-label" style="margin-left:auto">Drag the surface to rotate</span>';
-    host.querySelectorAll("[data-regime]").forEach((b) => {
-      b.addEventListener("click", () => {
-        surf.regime = b.dataset.regime;
-        host.querySelectorAll("[data-regime]").forEach((o) =>
+      '<div class="picker"><span class="control-label">Underlying</span>'
+      + Object.keys(NAMES).map((k) =>
+          `<button type="button" data-sym="${k}" aria-pressed="${k === market.sym}">${NAMES[k].label}</button>`).join("")
+      + '</div>'
+      + '<div class="picker"><span class="control-label">As of</span>'
+      + Object.keys(DATES).map((k) =>
+          `<button type="button" data-date="${k}" aria-pressed="${k === market.date}">${DATES[k].label}</button>`).join("")
+      + '</div>'
+      + '<p class="market-note" id="market-note"></p>';
+
+    function pick(attr, key) {
+      return (b) => {
+        market[key] = b.dataset[attr];
+        host.querySelectorAll(`[data-${attr}]`).forEach((o) =>
           o.setAttribute("aria-pressed", String(o === b)));
-        drawSurface(); drawSmile(); drawResid();
-      });
-    });
+        redrawMarket();
+      };
+    }
+    host.querySelectorAll("[data-sym]").forEach((b) =>
+      b.addEventListener("click", () => pick("sym", "sym")(b)));
+    host.querySelectorAll("[data-date]").forEach((b) =>
+      b.addEventListener("click", () => pick("date", "date")(b)));
 
     document.querySelectorAll(".cue").forEach((b) => {
       b.addEventListener("click", () => {
@@ -529,6 +609,23 @@
     });
   }
 
+  function marketNote() {
+    const n = document.getElementById("market-note");
+    if (!n) return;
+    const atm3m = sviVol(0, 0.25, marketCtx()) * 100;
+    n.innerHTML = `<strong>${NAMES[market.sym].label}, ${DATES[market.date].label}.</strong> `
+      + `${NAMES[market.sym].note}. ${DATES[market.date].note} `
+      + `Three-month at-the-money volatility here is <strong>${atm3m.toFixed(1)}%</strong>.`;
+  }
+
+  function redrawMarket() {
+    marketNote();
+    drawSurface();
+    drawSmile();
+    drawResid();
+    drawTrade();
+  }
+
   /* --------------------------------------------------------- 04 smile fit */
 
   const smile = { T: 0.25, r: rng(4242) };
@@ -539,11 +636,11 @@
   ];
 
   function smileData() {
-    const r = rng(Math.round(smile.T * 1000) + (surf.regime.length * 17));
+    const r = rng(Math.round(smile.T * 1000) + market.sym.length * 17 + market.date.length);
     const pts = [];
     for (let i = 0; i < 26; i++) {
       const k = lerp(K_MIN, K_MAX, i / 25);
-      const fit = sviVol(k, smile.T, surf.regime);
+      const fit = sviVol(k, smile.T, marketCtx());
       // Quotes are noisier in the wings, which is where the volume is thin.
       const wing = 1 + 2.4 * Math.pow(Math.abs(k) / 0.42, 2);
       pts.push({ k, fit, mkt: fit + gauss(r) * 0.0042 * wing });
@@ -685,13 +782,13 @@
 
   /* -------------------------------------------------------------- 05 skew */
 
-  function rr25(T, regime) {
+  function rr25(T, ctx) {
     // A 25-delta risk reversal, approximated by reading the fitted surface a
     // fixed number of standard deviations either side of the forward. Positive
     // means downside strikes are the more expensive ones.
-    const atm = sviVol(0, T, regime);
+    const atm = sviVol(0, T, ctx);
     const k = 0.66 * atm * Math.sqrt(T);
-    return (sviVol(-k, T, regime) - sviVol(k, T, regime)) * 100;
+    return (sviVol(-k, T, ctx) - sviVol(k, T, ctx)) * 100;
   }
 
   function drawSkew() {
@@ -700,14 +797,14 @@
     clear(svg);
     const W = 720, H = 320, pad = { l: 54, r: 150, t: 26, b: 38 };
     const series = [
-      { name: "calm day", regime: "calm", c: cssVar("--series-1") },
-      { name: "front-month event", regime: "event", c: cssVar("--series-2") },
-      { name: "selloff", regime: "stress", c: cssVar("--series-3") },
+      { name: "calm day", ctx: REGIMES.calm, c: cssVar("--series-1") },
+      { name: "front-month event", ctx: REGIMES.event, c: cssVar("--series-2") },
+      { name: "selloff", ctx: REGIMES.stress, c: cssVar("--series-3") },
     ];
     const Ts = [];
     for (let i = 0; i < 40; i++) Ts.push(T_MIN + (T_MAX - T_MIN) * Math.pow(i / 39, 1.3));
 
-    const all = series.flatMap((s) => Ts.map((T) => rr25(T, s.regime)));
+    const all = series.flatMap((s) => Ts.map((T) => rr25(T, s.ctx)));
     const yr = [Math.min.apply(null, all) * 0.9, Math.max.apply(null, all) * 1.08];
     const X = (T) => pad.l + Math.pow((T - T_MIN) / (T_MAX - T_MIN), 0.55) * (W - pad.l - pad.r);
     const Y = (v) => pad.t + (1 - (v - yr[0]) / (yr[1] - yr[0])) * (H - pad.t - pad.b);
@@ -731,7 +828,7 @@
     ylab.textContent = "25-delta risk reversal, vol points";
 
     series.forEach((s) => {
-      const d = Ts.map((T, i) => `${i ? "L" : "M"}${X(T)},${Y(rr25(T, s.regime))}`).join("");
+      const d = Ts.map((T, i) => `${i ? "L" : "M"}${X(T)},${Y(rr25(T, s.ctx))}`).join("");
       el("path", { d, fill: "none", stroke: s.c, "stroke-width": 2 }, svg);
     });
 
@@ -739,14 +836,14 @@
     // so the labels have to be pushed apart or they print on top of each other,
     // which is what happens if you just place each one at its own line's y.
     const labels = series
-      .map((s) => ({ s, y: Y(rr25(T_MAX, s.regime)) }))
+      .map((s) => ({ s, y: Y(rr25(T_MAX, s.ctx)) }))
       .sort((a, b) => a.y - b.y);
     const MIN_GAP = 15;
     for (let i = 1; i < labels.length; i++) {
       if (labels[i].y - labels[i - 1].y < MIN_GAP) labels[i].y = labels[i - 1].y + MIN_GAP;
     }
     labels.forEach((L) => {
-      const ly = Y(rr25(T_MAX, L.s.regime));
+      const ly = Y(rr25(T_MAX, L.s.ctx));
       if (Math.abs(ly - L.y) > 2) {
         el("line", { x1: X(T_MAX) + 3, y1: ly, x2: X(T_MAX) + 7, y2: L.y,
           stroke: L.s.c, "stroke-width": 1, opacity: 0.6 }, svg);
@@ -767,7 +864,7 @@
       cross = el("line", { x1: X(T), y1: pad.t, x2: X(T), y2: H - pad.b,
         stroke: cssVar("--muted-mark"), "stroke-width": 1, "stroke-dasharray": "3 3" }, svg);
       showTip(`<span class="k">expiry</span> ${(T * 12).toFixed(1)} months<br>`
-        + series.map((s) => `<span class="k">${s.name}</span> ${fmt(rr25(T, s.regime), 2)}`).join("<br>"),
+        + series.map((s) => `<span class="k">${s.name}</span> ${fmt(rr25(T, s.ctx), 2)}`).join("<br>"),
         e.clientX, e.clientY);
     });
     hit.addEventListener("pointerleave", () => { if (cross) { cross.remove(); cross = null; } hideTip(); });
@@ -1002,9 +1099,267 @@
        </p>`;
   }
 
+  /* ------------------------------------------------ 09 the worked trade --
+
+     Black-76 on the forward, which is the right frame for options on an index
+     or a future and keeps the carry assumptions in one place instead of
+     scattered through the greeks.
+
+     Everything below is arithmetic the reader can check: the strikes come from
+     inverting delta, the vols come from the fitted surface at those strikes,
+     the prices come from the closed form, and the "what the skew is worth"
+     number is the same trade repriced with the smile switched off. */
+
+  const R = 0.043;          // financing rate, stated rather than hidden
+  const Z25 = 0.6744897501960817;   // the standard normal quantile at 75%
+
+  function normCdf(x) {
+    // Abramowitz and Stegun 26.2.17, good to about 7.5e-8, which is far finer
+    // than the vols this is fed.
+    const s = x < 0 ? -1 : 1;
+    const z = Math.abs(x) / Math.SQRT2;
+    const t = 1 / (1 + 0.3275911 * z);
+    const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t
+      - 0.284496736) * t + 0.254829592) * t * Math.exp(-z * z);
+    return 0.5 * (1 + s * y);
+  }
+  const normPdf = (x) => Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+
+  function black76(F, K, T, vol, isCall) {
+    const sT = vol * Math.sqrt(T);
+    const d1 = (Math.log(F / K) + 0.5 * vol * vol * T) / sT;
+    const d2 = d1 - sT;
+    const df = Math.exp(-R * T);
+    const price = isCall ? df * (F * normCdf(d1) - K * normCdf(d2))
+                         : df * (K * normCdf(-d2) - F * normCdf(-d1));
+    return {
+      price, d1, d2,
+      delta: df * (isCall ? normCdf(d1) : normCdf(d1) - 1),
+      vega: df * F * Math.sqrt(T) * normPdf(d1) * 0.01,    // per vol POINT
+      gamma: df * normPdf(d1) / (F * sT),
+    };
+  }
+
+  /* The 25-delta strike is a fixed point, because the vol you price it at
+     depends on the strike you are solving for. Six passes is plenty; it moves
+     by less than a basis point after three. */
+  function delta25Strike(F, T, isCall, ctx) {
+    let vol = sviVol(0, T, ctx), K = F;
+    for (let i = 0; i < 6; i++) {
+      const d1 = isCall ? -Z25 : Z25;
+      K = F * Math.exp(0.5 * vol * vol * T - d1 * vol * Math.sqrt(T));
+      vol = sviVol(Math.log(K / F), T, ctx);
+    }
+    return { K, vol };
+  }
+
+  const TRADE_T = 0.25;
+  const SPREAD_VOL_PTS = 0.35;     // half-spread per leg, in vol points
+
+  function tradeMath() {
+    const ctx = marketCtx();
+    const S = NAMES[market.sym].spot;
+    const F = S * Math.exp(R * TRADE_T);
+    const put = delta25Strike(F, TRADE_T, false, ctx);
+    const call = delta25Strike(F, TRADE_T, true, ctx);
+    const atmVol = sviVol(0, TRADE_T, ctx);
+
+    const pLeg = black76(F, put.K, TRADE_T, put.vol, false);
+    const cLeg = black76(F, call.K, TRADE_T, call.vol, true);
+
+    // Short the put, long the call: one contract each, 100 shares a contract.
+    const M = 100;
+    const credit = (pLeg.price - cLeg.price) * M;
+
+    // The same two strikes priced with the smile switched off. The difference
+    // is the part of the premium that exists only because the surface is
+    // skewed, which is the thing the trade is actually expressing.
+    const pFlat = black76(F, put.K, TRADE_T, atmVol, false);
+    const cFlat = black76(F, call.K, TRADE_T, atmVol, true);
+    const creditFlat = (pFlat.price - cFlat.price) * M;
+    const skewValue = credit - creditFlat;
+
+    const netDelta = (-pLeg.delta + cLeg.delta) * M;
+    const netVega = (-pLeg.vega + cLeg.vega) * M;
+    const netGamma = -pLeg.gamma + cLeg.gamma;          // per share, per F^2
+
+    // Dollar gamma, stated as the P&L a 1% move produces from curvature alone:
+    //   pnl = 1/2 · gamma · (dF)^2 · contract size,  with dF = 0.01F
+    const gammaPnl1pct = 0.5 * netGamma * Math.pow(0.01 * F, 2) * M;
+
+    const cost = (pLeg.vega + cLeg.vega) * SPREAD_VOL_PTS * M;
+
+    return { ctx, S, F, put, call, atmVol, pLeg, cLeg, credit, creditFlat,
+             skewValue, netDelta, netVega, netGamma, gammaPnl1pct, cost, M };
+  }
+
+  function drawTrade() {
+    const host = document.getElementById("trade-steps");
+    if (!host) return;
+    const t = tradeMath();
+    const sym = NAMES[market.sym].label;
+    const money = (x) => (x < 0 ? "\u2212$" : "$") + Math.abs(x).toFixed(0);
+    const money2 = (x) => (x < 0 ? "\u2212$" : "$") + Math.abs(x).toFixed(2);
+    const pc = (v) => (v * 100).toFixed(2) + "%";
+
+    host.innerHTML = `
+      <ol class="steps">
+        <li>
+          <h4>1. Start from the forward, not the spot</h4>
+          <p>Spot is ${money(t.S)}. Carry it out three months at ${(R * 100).toFixed(1)}%
+             and the forward is <strong>${money2(t.F)}</strong>. Every strike below is
+             quoted against that, so financing is stated once instead of leaking
+             into each greek.</p>
+          <pre>F = S·e^(rT) = ${t.S} × e^(${R}×${TRADE_T}) = ${t.F.toFixed(2)}</pre>
+        </li>
+        <li>
+          <h4>2. Ask the surface for the 25-delta strikes</h4>
+          <p>The strike and its volatility depend on each other, so this is
+             solved rather than looked up: guess a vol, get a strike, read the
+             surface at that strike, repeat. It settles in three passes.</p>
+          <pre>K = F·exp(½σ²T ∓ 0.6745·σ√T)</pre>
+          <table class="nums">
+            <tr><th></th><th>strike</th><th>vol from the surface</th></tr>
+            <tr><td>25-delta put</td><td>${t.put.K.toFixed(2)}</td><td>${pc(t.put.vol)}</td></tr>
+            <tr><td>at the money</td><td>${t.F.toFixed(2)}</td><td>${pc(t.atmVol)}</td></tr>
+            <tr><td>25-delta call</td><td>${t.call.K.toFixed(2)}</td><td>${pc(t.call.vol)}</td></tr>
+          </table>
+          <p class="aside">The gap between the first and last row is the skew:
+             <strong>${((t.put.vol - t.call.vol) * 100).toFixed(2)} volatility points</strong>.
+             That is the number the whole trade is about.</p>
+        </li>
+        <li>
+          <h4>3. Price both legs</h4>
+          <p>Black-76, one contract of each, 100 shares a contract.</p>
+          <pre>d₁ = [ln(F/K) + ½σ²T] / σ√T        d₂ = d₁ − σ√T
+call = e^(−rT)[F·N(d₁) − K·N(d₂)]
+put  = e^(−rT)[K·N(−d₂) − F·N(−d₁)]</pre>
+          <table class="nums">
+            <tr><th></th><th>d₁</th><th>d₂</th><th>price</th><th>per contract</th></tr>
+            <tr><td>put, ${t.put.K.toFixed(0)}</td><td>${t.pLeg.d1.toFixed(3)}</td>
+                <td>${t.pLeg.d2.toFixed(3)}</td><td>${money2(t.pLeg.price)}</td>
+                <td>${money(t.pLeg.price * t.M)}</td></tr>
+            <tr><td>call, ${t.call.K.toFixed(0)}</td><td>${t.cLeg.d1.toFixed(3)}</td>
+                <td>${t.cLeg.d2.toFixed(3)}</td><td>${money2(t.cLeg.price)}</td>
+                <td>${money(t.cLeg.price * t.M)}</td></tr>
+          </table>
+        </li>
+        <li>
+          <h4>4. The trade, and what the skew is actually worth</h4>
+          <p>Sell the put, buy the call. That is a risk reversal, and it is the
+             cleanest way to be short the skew.</p>
+          <table class="nums">
+            <tr><td>Premium taken in</td><td class="v">${money(t.credit)}</td></tr>
+            <tr><td>The same two strikes, priced flat at the ${pc(t.atmVol)} at-the-money vol</td>
+                <td class="v">${money(t.creditFlat)}</td></tr>
+            <tr class="hl"><td>Difference: the part that exists only because the surface is skewed</td>
+                <td class="v">${money(t.skewValue)}</td></tr>
+          </table>
+          <p class="aside">Price the same position off a single at-the-money
+             number and you misprice it by ${money(Math.abs(t.skewValue))} a
+             contract. That is the answer to why anyone fits a surface instead
+             of quoting one volatility.</p>
+        </li>
+        <li>
+          <h4>5. Hedge the direction out, because that is not the bet</h4>
+          <p>The package is born delta ${t.netDelta > 0 ? "long" : "short"}. Trade
+             ${Math.abs(t.netDelta).toFixed(0)} shares
+             ${t.netDelta > 0 ? "short" : "long"} against it and what is left is a
+             position in the shape of the surface.</p>
+          <table class="nums">
+            <tr><td>Net delta, shares</td><td class="v">${t.netDelta.toFixed(1)}</td></tr>
+            <tr><td>Vega of the short put, per vol point</td><td class="v">${money2(-t.pLeg.vega * t.M)}</td></tr>
+            <tr><td>Vega of the long call, per vol point</td><td class="v">${money2(t.cLeg.vega * t.M)}</td></tr>
+            <tr class="hl"><td>Net vega</td><td class="v">${money2(t.netVega)}</td></tr>
+            <tr><td>Gamma P&amp;L from a 1% move, curvature alone</td>
+                <td class="v">${money2(t.gammaPnl1pct)}</td></tr>
+          </table>
+          <p class="aside">The two vegas very nearly cancel, and that is the
+             point rather than an accident. Both legs sit at the same delta, so
+             they carry almost the same sensitivity to the <em>level</em> of
+             volatility, and what survives the subtraction is a bet on its
+             <em>shape</em>. Lift the whole surface by a point and this position
+             barely notices. Flatten the skew by a point and it pays.</p>
+        </li>
+        <li>
+          <h4>6. Now subtract what it costs to do</h4>
+          <p>At ${SPREAD_VOL_PTS} of a volatility point per leg, crossing the
+             spread on both legs costs <strong>${money(t.cost)}</strong>, against a
+             skew premium of ${money(t.skewValue)}.</p>
+          <p class="verdict">${
+            Math.abs(t.skewValue) > t.cost * 2.5
+              ? `Costs eat ${(100 * t.cost / Math.abs(t.skewValue)).toFixed(0)}% of the edge. Survivable, and worth carrying further.`
+              : `Costs eat ${(100 * t.cost / Math.abs(t.skewValue)).toFixed(0)}% of the edge. On this surface the trade is mostly a way to pay a market maker.`
+          }</p>
+        </li>
+        <li>
+          <h4>7. What you are actually short</h4>
+          <p>The premium is compensation, not a gift. Selling the ${t.put.K.toFixed(0)}
+             put means below that strike the losses run one-for-one with the
+             index while the call financing it expires worthless. The skew is
+             steep because that outcome is the one everybody is hedging, and a
+             model that says the skew is "too steep" is competing with everyone
+             who has already paid to be wrong about it.</p>
+          <p class="aside">Which is why the honest version of this analysis ends
+             at the ablation panel above rather than at a trade ticket.</p>
+        </li>
+      </ol>`;
+
+    drawPayoff(t);
+  }
+
+  function drawPayoff(t) {
+    const svg = document.getElementById("payoff-svg");
+    if (!svg) return;
+    clear(svg);
+    const W = 420, H = 300, pad = { l: 58, r: 20, t: 26, b: 34 };
+    const lo = t.F * 0.80, hi = t.F * 1.20;
+    const pts = [];
+    for (let i = 0; i <= 120; i++) {
+      const S = lerp(lo, hi, i / 120);
+      // At expiry: short put, long call, plus the premium taken in.
+      const pnl = (Math.max(0, S - t.call.K) - Math.max(0, t.put.K - S)) * t.M + t.credit;
+      pts.push({ S, pnl });
+    }
+    const ys = pts.map((p) => p.pnl);
+    const y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    const X = (S) => pad.l + (S - lo) / (hi - lo) * (W - pad.l - pad.r);
+    const Y = (v) => pad.t + (1 - (v - y0) / (y1 - y0)) * (H - pad.t - pad.b);
+    const faint = cssVar("--ink-faint"), grid = cssVar("--grid");
+
+    for (let i = 0; i <= 4; i++) {
+      const v = lerp(y0, y1, i / 4), y = Y(v);
+      el("line", { x1: pad.l, y1: y, x2: W - pad.r, y2: y, stroke: grid, "stroke-width": 1 }, svg);
+      const tx = el("text", { x: pad.l - 8, y: y + 4, "text-anchor": "end",
+        "font-size": 10.5, fill: faint }, svg);
+      tx.textContent = (v < 0 ? "\u2212$" : "$") + Math.abs(Math.round(v / 100) * 100).toLocaleString("en-US");
+    }
+    el("line", { x1: pad.l, y1: Y(0), x2: W - pad.r, y2: Y(0),
+      stroke: cssVar("--muted-mark"), "stroke-width": 1 }, svg);
+
+    [[t.put.K, "short put"], [t.F, "forward"], [t.call.K, "long call"]].forEach(([k, lab]) => {
+      if (k < lo || k > hi) return;
+      el("line", { x1: X(k), y1: pad.t, x2: X(k), y2: H - pad.b,
+        stroke: cssVar("--muted-mark"), "stroke-width": 1, "stroke-dasharray": "3 3" }, svg);
+      const tx = el("text", { x: X(k), y: H - pad.b + 15, "text-anchor": "middle",
+        "font-size": 10, fill: faint }, svg);
+      tx.textContent = k.toFixed(0);
+      const tl = el("text", { x: X(k), y: H - pad.b + 27, "text-anchor": "middle",
+        "font-size": 9.5, fill: faint }, svg);
+      tl.textContent = lab;
+    });
+
+    const d = pts.map((p, i) => `${i ? "L" : "M"}${X(p.S)},${Y(p.pnl)}`).join("");
+    el("path", { d, fill: "none", stroke: cssVar("--series-1"), "stroke-width": 2 }, svg);
+
+    const title = el("text", { x: pad.l, y: pad.t - 10, "font-size": 11, fill: faint }, svg);
+    title.textContent = "profit and loss at expiry, one contract each";
+  }
+
   /* -------------------------------------------------------------- wiring */
 
   function drawAll() {
+    marketNote();
     P.renderStats();
     P.renderPipeline();
     P.drawTape();
@@ -1016,6 +1371,7 @@
     drawDrawdown();
     drawAblation();
     renderBreadth();
+    drawTrade();
   }
 
   function init() {
