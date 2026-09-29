@@ -1,0 +1,340 @@
+/* Market data platform walkthrough — neal-dandrea.github.io/platform.html
+   Loads after style.css and inherits its tokens, so the type, the paper and the
+   accent are the ones the rest of the site already uses. Only the things a
+   dashboard needs are defined here. */
+
+.viz-root {
+  /* Categorical slots. Validated with the data-viz validator against THIS
+     site's surfaces rather than a generic one:
+       light  #f7f6f3  worst all-pairs CVD dE 9.2, normal-vision dE 24.0
+       dark   #101215  worst all-pairs CVD dE 9.4, normal-vision dE 20.9
+     Light mode warns on contrast for slots 2 and 3, so every series on this
+     page carries a direct label. That is the relief rule, not a decoration. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+
+  /* Sequential ramp for magnitude, one hue, light to dark. Used for the
+     surface, where height already carries the value and colour reinforces it. */
+  --seq-1: #f2d9c9;
+  --seq-2: #e0a988;
+  --seq-3: #c9784f;
+  --seq-4: #a94f2c;
+  --seq-5: #7d2f18;
+
+  --good: #1baf7a;
+  --muted-mark: #b8b6ae;
+  --forming: #d98b18;
+  --grid: rgba(22, 24, 28, 0.09);
+  --surface-panel: #fffefc;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .viz-root {
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+
+    --seq-1: #4a2418;
+    --seq-2: #7d3a22;
+    --seq-3: #b05a30;
+    --seq-4: #d98a55;
+    --seq-5: #f0c0a0;
+
+    --good: #199e70;
+    --muted-mark: #4f5560;
+    --forming: #e0a42e;
+    --grid: rgba(231, 233, 236, 0.10);
+    --surface-panel: #15181c;
+  }
+}
+
+:root[data-theme="dark"] .viz-root {
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --seq-1: #4a2418;
+  --seq-2: #7d3a22;
+  --seq-3: #b05a30;
+  --seq-4: #d98a55;
+  --seq-5: #f0c0a0;
+  --good: #199e70;
+  --muted-mark: #4f5560;
+  --forming: #e0a42e;
+  --grid: rgba(231, 233, 236, 0.10);
+  --surface-panel: #15181c;
+}
+
+/* ---------- page frame ---------- */
+
+body.platform { padding-bottom: 4rem; }
+
+/* style.css caps main, the masthead and the footer at the 34rem reading
+   measure, which is right for prose and too narrow for charts. On this page
+   the cap moves onto the panels themselves so that a 46rem panel and a 64rem
+   one can share the same centre line. */
+body.platform main,
+body.platform .masthead,
+body.platform footer { max-width: none; }
+
+body.platform footer > p { max-width: 46rem; margin-inline: auto; }
+
+.platform-head {
+  max-width: 46rem;
+  margin-inline: auto;
+}
+.backlink { margin: 0 0 1.5rem; font-size: 0.9rem; }
+.platform-head h1 { margin: 0 0 0.75rem; }
+
+.disclaimer {
+  margin: 2rem 0 0;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  background: var(--surface-panel);
+}
+
+.disclaimer h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.disclaimer h2::before { content: none; }
+.disclaimer p { margin: 0 0 0.7rem; font-size: 0.95rem; color: var(--ink-soft); }
+.disclaimer p:last-child { margin-bottom: 0; }
+.disclaimer strong { color: var(--ink); }
+.disclaimer-foot { font-style: italic; }
+
+.panel-nav { max-width: 46rem; margin-inline: auto; }
+
+/* ---------- panels ---------- */
+
+.panel {
+  max-width: 46rem;
+  margin: 0 auto 4.5rem;
+  padding-top: 1rem;
+}
+.panel.wide { max-width: 64rem; }
+
+.panel-num {
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+}
+
+.panel h2 { margin-top: 0; }
+.panel-lede { max-width: 34rem; color: var(--ink-soft); }
+
+figure.viz {
+  margin: 1.6rem 0 0;
+  padding: 1rem 1rem 0.4rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--surface-panel);
+}
+
+figure.viz svg, figure.viz canvas { display: block; width: 100%; height: auto; }
+figure.viz canvas { touch-action: pan-y; }
+
+figure.viz figcaption {
+  margin-top: 0.9rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--ink-faint);
+}
+
+/* ---------- controls ---------- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 1.2rem;
+  font-size: 0.85rem;
+}
+
+.controls button, .cue {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.controls button:hover, .cue:hover { border-color: var(--accent); color: var(--accent); }
+.controls button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
+}
+.controls button:focus-visible, .cue:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.controls .control-label { color: var(--ink-faint); }
+
+.cue { margin-left: 0.3rem; padding: 0.1rem 0.55rem; font-size: 0.78rem; }
+
+/* ---------- stat tiles ---------- */
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.9rem;
+  margin-top: 1.4rem;
+}
+
+.stat {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--surface-panel);
+}
+
+.stat .value {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.stat .unit { font-size: 0.85rem; color: var(--ink-faint); }
+.stat .label {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+/* ---------- pipeline diagram ---------- */
+
+.pipeline { padding: 0.4rem 0 0.2rem; }
+
+/* ---------- surface panel layout ---------- */
+
+.surface-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 1.6rem;
+  align-items: start;
+}
+
+.reading { padding-top: 1.6rem; }
+.reading h3 { margin: 0 0 0.8rem; font-size: 1.05rem; }
+
+.reading-list { margin: 0; }
+.reading-list dt {
+  margin-top: 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.reading-list dt:first-of-type { margin-top: 0; }
+.reading-list dd {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* ---------- breadth ---------- */
+
+.breadth { padding: 0.5rem 0 0.2rem; }
+
+.breadth-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+.breadth-row .n {
+  min-width: 6.5rem;
+  font-size: 1.35rem;
+  text-align: right;
+  letter-spacing: -0.01em;
+}
+.breadth-row .bar {
+  height: 0.85rem;
+  min-width: 2px;
+  border-radius: 0 3px 3px 0;
+}
+.breadth-row .what { font-size: 0.87rem; color: var(--ink-faint); }
+
+/* ---------- tooltip ---------- */
+
+.viz-tip {
+  position: fixed;
+  z-index: 40;
+  max-width: 16rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--surface-panel);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--ink);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+.viz-tip[data-open="true"] { opacity: 1; }
+.viz-tip .k { color: var(--ink-faint); }
+
+/* ---------- legend ---------- */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1.1rem;
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.legend i {
+  width: 0.85rem;
+  height: 0.2rem;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+/* ---------- closing ---------- */
+
+.closing { max-width: 46rem; }
+.closing p { max-width: 34rem; }
+.closing-links { margin-top: 1.4rem; font-size: 0.92rem; }
+
+/* ---------- narrow screens ---------- */
+
+@media (max-width: 54rem) {
+  .surface-layout { grid-template-columns: 1fr; }
+  .reading { padding-top: 0; }
+}
+
+@media (max-width: 40rem) {
+  /* The pipeline is five labelled boxes in a row. Scaled to a phone the labels
+     become unreadable, so it keeps its width and scrolls sideways instead. */
+  .pipeline { overflow-x: auto; }
+  .pipeline svg { min-width: 560px; }
+  .breadth-row { flex-wrap: wrap; }
+  .breadth-row .n { min-width: 5rem; font-size: 1.15rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viz-tip { transition: none; }
+}
+
+@media print {
+  .controls, .panel-nav, .cue { display: none; }
+  .panel { page-break-inside: avoid; }
+}

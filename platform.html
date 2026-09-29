@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Market Data Platform — Neal D'Andrea</title>
+<meta name="description" content="An illustrative walkthrough of the market data platform Neal D'Andrea built at EQ Risk Management Consulting: volatility surfaces, SVI fits, tick capture, bar assembly, backtesting with costs, and the evaluation work that retired most of the signals.">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="platform.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://neal-dandrea.github.io/platform.html">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://neal-dandrea.github.io/platform.html">
+<meta property="og:title" content="Market Data Platform — an illustrative walkthrough">
+<meta property="og:description" content="Volatility surfaces, SVI fits, tick capture and bar assembly, backtesting with costs, and the evaluation work that retired 13 of 14 candidate signals.">
+<meta property="og:image" content="https://neal-dandrea.github.io/og-card.jpg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="platform">
+
+<header class="masthead platform-head">
+  <p class="backlink"><a href="./">&larr; Neal D&rsquo;Andrea</a></p>
+  <h1>Market data platform</h1>
+  <p class="standfirst">
+    A walkthrough of the kind of work behind the market data platform I built at
+    EQ Risk Management Consulting. Eight panels, from a raw tick to a volatility
+    surface to a backtest that mostly says no.
+  </p>
+
+  <aside class="disclaimer" role="note" aria-labelledby="disclaimer-title">
+    <h2 id="disclaimer-title">What this is, and what it is not</h2>
+    <p>
+      <strong>This is not the platform.</strong> The production system is
+      proprietary and stays that way. Nothing on this page touches it. There is
+      no connection to the firm&rsquo;s data, no client information, and none of
+      the logic that decides anything.
+    </p>
+    <p>
+      What you are looking at is a <strong>visual analogue</strong>, built
+      standalone for this page. Every number is generated in your browser from
+      published textbook models and a seeded random number generator. It is
+      similar in nature to the real thing and a considerably lesser version of
+      it: the shapes, the vocabulary and the questions are the same, the
+      substance underneath is not.
+    </p>
+    <p class="disclaimer-foot">
+      Treat it as an illustration of what the work involves. Do not treat any
+      number on this page as a result, and do not trade on it.
+    </p>
+  </aside>
+</header>
+
+<nav class="sections panel-nav" aria-label="Panels">
+  <ul>
+    <li><a href="#capture">Capture</a></li>
+    <li><a href="#tape">Tape</a></li>
+    <li><a href="#surface">Vol surface</a></li>
+    <li><a href="#smile">Smile fit</a></li>
+    <li><a href="#skew">Skew</a></li>
+    <li><a href="#backtest">Backtest</a></li>
+    <li><a href="#ablation">Ablation</a></li>
+    <li><a href="#breadth">Breadth</a></li>
+  </ul>
+</nav>
+
+<main class="viz-root">
+
+<!-- 1 ------------------------------------------------------------------ -->
+<section class="panel" id="capture">
+  <p class="panel-num">01</p>
+  <h2>Where the data comes from</h2>
+  <p class="panel-lede">
+    Everything downstream is only as good as the capture. A quote arrives over a
+    WebSocket, lands in an in-memory buffer, and is written to a date-partitioned
+    time-series store. Bars are derived from that, never fetched.
+  </p>
+
+  <div class="stat-row" id="stat-row"></div>
+
+  <figure class="viz">
+    <div id="pipeline" class="pipeline"></div>
+    <figcaption>
+      The path a single quote takes. The vendor publishes native bars at one
+      minute and above, so anything finer has to be assembled from the tick
+      buffer, which is the reason the buffer exists at all.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- 2 ------------------------------------------------------------------ -->
+<section class="panel" id="tape">
+  <p class="panel-num">02</p>
+  <h2>A bar being built, one tick at a time</h2>
+  <p class="panel-lede">
+    The rightmost candle is still forming. It is drawn differently on purpose.
+    A partial bar that looks like a finished one is the single easiest way to
+    put lookahead bias into a backtest, because the high and low of a bar are
+    not knowable until it closes.
+  </p>
+
+  <div class="controls" id="tape-controls"></div>
+  <figure class="viz">
+    <canvas id="tape-canvas" height="320" aria-label="A simulated tape of one-minute candles with the newest bar still forming"></canvas>
+    <figcaption>
+      Amber is the forming bar. Its open is fixed, its close moves with every
+      tick, and its high and low only ratchet outward. When the clock rolls over
+      it is committed and a new one starts.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- 3 ------------------------------------------------------------------ -->
+<section class="panel wide" id="surface">
+  <p class="panel-num">03</p>
+  <h2>The volatility surface</h2>
+  <p class="panel-lede">
+    An option&rsquo;s price is usually quoted as an implied volatility, the
+    number you put into Black-Scholes to recover the market price. Plot that
+    across every strike and every expiry and you get a surface. It is the single
+    most useful picture in options because it says what the market expects, not
+    what already happened.
+  </p>
+
+  <div class="controls" id="surface-controls"></div>
+
+  <div class="surface-layout">
+    <figure class="viz">
+      <canvas id="surface-canvas" height="420" aria-label="A three dimensional implied volatility surface across strike and time to expiry. Drag to rotate."></canvas>
+      <figcaption>
+        Drag to rotate. Height and colour both encode implied volatility, so the
+        shape survives being printed in black and white.
+      </figcaption>
+    </figure>
+
+    <div class="reading">
+      <h3>How to read it</h3>
+      <dl class="reading-list">
+        <dt>The floor is the money</dt>
+        <dd>
+          One axis is strike relative to the forward, the other is time to
+          expiry. The middle of the strike axis is at the money, which is where
+          most of the volume is.
+        </dd>
+
+        <dt>The tilt is the skew</dt>
+        <dd>
+          Slice at one expiry and the curve is almost never flat. Downside
+          strikes carry higher volatility than upside ones, because crashes are
+          faster than rallies and the people hedging them are price takers.
+          <button type="button" class="cue" data-cue="skew">Show me</button>
+        </dd>
+
+        <dt>The slope away from you is the term structure</dt>
+        <dd>
+          Slice at one strike instead and you get volatility against time. In a
+          calm market it rises with maturity. Before an event it inverts, with
+          the near expiry the most expensive thing on the board.
+          <button type="button" class="cue" data-cue="term">Show me</button>
+        </dd>
+
+        <dt>What a trader actually does with it</dt>
+        <dd>
+          Price something that is not quoted, by interpolating. Find something
+          quoted away from the surface, which is either an opportunity or bad
+          data, and it is bad data far more often. Hedge a book by knowing how
+          the whole sheet moves when one number does.
+        </dd>
+
+        <dt>Why it has to be fitted, not just plotted</dt>
+        <dd>
+          Raw quotes are noisy, arrive at different times, and disagree. A fit
+          gives one continuous surface you can differentiate, which is the next
+          panel.
+        </dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- 4 ------------------------------------------------------------------ -->
+<section class="panel" id="smile">
+  <p class="panel-num">04</p>
+  <h2>Fitting one expiry: the smile</h2>
+  <p class="panel-lede">
+    A single slice of that surface, fitted with SVI, a five-parameter form that
+    is standard in the literature and cheap to evaluate. The dots are quotes.
+    The line is the fit. The panel underneath is what the fit missed, which is
+    the part worth looking at.
+  </p>
+
+  <div class="controls" id="smile-controls"></div>
+  <figure class="viz">
+    <svg id="smile-svg" viewBox="0 0 720 300" role="img" aria-label="Implied volatility against log moneyness, with quoted points and a fitted curve"></svg>
+    <svg id="resid-svg" viewBox="0 0 720 120" role="img" aria-label="Fit residuals in volatility points"></svg>
+    <figcaption>
+      Residuals are in volatility points. Structure in them means the model is
+      wrong in a way that will show up in every price you take off it. Noise in
+      them means you are fitting the market rather than the noise.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- 5 ------------------------------------------------------------------ -->
+<section class="panel" id="skew">
+  <p class="panel-num">05</p>
+  <h2>Skew, tracked over time</h2>
+  <p class="panel-lede">
+    Once every expiry is fitted every day, the fit parameters become a time
+    series of their own. This is the cost of downside protection relative to
+    upside, by maturity, on three days chosen to look different.
+  </p>
+
+  <figure class="viz">
+    <svg id="skew-svg" viewBox="0 0 720 320" role="img" aria-label="Twenty five delta risk reversal against time to expiry, on three dates"></svg>
+    <figcaption>
+      A calm day, a day with an event in the front month, and a day in a selloff.
+      The near end moves the most, which is why a single headline volatility
+      number tells you almost nothing.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- 6 ------------------------------------------------------------------ -->
+<section class="panel" id="backtest">
+  <p class="panel-num">06</p>
+  <h2>A backtest, gross and net</h2>
+  <p class="panel-lede">
+    The gap between these two lines is the entire reason the cost model exists.
+    Gross of costs, a mediocre strategy looks like a good one. Net of a
+    calibrated slippage estimate, most of them stop existing.
+  </p>
+
+  <div class="controls" id="bt-controls"></div>
+  <figure class="viz">
+    <svg id="equity-svg" viewBox="0 0 720 300" role="img" aria-label="Cumulative return gross and net of costs"></svg>
+    <svg id="dd-svg" viewBox="0 0 720 110" role="img" aria-label="Drawdown from the running peak, net of costs"></svg>
+    <figcaption>
+      Drawdown below, net of costs, measured from the running peak. It is the
+      number that decides whether a strategy is survivable by a human, which is
+      a different question from whether it is profitable.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- 7 ------------------------------------------------------------------ -->
+<section class="panel" id="ablation">
+  <p class="panel-num">07</p>
+  <h2>The result that matters: mostly no</h2>
+  <p class="panel-lede">
+    Fourteen candidate signal families, each tested out of sample against a
+    matched baseline on identical bars and identical cost assumptions. Thirteen
+    were statistically indistinguishable from the baseline and were retired.
+  </p>
+
+  <figure class="viz">
+    <svg id="ablation-svg" viewBox="0 0 720 420" role="img" aria-label="Out of sample performance of fourteen candidate signals against baseline, with confidence intervals"></svg>
+    <figcaption>
+      Bars are the out-of-sample edge over baseline, whiskers are the confidence
+      interval. A bar whose whisker crosses zero has not shown it can do
+      anything. Reporting this honestly is the work. Anyone can find fourteen
+      signals that look good in sample.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- 8 ------------------------------------------------------------------ -->
+<section class="panel" id="breadth">
+  <p class="panel-num">08</p>
+  <h2>How many independent bets you actually have</h2>
+  <p class="panel-lede">
+    Counting trades overstates how much evidence you have, because the trades
+    are correlated. Names in the same sector move together, and the same signal
+    fires across them on the same day. Adjusting for that collapses the count,
+    and the collapsed number is the one that governs how sure you can be.
+  </p>
+
+  <figure class="viz">
+    <div id="breadth-figure" class="breadth"></div>
+    <figcaption>
+      The adjustment is the standard effective-sample-size calculation on a
+      correlated set. The consequence is strategic rather than technical: it
+      redirects the work from finding more signals toward getting more
+      independent evidence about the ones you have.
+    </figcaption>
+  </figure>
+</section>
+
+<section class="panel closing">
+  <h2>What this page is doing</h2>
+  <p>
+    The point of the real platform is not that it draws nice pictures. It is
+    that a number coming out of it can be trusted, which takes point-in-time
+    reconstruction, cost modelling, and an evaluation regime willing to return a
+    negative answer. The picture is the easy part and it is the part that fits
+    on a web page.
+  </p>
+  <p class="closing-links">
+    <a href="./">Back to the main page</a>
+    <span class="sep">&middot;</span>
+    <a href="./#work">The role this came out of</a>
+  </p>
+</section>
+
+</main>
+
+<footer>
+  <p>
+    Every figure on this page is synthetic and generated in your browser.
+    <span class="sep">&middot;</span>
+    <a href="./">neal-dandrea.github.io</a>
+  </p>
+</footer>
+
+<script src="platform.js"></script>
+</body>
+</html>

@@ -5,26 +5,35 @@ applications.
 
 ## What it is
 
-Two files. `index.html` holds the content, `style.css` holds the design. There
-is no build step, no framework and no JavaScript, so the page renders as soon as
-the HTML arrives and there is nothing to break in six months.
+`index.html` holds the content and `style.css` holds the design. There is no
+build step and no framework, so the page renders as soon as the HTML arrives and
+there is nothing to break in six months.
+
+`platform.html`, `platform.css` and `platform.js` are a separate page, described
+at the bottom of this file. The main page loads no JavaScript beyond the small
+expand-and-collapse control.
 
 ## Editing it
 
-Open `index.html` and edit the text directly. The structure repeats:
+Open `index.html` and edit the text directly. Entries are collapsible, so the
+page can be scanned. The structure repeats:
 
 ```html
-<article class="entry">
-  <header>
+<details class="entry">
+  <summary>
     <h3>Role</h3>
     <p class="meta">Employer <span class="sep">·</span> Dates</p>
-  </header>
+  </summary>
   <p class="lede">One sentence framing what the work was.</p>
   <ul>
     <li>A thing that was built, and what it did.</li>
   </ul>
-</article>
+</details>
 ```
+
+Everything inside `<summary>` is what shows when the entry is closed, so put
+nothing there that a reader needs in order to decide whether to open it. Avoid
+links inside a summary: clicking one navigates instead of expanding.
 
 Add `class="entry compact"` instead of `class="entry"` for a shorter block with
 no bullets. `.lede` is optional; use it only where a role needs framing before
@@ -140,3 +149,33 @@ colours clear the bar comfortably.
   the regeneration recipe.
 - Employment is ordered by relevance rather than strictly by date: the robotics
   research leads, because that is what the page is aimed at.
+
+## The platform walkthrough
+
+`platform.html` is a standalone page showing what the market data work looks
+like: capture, a forming bar, a rotatable volatility surface, an SVI fit and its
+residuals, skew by maturity, a backtest gross and net of costs, the signal
+ablation, and the breadth calculation.
+
+**Nothing on it is real, and that is the point.** The production system is
+proprietary. Every figure is generated in the visitor's browser by
+`platform.js` from published textbook models and a seeded random number
+generator, so the page is identical for every visitor and nothing leaves it.
+The disclaimer at the top is not decoration; if the page ever gains a figure
+that is not synthetic, the disclaimer stops being true and has to change first.
+
+Two things to know before editing `platform.js`:
+
+- **The SVI wing slope has to carry a factor of T.** Total implied variance is
+  roughly `T(atm + s·k)^2`, so `b` scales with time to expiry. A `b` that does
+  not produced a 284% one-week wing on the first pass, and the surface still
+  looked plausible at a glance.
+- **Section ids and element ids share a namespace.** `renderBreadth` once
+  replaced the whole section rather than its figure, because both carried
+  `id="breadth"`, and the heading silently disappeared.
+
+Colours come from `style.css` where they can, and the chart palette in
+`platform.css` was checked against this site's own light and dark surfaces
+rather than assumed. Light mode is below the contrast threshold for two of the
+three series, which is why every series carries a direct label rather than
+relying on a legend.
