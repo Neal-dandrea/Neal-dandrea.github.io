@@ -39,7 +39,10 @@
   const fmt = (n, d = 2) => n.toFixed(d);
   const comma = (n) => n.toLocaleString("en-US");
 
-  const root = document.querySelector(".viz-root");
+  // The tokens live on :root and inherit, so either element answers. Falling
+  // back to documentElement keeps the charts drawable if the wrapper is ever
+  // renamed or dropped.
+  const root = document.querySelector(".viz-root") || document.documentElement;
   function cssVar(name) {
     return getComputedStyle(root).getPropertyValue(name).trim();
   }

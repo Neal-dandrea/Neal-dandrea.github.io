@@ -3,7 +3,13 @@
    accent are the ones the rest of the site already uses. Only the things a
    dashboard needs are defined here. */
 
-.viz-root {
+/* ⚠️ ON :root, NOT ON .viz-root. The tooltip is appended to document.body so
+   that it can escape any panel's overflow, which puts it outside the chart
+   root. Scoped to .viz-root these variables did not resolve for it at all, so
+   `background: var(--surface-panel)` was simply invalid and the tooltip drew
+   with no background, straight over the page. It read as a transparency
+   setting and was a scoping mistake. */
+:root {
   /* Categorical slots. Validated with the data-viz validator against THIS
      site's surfaces rather than a generic one:
        light  #f7f6f3  worst all-pairs CVD dE 9.2, normal-vision dE 24.0
@@ -30,7 +36,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) .viz-root {
+  :root:where(:not([data-theme="light"])) {
     --series-1: #3987e5;
     --series-2: #d95926;
     --series-3: #199e70;
@@ -49,7 +55,7 @@
   }
 }
 
-:root[data-theme="dark"] .viz-root {
+:root[data-theme="dark"] {
   --series-1: #3987e5;
   --series-2: #d95926;
   --series-3: #199e70;
@@ -491,8 +497,10 @@ table.nums td.v { font-variant-numeric: tabular-nums; }
   padding: 0.45rem 0.6rem;
   border: 1px solid var(--rule);
   border-radius: 4px;
-  background: var(--surface-panel);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  /* Opaque, with a literal fallback. Nothing behind this should ever show
+     through a panel of numbers. */
+  background: var(--surface-panel, #fffefc);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
   font-size: 0.82rem;
   line-height: 1.45;
   color: var(--ink);
