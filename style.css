@@ -845,33 +845,30 @@ footer p { margin: 0; }
 }
 
 
-/* The machine learning teaser. Two curves and the gap between them. Training
-   error keeps falling, held-out error turns around, and the shaded wedge is the
-   overfitting. It is the shape behind every negative result on that page, and
-   it survives being small, which the busier versions did not. */
+/* The machine learning teaser. The network, drawn plainly, because it is the
+   one picture that says machine learning to everybody and it holds up at any
+   size. One path through it is picked out so the eye has somewhere to go. No
+   text at all, so nothing can collide or shrink out of legibility. */
 
-.teaser-ml-wrap { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+.teaser-ml-wrap { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
 .teaser-nn { display: block; width: 100%; height: auto; }
 
-.teaser-nn .nn-gap { fill: #eb6834; opacity: 0.13; }
-.teaser-nn .nn-train { stroke: #2a78d6; stroke-width: 2.4; }
-.teaser-nn .nn-valid { stroke: #eb6834; stroke-width: 2.4; }
-.teaser-nn .nn-axis { stroke: var(--rule); stroke-width: 1; }
-.teaser-nn .nn-mark { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; }
-.teaser-nn .nn-dot { fill: #eb6834; }
+.teaser-nn .nn-edges line { stroke: var(--ink-faint); stroke-width: 0.7; opacity: 0.28; }
+.teaser-nn .nn-strong line { stroke: #2a78d6; stroke-width: 1.8; opacity: 0.9; }
 
-.teaser-nn .nn-lab { font-size: 11.5px; }
-.teaser-nn .nn-t-train { fill: #2a78d6; }
-.teaser-nn .nn-t-valid { fill: #eb6834; }
-.teaser-nn .nn-small { font-size: 9.5px; fill: var(--ink-faint); }
+/* The loop underneath. Supervised learning is the network. Reinforcement
+   learning is the network plus a signal coming back, and that page covers
+   both. */
+.teaser-nn .nn-loop { stroke: var(--ink-faint); stroke-width: 1.2; stroke-dasharray: 4 4; opacity: 0.7; }
+
+.teaser-nn .nn-node { fill: var(--paper); stroke: var(--ink); stroke-width: 1.4; }
+.teaser-nn .nn-node-out { fill: var(--paper); stroke: var(--accent); stroke-width: 1.6; }
+.teaser-nn .nn-node-hot { fill: #2a78d6; stroke: #2a78d6; }
+.teaser-nn .nn-node-out.nn-node-hot { fill: var(--accent); stroke: var(--accent); }
 
 @media (prefers-color-scheme: dark) {
-  .teaser-nn .nn-train, .teaser-nn .nn-t-train { stroke: #3987e5; fill: #3987e5; }
-  .teaser-nn .nn-train { fill: none; }
-  .teaser-nn .nn-valid, .teaser-nn .nn-t-valid { stroke: #d95926; fill: #d95926; }
-  .teaser-nn .nn-valid { fill: none; }
-  .teaser-nn .nn-gap { fill: #d95926; }
-  .teaser-nn .nn-dot { fill: #d95926; }
+  .teaser-nn .nn-strong line { stroke: #3987e5; }
+  .teaser-nn .nn-node-hot { fill: #3987e5; stroke: #3987e5; }
 }
 
 /* ⚠️ THIS HAS TO COME AFTER THE THREE TEASER BLOCKS. Each teaser sets its own
