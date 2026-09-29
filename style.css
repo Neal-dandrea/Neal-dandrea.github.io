@@ -845,28 +845,47 @@ footer p { margin: 0; }
 }
 
 
-/* The machine learning teaser. The other two teasers are drawings of a real
-   object, a fitted surface and the actual arm, and a small line chart could not
-   hold its own beside them. This draws the model instead. Series that are not
-   the same length going into a stack that narrows, ending at one number, with
-   the other families named alongside. */
+/* The machine learning teaser. Two curves and the gap between them. Training
+   error keeps falling, held-out error turns around, and the shaded wedge is the
+   overfitting. It is the shape behind every negative result on that page, and
+   it survives being small, which the busier versions did not. */
 
-.teaser-ml-wrap { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+.teaser-ml-wrap { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
 .teaser-nn { display: block; width: 100%; height: auto; }
 
-.teaser-nn .nn-seq { fill: #2a78d6; opacity: 0.8; }
-.teaser-nn .nn-pad { fill: var(--rule); }
-.teaser-nn .nn-block { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; }
-.teaser-nn .nn-block-back { fill: var(--paper); stroke: var(--ink-faint); stroke-width: 1; }
-.teaser-nn .nn-wire { stroke: var(--ink-faint); stroke-width: 1.2; }
-.teaser-nn .nn-out { fill: var(--accent); }
+.teaser-nn .nn-gap { fill: #eb6834; opacity: 0.13; }
+.teaser-nn .nn-train { stroke: #2a78d6; stroke-width: 2.4; }
+.teaser-nn .nn-valid { stroke: #eb6834; stroke-width: 2.4; }
+.teaser-nn .nn-axis { stroke: var(--rule); stroke-width: 1; }
+.teaser-nn .nn-mark { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; }
+.teaser-nn .nn-dot { fill: #eb6834; }
 
-.teaser-nn text { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-.teaser-nn .nn-lab { font-size: 8.5px; letter-spacing: 0.1em; fill: var(--ink-soft); }
-.teaser-nn .nn-dim { font-size: 8px; letter-spacing: 0.1em; fill: var(--ink-faint); }
+.teaser-nn .nn-lab { font-size: 11.5px; }
+.teaser-nn .nn-t-train { fill: #2a78d6; }
+.teaser-nn .nn-t-valid { fill: #eb6834; }
+.teaser-nn .nn-small { font-size: 9.5px; fill: var(--ink-faint); }
 
 @media (prefers-color-scheme: dark) {
-  .teaser-nn .nn-seq { fill: #3987e5; }
+  .teaser-nn .nn-train, .teaser-nn .nn-t-train { stroke: #3987e5; fill: #3987e5; }
+  .teaser-nn .nn-train { fill: none; }
+  .teaser-nn .nn-valid, .teaser-nn .nn-t-valid { stroke: #d95926; fill: #d95926; }
+  .teaser-nn .nn-valid { fill: none; }
+  .teaser-nn .nn-gap { fill: #d95926; }
+  .teaser-nn .nn-dot { fill: #d95926; }
+}
+
+/* ⚠️ THIS HAS TO COME AFTER THE THREE TEASER BLOCKS. Each teaser sets its own
+   column ratio, and those rules sit below the earlier max-width rule that
+   collapses .teaser to one column, so they were winning at every width. On a
+   phone the drawing was being squeezed into a third of an already narrow
+   screen while the caption took the rest. */
+
+@media (max-width: 40rem) {
+  .teaser,
+  .teaser-r,
+  .teaser-ml-wrap {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---------- print ---------- */

@@ -1155,47 +1155,24 @@
   </p>
 
   <a class="teaser teaser-ml-wrap" href="models.html" aria-label="Open the machine learning walkthrough">
-<svg class="teaser-nn" viewBox="0 0 330 190" role="img" aria-label="A sequence model, from series of different lengths through convolution, a recurrent layer and a dense head, to one outcome">
-    <rect class="nn-seq" x="16.0" y="44.0" width="74.0" height="13.0" rx="2"/>
-    <rect class="nn-pad" x="90.0" y="44.0" width="10.0" height="13.0" rx="2"/>
-    <rect class="nn-seq" x="16.0" y="64.0" width="46.0" height="13.0" rx="2"/>
-    <rect class="nn-pad" x="62.0" y="64.0" width="38.0" height="13.0" rx="2"/>
-    <rect class="nn-seq" x="16.0" y="84.0" width="84.0" height="13.0" rx="2"/>
-    <rect class="nn-seq" x="16.0" y="104.0" width="36.0" height="13.0" rx="2"/>
-    <rect class="nn-pad" x="52.0" y="104.0" width="48.0" height="13.0" rx="2"/>
-    <rect class="nn-seq" x="16.0" y="124.0" width="62.0" height="13.0" rx="2"/>
-    <rect class="nn-pad" x="78.0" y="124.0" width="22.0" height="13.0" rx="2"/>
-    <text class="nn-lab" x="16.0" y="30.0" text-anchor="start">DIFFERENT LENGTHS</text>
-    <text class="nn-dim" x="16.0" y="176.0" text-anchor="start">PADDING IS NOT DATA</text>
-    <line class="nn-wire" x1="106.0" y1="96" x2="121.0" y2="96"/>
-    <path class="nn-wire" d="M120.0,92 L126.0,96 L120.0,100" fill="none"/>
-    <rect class="nn-block-back" x="140.0" y="38.0" width="34.0" height="96.0" rx="2"/>
-    <rect class="nn-block-back" x="135.0" y="43.0" width="34.0" height="96.0" rx="2"/>
-    <rect class="nn-block" x="130.0" y="48.0" width="34.0" height="96.0" rx="2"/>
-    <text class="nn-dim" x="147.0" y="176.0" text-anchor="middle">CONV</text>
-    <line class="nn-wire" x1="176.0" y1="96" x2="179.0" y2="96"/>
-    <path class="nn-wire" d="M178.0,92 L184.0,96 L178.0,100" fill="none"/>
-    <rect class="nn-block-back" x="196.0" y="48.0" width="30.0" height="76.0" rx="2"/>
-    <rect class="nn-block-back" x="191.0" y="53.0" width="30.0" height="76.0" rx="2"/>
-    <rect class="nn-block" x="186.0" y="58.0" width="30.0" height="76.0" rx="2"/>
-    <text class="nn-dim" x="201.0" y="176.0" text-anchor="middle">LSTM</text>
-    <line class="nn-wire" x1="228.0" y1="96" x2="227.0" y2="96"/>
-    <path class="nn-wire" d="M226.0,92 L232.0,96 L226.0,100" fill="none"/>
-    <rect class="nn-block-back" x="244.0" y="59.0" width="24.0" height="54.0" rx="2"/>
-    <rect class="nn-block-back" x="239.0" y="64.0" width="24.0" height="54.0" rx="2"/>
-    <rect class="nn-block" x="234.0" y="69.0" width="24.0" height="54.0" rx="2"/>
-    <text class="nn-dim" x="246.0" y="176.0" text-anchor="middle">DENSE</text>
-    <path class="nn-wire" d="M189,49.0 C172,40 232,40 213,49.0" fill="none"/>
-    <line class="nn-wire" x1="270.0" y1="96" x2="291.0" y2="96"/>
-    <path class="nn-wire" d="M290.0,92 L296.0,96 L290.0,100" fill="none"/>
-    <circle class="nn-out" cx="306" cy="96" r="8"/>
-    <text class="nn-dim" x="306.0" y="176.0" text-anchor="middle">ONE OUT</text>
+<svg class="teaser-nn" viewBox="0 0 320 190" role="img" aria-label="Training error falling while held-out error falls, bottoms out and rises again, with the widening gap between them shaded">
+    <polygon class="nn-gap" points="126.4,98.8 128.8,98.8 131.1,98.7 133.4,98.6 135.7,98.5 138.0,98.3 140.3,98.1 142.6,97.8 144.9,97.5 147.2,97.2 149.6,96.8 151.9,96.3 154.2,95.9 156.5,95.4 158.8,94.8 161.1,94.3 163.4,93.7 165.7,93.0 168.0,92.3 170.4,91.6 172.7,90.9 175.0,90.1 177.3,89.2 179.6,88.4 181.9,87.5 184.2,86.6 186.5,85.6 188.8,84.6 191.2,83.6 193.5,82.6 195.8,81.5 198.1,80.3 200.4,79.2 202.7,78.0 205.0,76.8 207.3,75.5 209.6,74.3 212.0,72.9 214.3,71.6 216.6,70.2 218.9,68.8 221.2,67.4 223.5,65.9 225.8,64.4 228.1,62.9 230.4,61.3 232.8,59.7 235.1,58.1 237.4,56.4 239.7,54.7 242.0,53.0 242.0,134.6 239.7,134.5 237.4,134.3 235.1,134.2 232.8,134.1 230.4,133.9 228.1,133.8 225.8,133.6 223.5,133.5 221.2,133.3 218.9,133.1 216.6,132.9 214.3,132.7 212.0,132.6 209.6,132.4 207.3,132.1 205.0,131.9 202.7,131.7 200.4,131.5 198.1,131.2 195.8,131.0 193.5,130.7 191.2,130.4 188.8,130.1 186.5,129.9 184.2,129.5 181.9,129.2 179.6,128.9 177.3,128.6 175.0,128.2 172.7,127.8 170.4,127.4 168.0,127.0 165.7,126.6 163.4,126.2 161.1,125.8 158.8,125.3 156.5,124.8 154.2,124.3 151.9,123.8 149.6,123.3 147.2,122.7 144.9,122.1 142.6,121.5 140.3,120.9 138.0,120.2 135.7,119.5 133.4,118.8 131.1,118.1 128.8,117.4 126.4,116.6"/>
+    <line class="nn-axis" x1="34" y1="156" x2="252" y2="156"/>
+    <line class="nn-axis" x1="34" y1="20" x2="34" y2="156"/>
+    <line class="nn-mark" x1="126.4" y1="24" x2="126.4" y2="156"/>
+    <path class="nn-train" d="M34.0,41.6 L36.3,45.2 L38.6,48.6 L40.9,51.9 L43.2,55.1 L45.6,58.2 L47.9,61.1 L50.2,64.0 L52.5,66.7 L54.8,69.3 L57.1,71.9 L59.4,74.3 L61.7,76.7 L64.0,78.9 L66.4,81.1 L68.7,83.2 L71.0,85.2 L73.3,87.2 L75.6,89.1 L77.9,90.9 L80.2,92.6 L82.5,94.3 L84.8,95.9 L87.2,97.5 L89.5,98.9 L91.8,100.4 L94.1,101.8 L96.4,103.1 L98.7,104.4 L101.0,105.6 L103.3,106.8 L105.6,108.0 L108.0,109.1 L110.3,110.1 L112.6,111.2 L114.9,112.2 L117.2,113.1 L119.5,114.0 L121.8,114.9 L124.1,115.8 L126.4,116.6 L128.8,117.4 L131.1,118.1 L133.4,118.8 L135.7,119.5 L138.0,120.2 L140.3,120.9 L142.6,121.5 L144.9,122.1 L147.2,122.7 L149.6,123.3 L151.9,123.8 L154.2,124.3 L156.5,124.8 L158.8,125.3 L161.1,125.8 L163.4,126.2 L165.7,126.6 L168.0,127.0 L170.4,127.4 L172.7,127.8 L175.0,128.2 L177.3,128.6 L179.6,128.9 L181.9,129.2 L184.2,129.5 L186.5,129.9 L188.8,130.1 L191.2,130.4 L193.5,130.7 L195.8,131.0 L198.1,131.2 L200.4,131.5 L202.7,131.7 L205.0,131.9 L207.3,132.1 L209.6,132.4 L212.0,132.6 L214.3,132.7 L216.6,132.9 L218.9,133.1 L221.2,133.3 L223.5,133.5 L225.8,133.6 L228.1,133.8 L230.4,133.9 L232.8,134.1 L235.1,134.2 L237.4,134.3 L239.7,134.5 L242.0,134.6" fill="none"/>
+    <path class="nn-valid" d="M34.0,44.2 L36.3,47.5 L38.6,50.7 L40.9,53.7 L43.2,56.6 L45.6,59.3 L47.9,62.0 L50.2,64.5 L52.5,66.8 L54.8,69.1 L57.1,71.3 L59.4,73.3 L61.7,75.3 L64.0,77.1 L66.4,78.9 L68.7,80.6 L71.0,82.1 L73.3,83.6 L75.6,85.0 L77.9,86.3 L80.2,87.6 L82.5,88.7 L84.8,89.8 L87.2,90.9 L89.5,91.8 L91.8,92.7 L94.1,93.5 L96.4,94.2 L98.7,94.9 L101.0,95.5 L103.3,96.1 L105.6,96.6 L108.0,97.1 L110.3,97.4 L112.6,97.8 L114.9,98.1 L117.2,98.3 L119.5,98.5 L121.8,98.6 L124.1,98.7 L126.4,98.8 L128.8,98.8 L131.1,98.7 L133.4,98.6 L135.7,98.5 L138.0,98.3 L140.3,98.1 L142.6,97.8 L144.9,97.5 L147.2,97.2 L149.6,96.8 L151.9,96.3 L154.2,95.9 L156.5,95.4 L158.8,94.8 L161.1,94.3 L163.4,93.7 L165.7,93.0 L168.0,92.3 L170.4,91.6 L172.7,90.9 L175.0,90.1 L177.3,89.2 L179.6,88.4 L181.9,87.5 L184.2,86.6 L186.5,85.6 L188.8,84.6 L191.2,83.6 L193.5,82.6 L195.8,81.5 L198.1,80.3 L200.4,79.2 L202.7,78.0 L205.0,76.8 L207.3,75.5 L209.6,74.3 L212.0,72.9 L214.3,71.6 L216.6,70.2 L218.9,68.8 L221.2,67.4 L223.5,65.9 L225.8,64.4 L228.1,62.9 L230.4,61.3 L232.8,59.7 L235.1,58.1 L237.4,56.4 L239.7,54.7 L242.0,53.0" fill="none"/>
+    <circle class="nn-dot" cx="126.4" cy="98.8" r="4"/>
+    <text class="nn-lab nn-t-train" x="250" y="138.6">train</text>
+    <text class="nn-lab nn-t-valid" x="250" y="57.0">held out</text>
+    <text class="nn-small" x="133.4" y="34">stop here</text>
+    <text class="nn-small" x="34" y="178">more capacity, more training</text>
+    <text class="nn-small nn-rot" transform="translate(16,78) rotate(-90)" >error</text>
     </svg>
     <span class="teaser-caption">
-      <strong>One problem, one model.</strong> Series that are not the same
-      length, a stack that narrows, and a single outcome at the end. The page
-      is arranged that way throughout, a question at a time rather than an
-      architecture at a time.
+      <strong>The shape behind every negative result on that page.</strong>
+      Fit keeps improving. Held-out error stops improving and turns around.
+      Knowing where that happens is most of the work.
       <span class="teaser-go">Open the walkthrough &rarr;</span>
     </span>
   </a>
