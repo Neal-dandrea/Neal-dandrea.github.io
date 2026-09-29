@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robot Learning — Neal D'Andrea</title>
+<meta name="description" content="Imitation learning and vision-language-action policies for robotic handover in space operations. The data pipeline, the model change, the deployment loop, and the train-deploy mismatches that cost the most time.">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="viz.css">
+<link rel="stylesheet" href="robotics.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://neal-dandrea.github.io/robotics.html">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://neal-dandrea.github.io/robotics.html">
+<meta property="og:title" content="Robot learning for handover in space operations">
+<meta property="og:description" content="From handheld demonstrations to a policy running on a Franka FR3, and the gap between training and deployment that took most of the time.">
+<meta property="og:image" content="https://neal-dandrea.github.io/og-card.jpg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="platform">
+
+<header class="masthead platform-head">
+  <p class="backlink"><a href="./">&larr; Neal D&rsquo;Andrea</a></p>
+  <h1>Robot learning, and the gap</h1>
+  <p class="standfirst">
+    Two robots passing an object between them, in orbit, with nobody in the loop
+    to correct a bad grasp. This is how the policy gets built, how it gets onto
+    the arm, and what goes wrong in between.
+  </p>
+
+  <aside class="disclaimer" role="note" aria-labelledby="disclaimer-title">
+    <h2 id="disclaimer-title">About the figures</h2>
+    <p>
+      <strong>The numbers are measured.</strong> Where a figure is quoted in the
+      text, it came out of the work. Frame counts, demonstration counts,
+      latencies, error magnitudes and the results of the comparisons are all
+      real.
+    </p>
+    <p>
+      <strong>The pictures are reconstructions.</strong> The rollouts, the
+      curves and the trajectories on this page are generated in your browser to
+      show the mechanism, because the lab&rsquo;s logs and video are not mine to
+      publish. Where a figure illustrates rather than reports, it says so.
+    </p>
+  </aside>
+</header>
+
+<nav class="sections panel-nav" aria-label="Panels">
+  <ul>
+    <li><a href="#problem">The problem</a></li>
+    <li><a href="#data">Demonstrations</a></li>
+    <li><a href="#model">The model change</a></li>
+    <li><a href="#loop">Closing the loop</a></li>
+    <li><a href="#mismatch">The gap</a></li>
+    <li><a href="#compression">Compression</a></li>
+    <li><a href="#evaluation">Evaluation</a></li>
+    <li><a href="#quantum">Parameter efficiency</a></li>
+    <li><a href="#next">What is next</a></li>
+  </ul>
+</nav>
+
+<main class="viz-root">
+
+<!-- 1 ------------------------------------------------------------------ -->
+<section class="panel" id="problem">
+  <p class="panel-num">01</p>
+  <h2>Why handover is the hard case</h2>
+  <p class="panel-lede">
+    One robot holds an object. Another has to take it. On the ground you can
+    retry, and a person can step in. In orbit you cannot do either, and a failed
+    grasp can put the object somewhere nobody can reach.
+  </p>
+  <p class="panel-lede me">
+    I came into this expecting the difficulty to be in the policy. Most of my
+    time has gone into everything around it.
+  </p>
+
+  <div class="stat-row" id="stat-row"></div>
+
+  <figure class="viz">
+    <div id="constraints"></div>
+    <figcaption>
+      In-space servicing, assembly and manufacturing sets the constraints. They
+      are not the constraints a lab bench has.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>What I assumed going in</summary>
+    <p>
+      That the research question was which architecture to use. It turned out
+      the architecture was rarely the thing standing between a policy that works
+      in evaluation and one that works on the arm. Frame conventions, stale
+      observations and the way an action is parameterised did more damage than
+      any modelling choice I made.
+    </p>
+  </details>
+</section>
+
+<!-- 2 ------------------------------------------------------------------ -->
+<section class="panel" id="data">
+  <p class="panel-num">02</p>
+  <h2>From a handheld demonstration to a training set</h2>
+  <p class="panel-lede">
+    Demonstrations are collected with a handheld gripper rather than by moving
+    the robot, which is faster and does not need the robot present. The cost is
+    that every demonstration has to be reconstructed into robot terms before
+    anything can learn from it.
+  </p>
+
+  <figure class="viz">
+    <div id="pipeline"></div>
+    <figcaption>
+      215 demonstrations and 265,000 frames through this path. Every step is
+      validated, and a step that fails validation is dropped rather than
+      repaired.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>What we throw away, and why</summary>
+    <p>
+      The pose of the handheld gripper comes from visual tracking, and tracking
+      fails. A dropped frame is obvious. A frame where tracking has drifted is
+      not, and it trains the policy to associate an image with a pose the
+      gripper was never at.
+    </p>
+    <p>
+      So validation runs per step rather than per episode, and a step that fails
+      is dropped. Dropping data feels wrong the first few times. It is much
+      cheaper than finding out later that a policy learned from poses that never
+      happened.
+    </p>
+  </details>
+</section>
+
+<!-- 3 ------------------------------------------------------------------ -->
+<section class="panel" id="model">
+  <p class="panel-num">03</p>
+  <h2>Changing the model, and having to justify it</h2>
+  <p class="panel-lede">
+    The stack ran on a 171-million-parameter U-Net diffusion policy. It now runs
+    on a 3-billion-parameter vision-language-action model. The reason was not
+    that bigger is better. It was that the diffusion policy did not generalise
+    outside the distribution it was trained on, and I could show that.
+  </p>
+
+  <div class="controls" id="model-controls"></div>
+  <figure class="viz">
+    <canvas id="model-canvas" height="300" aria-label="In-distribution and out-of-distribution performance for the two policies"></canvas>
+    <figcaption>
+      Illustrative. Both policies do well on the distribution they were trained
+      on. The gap opens where the object starts somewhere the demonstrations did
+      not cover.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>How I argued for it</summary>
+    <p>
+      Not with a benchmark score. A change of that size needs a reason somebody
+      else can check, so I wrote it up as a cited review of published handover
+      and out-of-distribution results and put my own measurements next to them.
+      The argument was that the failure was a generalisation failure rather than
+      a capacity or tuning failure, and that scaling the same architecture would
+      not fix it.
+    </p>
+  </details>
+</section>
+
+<!-- 4 ------------------------------------------------------------------ -->
+<section class="panel" id="loop">
+  <p class="panel-num">04</p>
+  <h2>Closing the loop on real hardware</h2>
+  <p class="panel-lede">
+    Inference takes about 125 milliseconds on the GPU. The arm wants a command
+    every millisecond. Those two numbers do not meet, and everything in this
+    panel exists to bridge them.
+  </p>
+
+  <div class="controls" id="loop-controls"></div>
+  <figure class="viz">
+    <canvas id="loop-canvas" height="260" aria-label="Timing of the control loop, from inference through action chunking to the controller"></canvas>
+    <figcaption>
+      The policy emits a chunk of future actions rather than one. The client
+      subsamples the chunk, rate limits it, and refuses anything outside the
+      workspace. The controller interpolates the rest.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>The part that is not modelling at all</summary>
+    <p>
+      A workspace gate on the client, because a policy that has never seen the
+      edge of the table will happily drive into it. Rate limiting, because a
+      chunk boundary can ask for a step the arm should not take in one cycle.
+      And impedance control rather than position control underneath, so contact
+      is survivable instead of a fault.
+    </p>
+  </details>
+</section>
+
+<!-- 5 ------------------------------------------------------------------ -->
+<section class="panel wide" id="mismatch">
+  <p class="panel-num">05</p>
+  <h2>The gap between training and deployment</h2>
+  <p class="panel-lede">
+    This is the panel I would show first. Three defects, all in the deployment
+    client rather than the model, each one individually plausible and quiet.
+    Turn them on and watch what they do to the same policy.
+  </p>
+  <p class="panel-lede me">
+    Every one of these looked like a model problem when I first met it. That is
+    what made them expensive.
+  </p>
+
+  <div class="controls" id="bug-controls"></div>
+
+  <div class="mismatch-layout">
+    <figure class="viz">
+      <canvas id="traj-canvas" height="380" aria-label="A reach and grasp trajectory with deployment defects applied"></canvas>
+      <figcaption>
+        Illustrative. The dashed path is the demonstration, the solid path is
+        what the arm does with the defects currently switched on, and the ring
+        is the grasp tolerance.
+      </figcaption>
+    </figure>
+
+    <div class="reading">
+      <h3>What each one does</h3>
+      <dl class="reading-list" id="bug-notes"></dl>
+    </div>
+  </div>
+
+  <details class="tried">
+    <summary>How long each of these took to find</summary>
+    <p>
+      The frame rotation was the worst, because a consistent rotation looks like
+      a policy that has learned a slightly wrong grasp approach. I went looking
+      in the model first, retrained, and got the same behaviour back.
+    </p>
+    <p>
+      The stale observations were subtler again. The policy was acting on what
+      the camera saw a control cycle or two ago, which at low speed is almost
+      invisible and at speed turns into overshoot.
+    </p>
+    <p>
+      The observation mask removed 5.6 percent of the image the model was
+      trained on. Small enough that nothing looked broken, large enough that the
+      policy was being asked to work from a different picture than it learned
+      from.
+    </p>
+  </details>
+</section>
+
+<!-- 6 ------------------------------------------------------------------ -->
+<section class="panel" id="compression">
+  <p class="panel-num">06</p>
+  <h2>Video compression as domain shift</h2>
+  <p class="panel-lede">
+    The demonstrations are video. Video gets compressed. The policy trains on the
+    compressed frames and then runs on frames from a live camera, which are not
+    compressed the same way, and the difference is a domain shift nobody wrote
+    down.
+  </p>
+
+  <figure class="viz">
+    <svg id="checkpoints-svg" viewBox="0 0 720 300" role="img"
+         aria-label="Prediction error against training checkpoint for the original and rebuilt data pipelines"></svg>
+    <figcaption>
+      Illustrative shape, measured conclusion. Rebuilding the conversion at
+      three times the fidelity and retraining produced lower prediction error
+      than the original model on 20 held-out episodes, at every checkpoint.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>Why this was worth doing at all</summary>
+    <p>
+      It was not an obvious place to look. I only went there because the
+      evaluation had become trustworthy enough to show a difference this size,
+      which is the previous panel and the one after it doing their job.
+    </p>
+  </details>
+</section>
+
+<!-- 7 ------------------------------------------------------------------ -->
+<section class="panel" id="evaluation">
+  <p class="panel-num">07</p>
+  <h2>One rollout tells you almost nothing</h2>
+  <p class="panel-lede">
+    A diffusion policy samples. Run the same policy on the same episode twice
+    and you get two different trajectories. Compare two policies on one rollout
+    each and you are mostly comparing two samples.
+  </p>
+
+  <div class="controls" id="eval-controls"></div>
+  <figure class="viz">
+    <svg id="rollouts-svg" viewBox="0 0 720 320" role="img"
+         aria-label="Final error across repeated rollouts for two policies, with the spread shown"></svg>
+    <figcaption>
+      Illustrative. Add rollouts and the two distributions separate. At one
+      rollout each, the worse policy wins often enough to be dangerous.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>What I was doing before</summary>
+    <p>
+      Comparing single trajectories and believing the result. It is fast and it
+      feels like measurement. Establishing that it could not distinguish a real
+      improvement from sampler variance is what made the compression work
+      possible, because until then there was no instrument fine enough to see
+      the improvement it produced.
+    </p>
+  </details>
+</section>
+
+<!-- 8 ------------------------------------------------------------------ -->
+<section class="panel" id="quantum">
+  <p class="panel-num">08</p>
+  <h2>Do quantum layers buy parameter efficiency</h2>
+  <p class="panel-lede">
+    A separate question inside the same stack. If parameterised quantum circuits
+    replaced the attention projections in a vision transformer policy, would
+    accuracy hold at fewer parameters. The comparison was pre-registered, with
+    matched classical controls on identical episode splits, a width ladder
+    spanning a 13 times parameter range, three seeds per configuration, and an
+    acceptance criterion fixed before data collection and enforced in code.
+  </p>
+
+  <div class="controls" id="ladder-controls"></div>
+  <figure class="viz">
+    <svg id="ladder-svg" viewBox="0 0 720 340" role="img"
+         aria-label="Held-out error against parameter count for the quantum and classical arms across a width ladder"></svg>
+    <figcaption>
+      Illustrative spread, measured conclusion. At matched parameter count the
+      two arms are statistically indistinguishable, at roughly 140 times the
+      wall-clock cost in simulation.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>The finding that nearly invalidated the experiment</summary>
+    <p>
+      An early pass had the patch-embedding convolutions taking 89 percent of
+      the parameter count at the narrowest width, which left the quantum layers
+      at 1.4 percent of the model. Any efficiency claim would have been a claim
+      about the classical layers around them.
+    </p>
+    <p>
+      Restructuring the architecture raised the quantum share to 10.5 percent.
+      That is the difference between measuring the thing you said you were
+      measuring and measuring something else with the same name.
+    </p>
+  </details>
+</section>
+
+<!-- 9 ------------------------------------------------------------------ -->
+<section class="panel" id="next">
+  <p class="panel-num">09</p>
+  <h2>What is next</h2>
+  <p class="panel-lede">
+    Roughly the order I would pick it up.
+  </p>
+
+  <ol class="next-list">
+    <li>
+      <h3>Whether the quantum arm degrades more slowly below the capacity knee</h3>
+      <p>
+        At matched parameter count the two arms are indistinguishable. The open
+        question is what happens when you keep narrowing, where the classical
+        arm should fall away first if the efficiency claim has anything in it.
+        That is a longer ladder and more seeds rather than a new idea.
+      </p>
+    </li>
+    <li>
+      <h3>Handover on two arms rather than one</h3>
+      <p>
+        Everything on this page is one arm reaching for a static object.
+        Handover is two policies whose errors compound, and the interesting
+        failure is the one where both are individually fine.
+      </p>
+    </li>
+    <li>
+      <h3>Evaluation that survives a reviewer</h3>
+      <p>
+        Episode-level splits and repeated rollouts got the measurements
+        trustworthy enough to work with. Making them defensible in a paper needs
+        a pre-registered protocol and a power calculation rather than my
+        judgement about how many rollouts is enough.
+      </p>
+    </li>
+    <li>
+      <h3>Compute budgets that match the deployment</h3>
+      <p>
+        A 3-billion-parameter model at 125 milliseconds is fine on a workstation
+        GPU and is not a spacecraft power budget. If the quantum work goes
+        anywhere useful it goes here, into the projection modules that run once
+        per inference rather than inside the iterative denoising loop where a
+        140 times multiplier would be untenable.
+      </p>
+    </li>
+  </ol>
+</section>
+
+<section class="panel closing">
+  <h2>Where this is written up properly</h2>
+  <p>
+    The first step, reproducing the demonstration-to-policy pipeline on
+    commodity hardware and verifying it against a Franka arm, is published at
+    NAECON 2026. A second paper is accepted at AIAA SciTech 2027 and in
+    preparation.
+  </p>
+  <p class="closing-links">
+    <a href="./">Back to the main page</a>
+    <span class="sep">&middot;</span>
+    <a href="./#publications">Publications</a>
+    <span class="sep">&middot;</span>
+    <a href="platform.html">The market data walkthrough</a>
+  </p>
+</section>
+
+</main>
+
+<footer>
+  <p>
+    Figures on this page are generated in your browser. Quoted numbers are
+    measured.
+    <span class="sep">&middot;</span>
+    <a href="./">neal-dandrea.github.io</a>
+  </p>
+</footer>
+
+<script src="robotics.js"></script>
+</body>
+</html>

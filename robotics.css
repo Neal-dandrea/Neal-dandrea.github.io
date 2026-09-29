@@ -1,0 +1,48 @@
+/* Page-specific styles for robotics.html. The panel frame, charts, controls,
+   tooltip and collapsible blocks all come from viz.css, which platform.html
+   uses too. Only what is particular to this page lives here. */
+
+.mismatch-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 1.6rem;
+  align-items: start;
+}
+
+/* A defect that is currently switched on gets its explanation marked, so the
+   drawing and the words never disagree about what is being shown. */
+.bug-on dt { color: var(--accent); }
+.bug-off dt { color: var(--ink-faint); }
+.bug-off dd { opacity: 0.55; }
+
+.bug-err {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.constraint-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.9rem 1.6rem;
+  margin: 0;
+  padding: 0.3rem 0;
+}
+
+.constraint-list dt {
+  font-weight: 600;
+  font-size: 0.93rem;
+}
+
+.constraint-list dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.87rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 54rem) {
+  .mismatch-layout { grid-template-columns: 1fr; }
+}

@@ -1,4 +1,5 @@
-/* Market data platform walkthrough — neal-dandrea.github.io/platform.html
+/* Shared chart and panel styles for the project pages
+   (platform.html, robotics.html)
    Loads after style.css and inherits its tokens, so the type, the paper and the
    accent are the ones the rest of the site already uses. Only the things a
    dashboard needs are defined here. */
