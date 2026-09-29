@@ -87,6 +87,26 @@
       is assembled from the buffer.
     </figcaption>
   </figure>
+
+  <details class="tried">
+    <summary>What we tried first</summary>
+    <p>
+      Polling the vendor&rsquo;s REST endpoint, because it took an afternoon to
+      stand up. Measured against one liquid name over a single session it
+      accounted for 13 to 15 percent of the shares that actually traded. The
+      rest happened between polls. Everything live moved onto the stream after
+      that, and the buffer was written so that only the fetch function had to
+      change.
+    </p>
+    <p>
+      Two things cost real time. Our credential has no per-trade entitlement, so
+      the trade feed is declined rather than delivered, and our own code logged
+      that it had subscribed anyway because it never checked the response code
+      on a subscribe. Separately, the stream sends delta frames that omit
+      unchanged fields, and treating an absent field as zero quietly zeroed the
+      volume on every frame that did not carry it.
+    </p>
+  </details>
 </section>
 
 <!-- 2 ------------------------------------------------------------------ -->
@@ -106,6 +126,22 @@
       and low ratcheting outward.
     </figcaption>
   </figure>
+
+  <details class="tried">
+    <summary>What we tried first</summary>
+    <p>
+      Re-fetching the current bar from the vendor on a timer. It lagged, and at
+      the bucket boundary the same bar could arrive twice with different
+      contents. The bar is now assembled in memory from the stream and anchored
+      to the clock rather than to the arrival of the first tick.
+    </p>
+    <p>
+      We also tried publishing a provisional signal on the forming bar, and
+      removed it. The pattern being detected needs bars on both sides to
+      confirm, so it cannot be evaluated on the newest bar at all, and the flag
+      could provably never return a row.
+    </p>
+  </details>
 </section>
 
 <!-- 3 ------------------------------------------------------------------ -->
@@ -188,6 +224,23 @@
     Both checks are recomputed on every market change rather than asserted
     once.
   </p>
+
+  <details class="tried">
+    <summary>What broke first</summary>
+    <p>
+      Short maturities. Below about forty-five days the fitted at-the-money
+      volatility collapsed on some dates, with the first percentile landing at
+      0.6 percent on an index that has never been that quiet. Those slices are
+      now excluded rather than patched, because a fit that is wrong in a
+      plausible-looking way is worse than a gap.
+    </p>
+    <p>
+      Building this page reproduced the same class of problem. The first
+      parameterization of the model drawn here failed the butterfly check below,
+      on the upside wing at short maturities, for exactly the reason the real
+      fits did.
+    </p>
+  </details>
 </section>
 
 <!-- 4 ------------------------------------------------------------------ -->
@@ -214,6 +267,16 @@
       reaches every price taken off it.
     </figcaption>
   </figure>
+
+  <details class="tried">
+    <summary>What we tried first</summary>
+    <p>
+      Fitting whatever the history handed us. It contains quotes with
+      non-positive implied volatility, and a fit that runs through them drags
+      the whole smile down. They are dropped now, and the number dropped is
+      reported rather than quietly absorbed.
+    </p>
+  </details>
 </section>
 
 <!-- 5 ------------------------------------------------------------------ -->
@@ -233,6 +296,17 @@
       moves most.
     </figcaption>
   </figure>
+
+  <details class="tried">
+    <summary>What we got wrong</summary>
+    <p>
+      Anchoring the surface on the cash close. The at-the-money point belongs at
+      the forward, not at spot, and the difference is financing and dividends
+      rather than rounding. It is implied from put-call parity across every
+      strike now and taken as a median, which survives the handful of strikes
+      where one side of the market is stale.
+    </p>
+  </details>
 </section>
 
 <!-- 6 ------------------------------------------------------------------ -->
@@ -252,6 +326,18 @@
       Drawdown from the running peak, net of costs.
     </figcaption>
   </figure>
+
+  <details class="tried">
+    <summary>The change that made everything look worse</summary>
+    <p>
+      Putting an embargo between the training and testing windows, so a feature
+      with a fifty-bar lookback cannot see across the boundary. Out-of-sample
+      performance fell on every symbol we ran it on. On one name it fell by more
+      than the gap between any two of the feature sets we had been comparing,
+      which means those comparisons had been reading differences smaller than
+      the bias they shared.
+    </p>
+  </details>
 </section>
 
 <!-- 7 ------------------------------------------------------------------ -->
@@ -272,6 +358,23 @@
       anything. Anyone can find fourteen signals that look good in sample.
     </figcaption>
   </figure>
+
+  <details class="tried">
+    <summary>What we built to fix this, and what happened</summary>
+    <p>
+      Two feature families, specifically to give the model something it did not
+      already have. One described the time of day and the position in the week.
+      The other described the shape of the volatility surface, which was the
+      only input we had that says what the market expects rather than what it
+      already did.
+    </p>
+    <p>
+      In-sample fit rose steadily as we added them. Out of sample it fell, on
+      every symbol, every time. An earlier walk-forward had said the same thing
+      in a different way, when the configuration that ranked first in sample
+      came 103rd of 144 out of sample.
+    </p>
+  </details>
 </section>
 
 <!-- 8 ------------------------------------------------------------------ -->
@@ -292,6 +395,15 @@
       getting more independent evidence about the ones already in hand.
     </figcaption>
   </figure>
+
+  <details class="tried">
+    <summary>What we were counting before</summary>
+    <p>
+      Trades. For longer than we should have been. The thing that changed the
+      research plan was not a new signal, it was noticing that the ones already
+      in hand were largely the same bet placed again.
+    </p>
+  </details>
 </section>
 
 <section class="panel wide" id="trade">
@@ -314,6 +426,22 @@
       </figcaption>
     </figure>
   </div>
+
+  <details class="tried">
+    <summary>Where the obvious test gave the wrong answer</summary>
+    <p>
+      One of the signal functions had an ambiguous direction, and the natural
+      way to settle it was to measure the return from the bar where the pattern
+      confirmed. That test said the labels were inverted, significantly, across
+      twenty-six thousand signals.
+    </p>
+    <p>
+      It also changed sign between the first and second halves of the history,
+      and it was measuring an entry the rule never described. Tested as the
+      breakout it actually is, meaning the trade only exists if price trades
+      through the level, the sign held in both halves.
+    </p>
+  </details>
 </section>
 
 <section class="panel closing">
