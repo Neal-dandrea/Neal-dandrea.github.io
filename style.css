@@ -847,28 +847,67 @@ footer p { margin: 0; }
 
 /* The machine learning teaser. The network, drawn plainly, because it is the
    one picture that says machine learning to everybody and it holds up at any
-   size. One path through it is picked out so the eye has somewhere to go. No
-   text at all, so nothing can collide or shrink out of legibility. */
+   size. No text at all, so nothing can collide or shrink out of legibility.
+
+   The signals are CSS on the inline SVG rather than script, so the résumé page
+   still loads no JavaScript for this. Each segment carries pathLength="1", so a
+   dash of 1 covers it whatever its actual length, and the offset animating from
+   1 to 0 draws it in. Three routes share a six second cycle at two second
+   offsets, and each segment of a route is delayed again so the pulse travels
+   layer by layer rather than the whole route lighting at once. */
 
 .teaser-ml-wrap { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
 .teaser-nn { display: block; width: 100%; height: auto; }
 
-.teaser-nn .nn-edges line { stroke: var(--ink-faint); stroke-width: 0.7; opacity: 0.28; }
-.teaser-nn .nn-strong line { stroke: #2a78d6; stroke-width: 1.8; opacity: 0.9; }
-
-/* The loop underneath. Supervised learning is the network. Reinforcement
-   learning is the network plus a signal coming back, and that page covers
-   both. */
-.teaser-nn .nn-loop { stroke: var(--ink-faint); stroke-width: 1.2; stroke-dasharray: 4 4; opacity: 0.7; }
-
+.teaser-nn .nn-edges line { stroke: var(--ink-faint); stroke-width: 0.7; opacity: 0.26; }
 .teaser-nn .nn-node { fill: var(--paper); stroke: var(--ink); stroke-width: 1.4; }
 .teaser-nn .nn-node-out { fill: var(--paper); stroke: var(--accent); stroke-width: 1.6; }
-.teaser-nn .nn-node-hot { fill: #2a78d6; stroke: #2a78d6; }
-.teaser-nn .nn-node-out.nn-node-hot { fill: var(--accent); stroke: var(--accent); }
+.teaser-nn .nn-loop { stroke: var(--ink-faint); stroke-width: 1.2; stroke-dasharray: 4 4; opacity: 0.7; }
+
+.teaser-nn .nn-flow line {
+  stroke: #2a78d6;
+  stroke-width: 1.9;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  animation: nn-draw 6s linear infinite;
+}
+
+.teaser-nn .nn-lit { fill: #2a78d6; stroke: #2a78d6; stroke-width: 1.4; }
+.teaser-nn .nn-lit-out { fill: var(--accent); stroke: var(--accent); stroke-width: 1.6; }
+.teaser-nn .nn-lit,
+.teaser-nn .nn-lit-out { opacity: 0; animation: nn-lit 6s linear infinite; }
+
+@keyframes nn-draw {
+  0%   { stroke-dashoffset: 1; opacity: 0; }
+  3%   { opacity: 0.95; }
+  16%  { stroke-dashoffset: 0; opacity: 0.95; }
+  30%  { opacity: 0.95; }
+  38%  { stroke-dashoffset: 0; opacity: 0; }
+  39%  { stroke-dashoffset: 1; opacity: 0; }
+  100% { stroke-dashoffset: 1; opacity: 0; }
+}
+
+@keyframes nn-lit {
+  0%   { opacity: 0; }
+  4%   { opacity: 1; }
+  30%  { opacity: 1; }
+  38%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* A loop running forever beside body text is exactly what this setting is
+   asking not to have, so it resolves to one lit route and stops. */
+@media (prefers-reduced-motion: reduce) {
+  .teaser-nn .nn-flow line { animation: none; stroke-dashoffset: 0; opacity: 0.9; }
+  .teaser-nn .nn-lit, .teaser-nn .nn-lit-out { animation: none; opacity: 1; }
+  .teaser-nn .nn-flow ~ .nn-flow line,
+  .teaser-nn .nn-flow ~ .nn-flow circle { opacity: 0; }
+}
 
 @media (prefers-color-scheme: dark) {
-  .teaser-nn .nn-strong line { stroke: #3987e5; }
-  .teaser-nn .nn-node-hot { fill: #3987e5; stroke: #3987e5; }
+  .teaser-nn .nn-flow line { stroke: #3987e5; }
+  .teaser-nn .nn-lit { fill: #3987e5; stroke: #3987e5; }
 }
 
 /* ⚠️ THIS HAS TO COME AFTER THE THREE TEASER BLOCKS. Each teaser sets its own

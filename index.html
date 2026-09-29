@@ -1155,7 +1155,7 @@
   </p>
 
   <a class="teaser teaser-ml-wrap" href="models.html" aria-label="Open the machine learning walkthrough">
-<svg class="teaser-nn" viewBox="0 0 330 200" role="img" aria-label="A four layer neural network, with one path through it picked out">
+<svg class="teaser-nn" viewBox="0 0 330 200" role="img" aria-label="A four layer neural network with signals travelling through it, and a feedback loop returning to the input">
     <g class="nn-edges">
     <line x1="44.0" y1="61.0" x2="124.0" y2="22.0"/>
     <line x1="44.0" y1="61.0" x2="124.0" y2="48.0"/>
@@ -1184,6 +1184,7 @@
     <line x1="44.0" y1="139.0" x2="124.0" y2="100.0"/>
     <line x1="44.0" y1="139.0" x2="124.0" y2="126.0"/>
     <line x1="44.0" y1="139.0" x2="124.0" y2="152.0"/>
+    <line x1="44.0" y1="139.0" x2="124.0" y2="178.0"/>
     <line x1="124.0" y1="22.0" x2="204.0" y2="22.0"/>
     <line x1="124.0" y1="22.0" x2="204.0" y2="48.0"/>
     <line x1="124.0" y1="22.0" x2="204.0" y2="74.0"/>
@@ -1230,6 +1231,7 @@
     <line x1="124.0" y1="178.0" x2="204.0" y2="48.0"/>
     <line x1="124.0" y1="178.0" x2="204.0" y2="74.0"/>
     <line x1="124.0" y1="178.0" x2="204.0" y2="100.0"/>
+    <line x1="124.0" y1="178.0" x2="204.0" y2="126.0"/>
     <line x1="124.0" y1="178.0" x2="204.0" y2="152.0"/>
     <line x1="124.0" y1="178.0" x2="204.0" y2="178.0"/>
     <line x1="204.0" y1="22.0" x2="286.0" y2="74.0"/>
@@ -1245,6 +1247,7 @@
     <line x1="204.0" y1="100.0" x2="286.0" y2="100.0"/>
     <line x1="204.0" y1="100.0" x2="286.0" y2="126.0"/>
     <line x1="204.0" y1="126.0" x2="286.0" y2="74.0"/>
+    <line x1="204.0" y1="126.0" x2="286.0" y2="100.0"/>
     <line x1="204.0" y1="126.0" x2="286.0" y2="126.0"/>
     <line x1="204.0" y1="152.0" x2="286.0" y2="74.0"/>
     <line x1="204.0" y1="152.0" x2="286.0" y2="100.0"/>
@@ -1253,32 +1256,54 @@
     <line x1="204.0" y1="178.0" x2="286.0" y2="100.0"/>
     <line x1="204.0" y1="178.0" x2="286.0" y2="126.0"/>
     </g>
-    <g class="nn-strong">
-    <line x1="44.0" y1="139.0" x2="124.0" y2="178.0"/>
-    <line x1="124.0" y1="178.0" x2="204.0" y2="126.0"/>
-    <line x1="204.0" y1="126.0" x2="286.0" y2="100.0"/>
-    </g>
     <circle class="nn-node" cx="44.0" cy="61.0" r="7.0"/>
     <circle class="nn-node" cx="44.0" cy="87.0" r="7.0"/>
     <circle class="nn-node" cx="44.0" cy="113.0" r="7.0"/>
-    <circle class="nn-node nn-node-hot" cx="44.0" cy="139.0" r="7.0"/>
+    <circle class="nn-node" cx="44.0" cy="139.0" r="7.0"/>
     <circle class="nn-node" cx="124.0" cy="22.0" r="6.2"/>
     <circle class="nn-node" cx="124.0" cy="48.0" r="6.2"/>
     <circle class="nn-node" cx="124.0" cy="74.0" r="6.2"/>
     <circle class="nn-node" cx="124.0" cy="100.0" r="6.2"/>
     <circle class="nn-node" cx="124.0" cy="126.0" r="6.2"/>
     <circle class="nn-node" cx="124.0" cy="152.0" r="6.2"/>
-    <circle class="nn-node nn-node-hot" cx="124.0" cy="178.0" r="6.2"/>
+    <circle class="nn-node" cx="124.0" cy="178.0" r="6.2"/>
     <circle class="nn-node" cx="204.0" cy="22.0" r="6.2"/>
     <circle class="nn-node" cx="204.0" cy="48.0" r="6.2"/>
     <circle class="nn-node" cx="204.0" cy="74.0" r="6.2"/>
     <circle class="nn-node" cx="204.0" cy="100.0" r="6.2"/>
-    <circle class="nn-node nn-node-hot" cx="204.0" cy="126.0" r="6.2"/>
+    <circle class="nn-node" cx="204.0" cy="126.0" r="6.2"/>
     <circle class="nn-node" cx="204.0" cy="152.0" r="6.2"/>
     <circle class="nn-node" cx="204.0" cy="178.0" r="6.2"/>
     <circle class="nn-node-out" cx="286.0" cy="74.0" r="7.4"/>
-    <circle class="nn-node-out nn-node-hot" cx="286.0" cy="100.0" r="7.4"/>
+    <circle class="nn-node-out" cx="286.0" cy="100.0" r="7.4"/>
     <circle class="nn-node-out" cx="286.0" cy="126.0" r="7.4"/>
+    <g class="nn-flow">
+    <line pathLength="1" style="animation-delay:0.00s" x1="44.0" y1="113.0" x2="124.0" y2="152.0"/>
+    <line pathLength="1" style="animation-delay:0.28s" x1="124.0" y1="152.0" x2="204.0" y2="74.0"/>
+    <line pathLength="1" style="animation-delay:0.56s" x1="204.0" y1="74.0" x2="286.0" y2="126.0"/>
+    <circle class="nn-lit" style="animation-delay:0.00s" cx="44.0" cy="113.0" r="7.0"/>
+    <circle class="nn-lit" style="animation-delay:0.28s" cx="124.0" cy="152.0" r="6.2"/>
+    <circle class="nn-lit" style="animation-delay:0.56s" cx="204.0" cy="74.0" r="6.2"/>
+    <circle class="nn-lit-out" style="animation-delay:0.84s" cx="286.0" cy="126.0" r="7.4"/>
+    </g>
+    <g class="nn-flow">
+    <line pathLength="1" style="animation-delay:2.00s" x1="44.0" y1="61.0" x2="124.0" y2="178.0"/>
+    <line pathLength="1" style="animation-delay:2.28s" x1="124.0" y1="178.0" x2="204.0" y2="100.0"/>
+    <line pathLength="1" style="animation-delay:2.56s" x1="204.0" y1="100.0" x2="286.0" y2="74.0"/>
+    <circle class="nn-lit" style="animation-delay:2.00s" cx="44.0" cy="61.0" r="7.0"/>
+    <circle class="nn-lit" style="animation-delay:2.28s" cx="124.0" cy="178.0" r="6.2"/>
+    <circle class="nn-lit" style="animation-delay:2.56s" cx="204.0" cy="100.0" r="6.2"/>
+    <circle class="nn-lit-out" style="animation-delay:2.84s" cx="286.0" cy="74.0" r="7.4"/>
+    </g>
+    <g class="nn-flow">
+    <line pathLength="1" style="animation-delay:4.00s" x1="44.0" y1="61.0" x2="124.0" y2="48.0"/>
+    <line pathLength="1" style="animation-delay:4.28s" x1="124.0" y1="48.0" x2="204.0" y2="22.0"/>
+    <line pathLength="1" style="animation-delay:4.56s" x1="204.0" y1="22.0" x2="286.0" y2="100.0"/>
+    <circle class="nn-lit" style="animation-delay:4.00s" cx="44.0" cy="61.0" r="7.0"/>
+    <circle class="nn-lit" style="animation-delay:4.28s" cx="124.0" cy="48.0" r="6.2"/>
+    <circle class="nn-lit" style="animation-delay:4.56s" cx="204.0" cy="22.0" r="6.2"/>
+    <circle class="nn-lit-out" style="animation-delay:4.84s" cx="286.0" cy="100.0" r="7.4"/>
+    </g>
     <path class="nn-loop" d="M286,176 C286,196 44,196 44,176" fill="none"/>
     <path class="nn-loop" d="M49,181 L44,174 L39,181" fill="none"/>
     </svg>
