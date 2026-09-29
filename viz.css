@@ -22,7 +22,7 @@
   --series-3: #1baf7a;
 
   /* Sequential ramp for magnitude, one hue, light to dark. Used for the
-     surface, where height already carries the value and colour reinforces it. */
+     surface, where height already carries the value and color reinforces it. */
   --seq-1: #f2d9c9;
   --seq-2: #e0a988;
   --seq-3: #c9784f;
@@ -79,7 +79,7 @@ body.platform { padding-bottom: 4rem; }
 /* style.css caps main, the masthead and the footer at the 34rem reading
    measure, which is right for prose and too narrow for charts. On this page
    the cap moves onto the panels themselves so that a 46rem panel and a 64rem
-   one can share the same centre line. */
+   one can share the same center line. */
 body.platform main,
 body.platform .masthead,
 body.platform footer { max-width: none; }
@@ -335,8 +335,8 @@ figure.viz figcaption {
   overflow-y: hidden;      /* or a long equation grows a vertical scrollbar too */
 }
 
-/* Block-level MathML is centred by default. Everything else on this page is
-   ranged left, and a centred equation inside a left-ranged step reads as a
+/* Block-level MathML is centered by default. Everything else on this page is
+   ranged left, and a centered equation inside a left-ranged step reads as a
    quotation from somewhere else. */
 .eq math {
   display: block;
@@ -346,9 +346,9 @@ figure.viz figcaption {
   color: var(--ink);
 }
 
-/* ⚠️ DO NOT SET font-family: inherit ON THE MATHS. That was the first attempt
+/* ⚠️ DO NOT SET font-family: inherit ON THE MATH. That was the first attempt
    and it is what made these look like italic prose rather than equations. A
-   maths font is not just a typeface. It carries the MATH table, which is what
+   math font is not just a typeface. It carries the MATH table, which is what
    tells the browser how tall to draw a radical, how far to raise a superscript,
    how thick the fraction bar is and how much room an operator needs. Forcing
    the page serif throws all of that away and leaves the browser guessing.
@@ -357,7 +357,7 @@ figure.viz figcaption {
    look like LaTeX rather than like an approximation of it. It is served from
    this repository rather than a CDN so the page keeps working whatever happens
    to somebody else's host, and `math` is kept as the fallback so a reader gets
-   their system maths font while 380 kB arrives, or instead of it. */
+   their system math font while 380 kB arrives, or instead of it. */
 @font-face {
   font-family: "Latin Modern Math";
   src: url("fonts/latinmodern-math.woff2") format("woff2");
@@ -647,8 +647,8 @@ table.nums td.v { font-variant-numeric: tabular-nums; }
 .legend i.dot { width: 0.4rem; height: 0.4rem; border-radius: 50%; }
 .legend i.sq { width: 0.7rem; height: 0.7rem; border-radius: 2px; }
 
-/* Each key takes the colour of the thing it stands for, and the words stay in
-   text ink, so identity is never carried by colour alone. */
+/* Each key takes the color of the thing it stands for, and the words stay in
+   text ink, so identity is never carried by color alone. */
 .lg-slice { color: var(--series-1); }
 .lg-quote { color: var(--ink); }
 .lg-sheet { color: var(--seq-3); }
@@ -675,7 +675,7 @@ table.nums td.v { font-variant-numeric: tabular-nums; }
 }
 
 @media (max-width: 40rem) {
-  /* The pipeline is five labelled boxes in a row. Scaled to a phone the labels
+  /* The pipeline is five labeled boxes in a row. Scaled to a phone the labels
      become unreadable, so it keeps its width and scrolls sideways instead. */
   .pipeline { overflow-x: auto; }
   .pipeline svg { min-width: 560px; }

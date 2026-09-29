@@ -70,7 +70,7 @@
   be poked at rather than described. The
   <a href="platform.html">finance platform</a>, the
   <a href="robotics.html">robot learning</a>, and the
-  <a href="models.html">machine learning organised by problem</a>.
+  <a href="models.html">machine learning organized by problem</a>.
 </p>
 
 <section id="intro">
@@ -241,8 +241,8 @@
       <svg viewBox="0 0 560 150" role="img"
            aria-labelledby="errdrop-title errdrop-desc">
         <title id="errdrop-title">Held-out prediction error before and after rebuilding the pipeline</title>
-        <desc id="errdrop-desc">Original pipeline, 192 millimetres. Rebuilt pipeline, 18 millimetres.
-        The grasp tolerance is 30 millimetres, so only the rebuilt pipeline falls inside it.</desc>
+        <desc id="errdrop-desc">Original pipeline, 192 millimeters. Rebuilt pipeline, 18 millimeters.
+        The grasp tolerance is 30 millimeters, so only the rebuilt pipeline falls inside it.</desc>
 
         <line class="c-axis" x1="132.5" y1="12" x2="132.5" y2="98"/>
 
@@ -254,7 +254,7 @@
         <path class="c-now" d="M132,72 H159.5 A4,4 0 0 1 163.5,76 V88 A4,4 0 0 1 159.5,92 H132 Z"/>
         <text class="c-val" x="196.5" y="86">18 mm</text>
 
-        <!-- Grasp tolerance, drawn over the bars with a surface-coloured
+        <!-- Grasp tolerance, drawn over the bars with a surface-colored
              backing stroke so it stays legible where it crosses a fill. -->
         <line class="c-tol-back" x1="184.5" y1="12" x2="184.5" y2="98"/>
         <line class="c-tol"      x1="184.5" y1="12" x2="184.5" y2="98"/>
@@ -1040,25 +1040,78 @@
   </p>
 
   <a class="teaser teaser-r" href="robotics.html" aria-label="Open the robot learning walkthrough">
-    <svg class="teaser-arm" viewBox="0 0 610 290" role="img" aria-label="Schematic of a robot arm reaching for an object being handed over by a second arm">
-    <line class="r-bench" x1="20" y1="280" x2="600" y2="280"/>
-    <rect class="r-base" x="26" y="240" width="68" height="40" rx="2"/>
-    <polyline class="r-arm2" points="570.0,270.0 510.0,120.0 324.0,70.0" fill="none"/>
-    <line class="r-path" x1="310" y1="80" x2="240" y2="155"/>
-    <polygon class="r-cone" points="238.5,113.0 332.9,229.6 232.6,262.9"/>
-    <line class="r-link r-l0" x1="60.0" y1="240.0" x2="103.5" y2="149.9"/>
-    <line class="r-link r-l1" x1="103.5" y1="149.9" x2="172.9" y2="89.6"/>
-    <line class="r-link r-l2" x1="172.9" y1="89.6" x2="246.9" y2="87.4"/>
-    <line class="r-link r-l3" x1="246.9" y1="87.4" x2="262.0" y2="133.0"/>
-    <line class="r-finger" x1="272.4" y1="129.5" x2="278.7" y2="148.5"/>
-    <line class="r-finger" x1="251.6" y1="136.5" x2="257.9" y2="155.4"/>
-    <circle class="r-joint" cx="60.0" cy="240.0" r="7.0"/>
-    <circle class="r-joint" cx="103.5" cy="149.9" r="6.0"/>
-    <circle class="r-joint" cx="172.9" cy="89.6" r="5.0"/>
-    <circle class="r-joint" cx="246.9" cy="87.4" r="4.0"/>
-    <circle class="r-cam" cx="238.5" cy="113.0" r="4"/>
-    <circle class="r-ring" cx="262.0" cy="133.0" r="17"/>
-    <circle class="r-obj" cx="262.0" cy="133.0" r="6"/>
+<svg class="teaser-arm" viewBox="0 0 605 300" role="img" aria-label="Schematic of a Franka robot arm reaching for an object being handed over by a second arm">
+    <rect class="r-table" x="-55" y="270" width="650" height="9"/>
+    <line class="r-hatch" x1="-49" y1="279" x2="-55" y2="288"/>
+    <line class="r-hatch" x1="-24" y1="279" x2="-30" y2="288"/>
+    <line class="r-hatch" x1="1" y1="279" x2="-5" y2="288"/>
+    <line class="r-hatch" x1="26" y1="279" x2="20" y2="288"/>
+    <line class="r-hatch" x1="51" y1="279" x2="45" y2="288"/>
+    <line class="r-hatch" x1="76" y1="279" x2="70" y2="288"/>
+    <line class="r-hatch" x1="101" y1="279" x2="95" y2="288"/>
+    <line class="r-hatch" x1="126" y1="279" x2="120" y2="288"/>
+    <line class="r-hatch" x1="151" y1="279" x2="145" y2="288"/>
+    <line class="r-hatch" x1="176" y1="279" x2="170" y2="288"/>
+    <line class="r-hatch" x1="201" y1="279" x2="195" y2="288"/>
+    <line class="r-hatch" x1="226" y1="279" x2="220" y2="288"/>
+    <line class="r-hatch" x1="251" y1="279" x2="245" y2="288"/>
+    <line class="r-hatch" x1="276" y1="279" x2="270" y2="288"/>
+    <line class="r-hatch" x1="301" y1="279" x2="295" y2="288"/>
+    <line class="r-hatch" x1="326" y1="279" x2="320" y2="288"/>
+    <line class="r-hatch" x1="351" y1="279" x2="345" y2="288"/>
+    <line class="r-hatch" x1="376" y1="279" x2="370" y2="288"/>
+    <line class="r-hatch" x1="401" y1="279" x2="395" y2="288"/>
+    <line class="r-hatch" x1="426" y1="279" x2="420" y2="288"/>
+    <line class="r-hatch" x1="451" y1="279" x2="445" y2="288"/>
+    <line class="r-hatch" x1="476" y1="279" x2="470" y2="288"/>
+    <line class="r-hatch" x1="501" y1="279" x2="495" y2="288"/>
+    <line class="r-hatch" x1="526" y1="279" x2="520" y2="288"/>
+    <line class="r-hatch" x1="551" y1="279" x2="545" y2="288"/>
+    <line class="r-hatch" x1="576" y1="279" x2="570" y2="288"/>
+    <polyline class="r-arm2" points="565,260 505,110 319,60" fill="none"/>
+    <polygon class="r-cone" points="245.7,131.8 329.3,256.4 226.4,280.6"/>
+    <line class="cap-edge " x1="55.0" y1="268.0" x2="55.0" y2="248.0" stroke-width="54.0"/>
+    <line class="cap-body " x1="55.0" y1="268.0" x2="55.0" y2="248.0" stroke-width="52.0"/>
+    <line class="cap-edge " x1="55.0" y1="252.0" x2="55.0" y2="236.0" stroke-width="40.0"/>
+    <line class="cap-body " x1="55.0" y1="252.0" x2="55.0" y2="236.0" stroke-width="38.0"/>
+    <line class="cap-edge " x1="55.0" y1="230.0" x2="67.6" y2="167.2" stroke-width="19.0"/>
+    <line class="cap-body " x1="55.0" y1="230.0" x2="67.6" y2="167.2" stroke-width="17.0"/>
+    <line class="cap-edge " x1="67.6" y1="167.2" x2="129.4" y2="93.8" stroke-width="17.0"/>
+    <line class="cap-body " x1="67.6" y1="167.2" x2="129.4" y2="93.8" stroke-width="15.0"/>
+    <line class="cap-edge " x1="129.4" y1="93.8" x2="212.1" y2="70.3" stroke-width="15.0"/>
+    <line class="cap-body " x1="129.4" y1="93.8" x2="212.1" y2="70.3" stroke-width="13.0"/>
+    <line class="cap-edge " x1="212.1" y1="70.3" x2="249.2" y2="89.9" stroke-width="13.0"/>
+    <line class="cap-body " x1="212.1" y1="70.3" x2="249.2" y2="89.9" stroke-width="11.0"/>
+    <line class="cap-edge " x1="249.2" y1="89.9" x2="257.0" y2="123.0" stroke-width="11.0"/>
+    <line class="cap-body " x1="249.2" y1="89.9" x2="257.0" y2="123.0" stroke-width="9.0"/>
+    <line class="cap-edge " x1="49.1" y1="228.8" x2="60.9" y2="231.2" stroke-width="24.0"/>
+    <line class="cap-body " x1="49.1" y1="228.8" x2="60.9" y2="231.2" stroke-width="22.0"/>
+    <circle class="r-band" cx="55.0" cy="230.0" r="6.8"/>
+    <line class="cap-edge " x1="63.4" y1="163.7" x2="71.8" y2="170.8" stroke-width="22.0"/>
+    <line class="cap-body " x1="63.4" y1="163.7" x2="71.8" y2="170.8" stroke-width="20.0"/>
+    <circle class="r-band" cx="67.6" cy="167.2" r="6.2"/>
+    <line class="cap-edge " x1="128.0" y1="89.0" x2="130.7" y2="98.5" stroke-width="20.0"/>
+    <line class="cap-body " x1="128.0" y1="89.0" x2="130.7" y2="98.5" stroke-width="18.0"/>
+    <circle class="r-band" cx="129.4" cy="93.8" r="5.6"/>
+    <line class="cap-edge " x1="214.2" y1="66.4" x2="210.0" y2="74.2" stroke-width="18.0"/>
+    <line class="cap-body " x1="214.2" y1="66.4" x2="210.0" y2="74.2" stroke-width="16.0"/>
+    <circle class="r-band" cx="212.1" cy="70.3" r="5.0"/>
+    <line class="cap-edge " x1="253.0" y1="89.0" x2="245.5" y2="90.8" stroke-width="16.0"/>
+    <line class="cap-body " x1="253.0" y1="89.0" x2="245.5" y2="90.8" stroke-width="14.0"/>
+    <circle class="r-band" cx="249.2" cy="89.9" r="4.3"/>
+    <line class="cap-edge " x1="256.5" y1="121.1" x2="257.9" y2="126.9" stroke-width="24.0"/>
+    <line class="cap-body " x1="256.5" y1="121.1" x2="257.9" y2="126.9" stroke-width="22.0"/>
+    <line class="cap-edge " x1="257.9" y1="126.9" x2="260.4" y2="137.6" stroke-width="20.0"/>
+    <line class="cap-body " x1="257.9" y1="126.9" x2="260.4" y2="137.6" stroke-width="18.0"/>
+    <line class="cap-edge " x1="250.7" y1="139.9" x2="270.2" y2="135.3" stroke-width="8.0"/>
+    <line class="cap-body " x1="250.7" y1="139.9" x2="270.2" y2="135.3" stroke-width="6.0"/>
+    <line class="cap-edge " x1="269.2" y1="135.5" x2="273.3" y2="153.1" stroke-width="8.0"/>
+    <line class="cap-body " x1="269.2" y1="135.5" x2="273.3" y2="153.1" stroke-width="6.0"/>
+    <line class="cap-edge " x1="251.7" y1="139.7" x2="255.8" y2="157.2" stroke-width="8.0"/>
+    <line class="cap-body " x1="251.7" y1="139.7" x2="255.8" y2="157.2" stroke-width="6.0"/>
+    <circle class="r-cam" cx="245.7" cy="131.8" r="4"/>
+    <circle class="r-ring" cx="257.0" cy="123.0" r="17"/>
+    <circle class="r-obj" cx="257.0" cy="123.0" r="6"/>
     </svg>
     <span class="teaser-caption">
       <strong>Handover, in schematic.</strong> One arm reaching for an object
@@ -1070,7 +1123,7 @@
 
   <details class="entry">
     <summary>
-      <h3>Robot learning, and the gap between training and deployment</h3>
+      <h3>Robot learning and the gap between training and deployment</h3>
       <p class="meta">Nine panels, in the browser <span class="sep">&middot;</span> <a href="robotics.html">Open the walkthrough</a></p>
     </summary>
     <p class="lede">
@@ -1094,7 +1147,7 @@
 </section>
 
 <section id="models-demo">
-  <h2>Machine learning, by problem</h2>
+  <h2>Machine learning by problem</h2>
 
   <p class="section-lede">
     The machine learning work that is not one of the two big projects, arranged
@@ -1103,14 +1156,14 @@
 
   <details class="entry">
     <summary>
-      <h3>Machine learning, organised by problem</h3>
+      <h3>Machine learning organized by problem</h3>
       <p class="meta">Eight panels, in the browser <span class="sep">&middot;</span> <a href="models.html">Open the walkthrough</a></p>
     </summary>
     <p class="lede">
       Sequence models on variable-length sensor data, the ridge ablation that
       answers whether a feature block carries anything, reinforcement learning
       once the reward is charged for trading, parameter-efficient fine tuning
-      and quantisation, retrieval and why chunking decides most of it, and
+      and quantization, retrieval and why chunking decides most of it, and
       physiological signals across settings that differ. The roster of every
       model family is at the top for anyone who wants to check the list first.
     </p>

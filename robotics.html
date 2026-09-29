@@ -22,7 +22,7 @@
 
 <header class="masthead platform-head">
   <p class="backlink"><a href="./">&larr; Neal D&rsquo;Andrea</a></p>
-  <h1>Robot learning, and the gap</h1>
+  <h1>Robot learning and the gap</h1>
   <p class="standfirst">
     Two robots passing an object between them, in orbit, with nobody in the loop
     to correct a bad grasp. This is how the policy gets built, how it gets onto
@@ -54,7 +54,7 @@
     <div class="plate-title">
       <span><b>Plate 00</b></span>
       <span>Handover, planar schematic</span>
-      <span>Franka FR3, 7 axes drawn as 4</span>
+      <span>Franka FR3, 7 axes drawn as 5</span>
       <span>Not to scale</span>
     </div>
     <figcaption>
@@ -113,8 +113,8 @@
       That the research question was which architecture to use. It turned out
       the architecture was rarely the thing standing between a policy that works
       in evaluation and one that works on the arm. Frame conventions, stale
-      observations and the way an action is parameterised did more damage than
-      any modelling choice I made.
+      observations and the way an action is parameterized did more damage than
+      any modeling choice I made.
     </p>
   </details>
 </section>
@@ -173,7 +173,7 @@
   <p class="lede">
     The stack ran on a 171-million-parameter U-Net diffusion policy. It now runs
     on a 3-billion-parameter vision-language-action model. The reason was not
-    that bigger is better. It was that the diffusion policy did not generalise
+    that bigger is better. It was that the diffusion policy did not generalize
     outside the distribution it was trained on, and I could show that.
   </p>
 
@@ -193,7 +193,7 @@
       Not with a benchmark score. A change of that size needs a reason somebody
       else can check, so I wrote it up as a cited review of published handover
       and out-of-distribution results and put my own measurements next to them.
-      The argument was that the failure was a generalisation failure rather than
+      The argument was that the failure was a generalization failure rather than
       a capacity or tuning failure, and that scaling the same architecture would
       not fix it.
     </p>
@@ -222,7 +222,7 @@
   </figure>
 
   <details class="tried">
-    <summary>The part that is not modelling at all</summary>
+    <summary>The part that is not modeling at all</summary>
     <p>
       A workspace gate on the client, because a policy that has never seen the
       edge of the table will happily drive into it. Rate limiting, because a
@@ -271,7 +271,7 @@
     <p>
       The frame rotation was the worst, because a consistent rotation looks like
       a policy that has learned a slightly wrong grasp approach. I went looking
-      in the model first, retrained, and got the same behaviour back.
+      in the model first, retrained, and got the same behavior back.
     </p>
     <p>
       The stale observations were subtler again. The policy was acting on what
@@ -358,7 +358,7 @@
   <span class="plate-kicker">Parameter study</span>
   <h2>Do quantum layers buy parameter efficiency</h2>
   <p class="lede">
-    A separate question inside the same stack. If parameterised quantum circuits
+    A separate question inside the same stack. If parameterized quantum circuits
     replaced the attention projections in a vision transformer policy, would
     accuracy hold at fewer parameters. The comparison was pre-registered, with
     matched classical controls on identical episode splits, a width ladder

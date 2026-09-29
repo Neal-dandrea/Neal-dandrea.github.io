@@ -111,9 +111,17 @@
      did the only thing it could and stretched every joint straight at it. The
      drawing was a stick. Link lengths sum to 314 and the path sits between 199
      and 297 away, which keeps the elbow bent through the whole sweep. */
+  /* Five segments rather than four, laid out closer to the real proportions.
+     An FR3 in side view reads as a base column, an upper arm, a forearm, a
+     short wrist and the hand, and giving each of those its own segment is what
+     makes the silhouette recognisable rather than generic.
+
+     Link widths taper the way the real arm does, which matters more to whether
+     it looks like an arm than the joint count does. */
   const ARM = {
     base: { x: 150, y: 300 },
-    links: [100, 92, 74, 48],
+    links: [64, 96, 86, 42, 34],
+    widths: [17, 15, 13, 11, 9],
     camFov: 0.72,
   };
 
@@ -148,7 +156,7 @@
     return { angles: a, pts: fk(a) };
   }
 
-  const heroState = { t: 0.55, seed: [-0.9, 0.7, 0.5, 0.2] };
+  const heroState = { t: 0.55, seed: [-1.35, 0.55, 0.62, 0.3, 0.1] };
 
   function drawArmPlate() {
     const canvas = document.getElementById("arm-canvas");
@@ -174,59 +182,106 @@
     const sol = poseArm(target, heroState.seed);
     const pts = sol.pts;
 
-    // Bench line and base.
+    /* ---- the table, with a thickness rather than a single line ---------- */
+    ctx.fillStyle = cssVar("--surface-panel");
     ctx.strokeStyle = rule;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(sx(40), sy(340)); ctx.lineTo(sx(690), sy(340));
-    ctx.stroke();
-    ctx.fillStyle = soft;
-    ctx.fillRect(sx(ARM.base.x - 34), sy(300), sx(68), sy(40));
+    ctx.rect(sx(40), sy(340), sx(650), sy(9));
+    ctx.fill(); ctx.stroke();
     ctx.strokeStyle = faint;
-    for (let i = 0; i < 6; i++) {
+    ctx.globalAlpha = 0.5;
+    for (let i = 0; i < 26; i++) {
       ctx.beginPath();
-      ctx.moveTo(sx(ARM.base.x - 34 + i * 13), sy(340));
-      ctx.lineTo(sx(ARM.base.x - 44 + i * 13), sy(352));
+      ctx.moveTo(sx(46 + i * 25), sy(349));
+      ctx.lineTo(sx(40 + i * 25), sy(358));
       ctx.stroke();
     }
+    ctx.globalAlpha = 1;
 
-    // Links, drawn as a linkage rather than a silhouette.
+    /* ---- capsules and housings ------------------------------------------
+
+       An outlined capsule rather than a stick. Stroke once fat in the outline
+       colour and once thinner in the body colour, which gives a filled link
+       with a clean edge and costs one path. A stick reads as a linkage
+       diagram. This reads as a robot, and the difference is most of what the
+       plate is for. */
+    const capsule = (a, b, halfW, body, edge) => {
+      ctx.lineCap = "round";
+      ctx.strokeStyle = edge;
+      ctx.lineWidth = (halfW * 2 + 2) * S;
+      ctx.beginPath();
+      ctx.moveTo(sx(a.x), sy(a.y)); ctx.lineTo(sx(b.x), sy(b.y));
+      ctx.stroke();
+      ctx.strokeStyle = body;
+      ctx.lineWidth = halfW * 2 * S;
+      ctx.beginPath();
+      ctx.moveTo(sx(a.x), sy(a.y)); ctx.lineTo(sx(b.x), sy(b.y));
+      ctx.stroke();
+    };
+
+    const body = cssVar("--surface-panel"), edge = ink, band = soft;
+
+    // Pedestal, two stacked cylinders, the way the arm is actually mounted.
+    capsule({ x: ARM.base.x, y: 338 }, { x: ARM.base.x, y: 318 }, 26, body, edge);
+    capsule({ x: ARM.base.x, y: 322 }, { x: ARM.base.x, y: 306 }, 19, body, edge);
+
     ctx.lineCap = "round";
     for (let i = 0; i < pts.length - 1; i++) {
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = Math.max(2, (11 - i * 1.8) * S);
-      ctx.beginPath();
-      ctx.moveTo(sx(pts[i].x), sy(pts[i].y));
-      ctx.lineTo(sx(pts[i + 1].x), sy(pts[i + 1].y));
-      ctx.stroke();
+      capsule(pts[i], pts[i + 1], ARM.widths[i] / 2, body, edge);
     }
+
+    // Joint housings, drawn across the link rather than along it, which is what
+    // makes the elbow look like an elbow.
     pts.slice(0, -1).forEach((p, i) => {
-      ctx.fillStyle = cssVar("--paper");
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 1.5 * S;
+      const nxt = pts[i + 1];
+      const a = Math.atan2(nxt.y - p.y, nxt.x - p.x);
+      const hw = ARM.widths[i] / 2 + 2.5;
+      const ux = Math.cos(a + Math.PI / 2), uy = Math.sin(a + Math.PI / 2);
+      capsule({ x: p.x - ux * hw * 0.55, y: p.y - uy * hw * 0.55 },
+              { x: p.x + ux * hw * 0.55, y: p.y + uy * hw * 0.55 },
+              hw, body, edge);
+      // The dark band around each joint.
+      ctx.strokeStyle = band;
+      ctx.globalAlpha = 0.5;
+      ctx.lineWidth = 1.6 * S;
       ctx.beginPath();
-      ctx.arc(sx(p.x), sy(p.y), Math.max(3, (7 - i) * S), 0, Math.PI * 2);
-      ctx.fill();
+      ctx.arc(sx(p.x), sy(p.y), hw * 0.62 * S, 0, Math.PI * 2);
       ctx.stroke();
+      ctx.globalAlpha = 1;
     });
 
-    // Gripper fingers at the tool point, opened around the object.
+    /* ---- the hand -------------------------------------------------------- */
     const tip = pts[pts.length - 1], wrist = pts[pts.length - 2];
     const th = Math.atan2(tip.y - wrist.y, tip.x - wrist.x);
     const nx = -Math.sin(th), ny = Math.cos(th);
-    ctx.strokeStyle = ink;
-    ctx.lineWidth = 2.5 * S;
+    const along = (p, d) => ({ x: p.x + Math.cos(th) * d, y: p.y + Math.sin(th) * d });
+
+    // Flange, then the hand body, then two fingers on a rail.
+    capsule(along(tip, -2), along(tip, 4), 11, body, edge);
+    capsule(along(tip, 4), along(tip, 15), 9, body, edge);
+    // The rail the fingers ride on.
+    capsule({ x: tip.x + Math.cos(th) * 15 + nx * 10, y: tip.y + Math.sin(th) * 15 + ny * 10 },
+            { x: tip.x + Math.cos(th) * 15 - nx * 10, y: tip.y + Math.sin(th) * 15 - ny * 10 },
+            3, body, edge);
     [-1, 1].forEach((sgn) => {
+      const root = { x: tip.x + Math.cos(th) * 15 + nx * 9 * sgn,
+                     y: tip.y + Math.sin(th) * 15 + ny * 9 * sgn };
+      capsule(root, along(root, 18), 3, body, edge);
+      // The pad on the inside face of each finger.
+      ctx.strokeStyle = band;
+      ctx.lineWidth = 2 * S;
       ctx.beginPath();
-      ctx.moveTo(sx(tip.x + nx * 11 * sgn), sy(tip.y + ny * 11 * sgn));
-      ctx.lineTo(sx(tip.x + nx * 11 * sgn + Math.cos(th) * 20),
-                 sy(tip.y + ny * 11 * sgn + Math.sin(th) * 20));
+      ctx.moveTo(sx(root.x - nx * 2.5 * sgn + Math.cos(th) * 6),
+                 sy(root.y - ny * 2.5 * sgn + Math.sin(th) * 6));
+      ctx.lineTo(sx(root.x - nx * 2.5 * sgn + Math.cos(th) * 16),
+                 sy(root.y - ny * 2.5 * sgn + Math.sin(th) * 16));
       ctx.stroke();
     });
 
     // Wrist camera and its cone.
-    const camAt = { x: wrist.x + (tip.x - wrist.x) * 0.45 + nx * 16,
-                    y: wrist.y + (tip.y - wrist.y) * 0.45 + ny * 16 };
+    const camAt = { x: tip.x + Math.cos(th) * 6 + nx * 13,
+                    y: tip.y + Math.sin(th) * 6 + ny * 13 };
     ctx.fillStyle = blue;
     ctx.beginPath();
     ctx.arc(sx(camAt.x), sy(camAt.y), 4 * S, 0, Math.PI * 2);
@@ -257,7 +312,7 @@
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
 
-    // The handover path the object is travelling along.
+    // The handover path the object is traveling along.
     ctx.strokeStyle = faint;
     ctx.setLineDash([2 * S, 4 * S]);
     ctx.beginPath();
@@ -299,7 +354,7 @@
 
     leader(camAt.x, camAt.y, 250, 78, "WRIST CAMERA");
     leader(target.x, target.y - 17, 450, 64, "GRASP TOLERANCE 30 MM");
-    leader(pts[1].x, pts[1].y, 54, 196, "7 AXES, SHOWN AS 4", "left");
+    leader(pts[1].x, pts[1].y, 54, 196, "7 AXES, SHOWN AS 5", "left");
     leader(612, 210, 660, 258, "SECOND ARM");
     leader(ARM.base.x, 322, 246, 366, "IMPEDANCE CONTROL 1 KHZ");
 
@@ -557,7 +612,7 @@
 
   /* ------------------------------------------------ 02 the pipeline, moving
 
-     The plate used to be five labelled boxes with arrows, which says the order
+     The plate used to be five labeled boxes with arrows, which says the order
      of the steps and nothing about what happens inside any of them. This runs
      instead. Four stages, each drawn from the same state the prose describes,
      cycling on a timer.
@@ -875,7 +930,7 @@
 
   /* ------------------------------------------- 05 train-deploy mismatch --
 
-     A closed loop, in millimetres, reaching for a target at the origin from
+     A closed loop, in millimeters, reaching for a target at the origin from
      400 mm away. The policy sees where it is, works out a step toward where it
      thinks the target is, and the client executes that step.
 
@@ -907,7 +962,7 @@
     start: { x: -400, y: 130 },
     gain: 0.16,
     maxStep: 26,
-    tolerance: 30,          // the grasp tolerance, in millimetres
+    tolerance: 30,          // the grasp tolerance, in millimeters
     delay: 3,               // control cycles of staleness
     staleGain: 2.6,
     rotation: Math.PI / 4,  // the tool-frame error, 45 degrees
@@ -1168,7 +1223,7 @@
           fill: a.c, opacity: 0.55 }, svg);
       });
       const m = draws.reduce((s, v) => s + v, 0) / draws.length;
-      // The mean line spans the dots it summarises. Drawn at a fixed height it
+      // The mean line spans the dots it summarizes. Drawn at a fixed height it
       // towers over a single rollout and implies a spread that is not there.
       el("line", { x1: X(m), y1: y0 - 12, x2: X(m), y2: y0 + (rows - 1) * 8 + 12,
         stroke: a.c, "stroke-width": 2 }, svg);

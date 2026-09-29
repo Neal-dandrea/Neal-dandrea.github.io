@@ -66,7 +66,7 @@ The affiliations section uses two different list structures:
 Wrap `.crest-name` text in an `<a>` to make an entry link out, as the lab entry
 does.
 
-Colours, spacing and the text measure are variables at the top of `style.css`.
+Colors, spacing and the text measure are variables at the top of `style.css`.
 `--measure` controls line length — widen it and the page gets harder to read, so
 change it cautiously. Dark mode, print and small screens all follow from those
 same variables and need no separate edit.
@@ -75,12 +75,12 @@ same variables and need no separate edit.
 
 `body::before` and `body::after` are two fixed layers behind the content: a
 ruled instrument grid, which reads as a price chart and a CAD drawing at the
-same time, and two soft colour washes. Both are CSS gradients, so they cost no
+same time, and two soft color washes. Both are CSS gradients, so they cost no
 requests and nothing loads. The grid is masked to fade out by roughly 75rem
 down, so the long prose sections are never read over ruling.
 
 `--accent` is a scarlet that sits between UC red and Ohio State scarlet, close
-enough to read as either without claiming to be an official brand colour. It
+enough to read as either without claiming to be an official brand color. It
 appears in the hairline under the sticky nav, the tick before each section
 label, and link and crest hover states. Turn the whole surface off by deleting
 the `body::before, body::after` rule; nothing else depends on it.
@@ -134,7 +134,7 @@ If the standfirst changes, regenerate the card so the two agree, and update the
 held at or above the WCAG AA contrast minimum of 4.5:1 against `--paper`
 (currently 4.70:1 in light mode, 5.98:1 in dark). It is tempting to lighten it
 for a quieter look; don't, without re-checking the ratio. The other text
-colours clear the bar comfortably.
+colors clear the bar comfortably.
 
 ## Content notes
 
@@ -144,7 +144,7 @@ colours clear the bar comfortably.
   lines removed and add it as `resume.pdf` with a link in the masthead.
 - The affiliations section uses real marks and real headshots throughout, each
   taken from the organization's own site. Every mark has a dark-mode twin,
-  because an SVG loaded through `<img>` does not inherit the page's colour and
+  because an SVG loaded through `<img>` does not inherit the page's color and
   would otherwise render black on black. `img/README.md` has the details and
   the regeneration recipe.
 - Employment is ordered by relevance rather than strictly by date: the robotics
@@ -193,7 +193,7 @@ Four things to know before editing `platform.js`:
   date put NVDA's three-month at-the-money vol at 94%, which is the kind of
   number that discredits every other number on the page.
 
-Colours come from `style.css` where they can, and the chart palette in
+Colors come from `style.css` where they can, and the chart palette in
 `platform.css` was checked against this site's own light and dark surfaces
 rather than assumed. Light mode is below the contrast threshold for two of the
 three series, which is why every series carries a direct label rather than

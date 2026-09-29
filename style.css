@@ -50,7 +50,7 @@ body {
 }
 
 /* ---------- background surface ----------
-   One fixed layer behind everything: two slow colour washes, scarlet at the
+   One fixed layer behind everything: two slow color washes, scarlet at the
    top and a cool instrument blue at the bottom. Built from gradients, so
    there are no image requests and nothing to load. */
 
@@ -616,7 +616,7 @@ ul.plain .meta { display: inline; font-size: 0.85rem; }
 
 /* ---------- charts ---------- */
 
-/* Inline SVG, so it inherits the page's colour tokens and follows dark mode
+/* Inline SVG, so it inherits the page's color tokens and follows dark mode
    without a second copy. Before and after are one hue in two shades; the
    accent is spent on the tolerance, which is the line the story crosses. */
 .chart {
@@ -638,7 +638,7 @@ ul.plain .meta { display: inline; font-size: 0.85rem; }
   stroke-width: 1;
 }
 
-/* The backing stroke is the surface colour, so the tolerance rule stays
+/* The backing stroke is the surface color, so the tolerance rule stays
    readable where it crosses the bar it is measuring. */
 .c-tol-back {
   stroke: var(--paper);
@@ -650,7 +650,7 @@ ul.plain .meta { display: inline; font-size: 0.85rem; }
   stroke-width: 1.5;
 }
 
-/* Text wears text tokens, never the data colour. */
+/* Text wears text tokens, never the data color. */
 .chart text {
   font-family: inherit;
   font-size: 13px;
@@ -821,22 +821,19 @@ footer p { margin: 0; }
 
 
 /* The robotics teaser, generated from the same linkage solver the walkthrough
-   uses and baked in, so the page gains a drawing rather than a script. */
+   uses and baked in, so the page gains a drawing rather than a script. Links
+   are capsules, which means each one is two strokes, a fat edge under a
+   thinner body. A single stroke reads as a stick figure. */
 
-.teaser-r { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+.teaser-r { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
 .teaser-arm { display: block; width: 100%; height: auto; overflow: visible; }
 
-.teaser-arm .r-link { stroke: var(--ink); stroke-linecap: round; }
-.teaser-arm .r-l0 { stroke-width: 11; }
-.teaser-arm .r-l1 { stroke-width: 9; }
-.teaser-arm .r-l2 { stroke-width: 7; }
-.teaser-arm .r-l3 { stroke-width: 5; }
-.teaser-arm .r-finger { stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; }
-.teaser-arm .r-joint { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
-.teaser-arm .r-base { fill: var(--ink-soft); }
-.teaser-arm .r-bench { stroke: var(--rule); stroke-width: 1; }
-.teaser-arm .r-arm2 { stroke: var(--ink-faint); stroke-width: 6; opacity: 0.4; stroke-linecap: round; }
-.teaser-arm .r-path { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 2 4; }
+.teaser-arm .cap-edge { stroke: var(--ink); stroke-linecap: round; }
+.teaser-arm .cap-body { stroke: var(--paper); stroke-linecap: round; }
+.teaser-arm .r-band { fill: none; stroke: var(--ink-soft); stroke-width: 1.6; opacity: 0.5; }
+.teaser-arm .r-table { fill: none; stroke: var(--rule); stroke-width: 1; }
+.teaser-arm .r-hatch { stroke: var(--ink-faint); stroke-width: 1; opacity: 0.45; }
+.teaser-arm .r-arm2 { stroke: var(--ink-faint); stroke-width: 7; opacity: 0.35; stroke-linecap: round; }
 .teaser-arm .r-cone { fill: #2a78d6; opacity: 0.12; }
 .teaser-arm .r-cam { fill: #2a78d6; }
 .teaser-arm .r-obj { fill: var(--accent); }

@@ -351,7 +351,7 @@
       }
     });
 
-    // The forming bar is labelled rather than left to the legend, because it is
+    // The forming bar is labeled rather than left to the legend, because it is
     // the whole point of the panel.
     const fx = padL + (all.length - 1) * bw + bw / 2;
     ctx.fillStyle = cssVar("--forming");
@@ -467,7 +467,7 @@
     "2025-04-04": { label: "4 Apr 2025",  lvl: 1.95, evt: 0,     str: 0.13, skewMul: 1.35,
                     note: "A selloff. The whole surface lifts, the front most, and the skew steepens." },
     "2025-07-25": { label: "25 Jul 2025", lvl: 1.05, evt: 0.085, str: 0,    skewMul: 1.0,
-                    note: "An earnings print inside the front month, so one expiry stands proud of its neighbours." },
+                    note: "An earnings print inside the front month, so one expiry stands proud of its neighbors." },
     "2025-10-31": { label: "31 Oct 2025", lvl: 0.74, evt: 0,     str: -0.035, skewMul: 0.9,
                     note: "The crush afterwards. The front end collapses." },
     "2026-02-27": { label: "27 Feb 2026", lvl: 1.28, evt: 0.03,  str: 0.04, skewMul: 1.15,
@@ -688,7 +688,7 @@
   }
 
   /* The auto-fit puts the whole surface in the box. The view transform then
-     zooms and pans within that, about the canvas centre, so zooming is
+     zooms and pans within that, about the canvas center, so zooming is
      independent of the angle and of which market is loaded. */
   function project(k, T, v, vlo, vhi, fit) {
     const r = raw(k, T, v, vlo, vhi);
@@ -750,8 +750,8 @@
     // and therefore where the labels can sit without being behind the sheet.
     const leftIsNear = Math.sin(surf.yaw) < 0;
 
-    // Floor lines along the strike axis, one per labelled expiry. The seven-day
-    // slice is drawn but not labelled, because at this scale its label lands on
+    // Floor lines along the strike axis, one per labeled expiry. The seven-day
+    // slice is drawn but not labeled, because at this scale its label lands on
     // top of the one-month label.
     const marks = [28, 91, 189, 350, 545].map((d) => d / 365)
       .filter((T) => T >= T_MIN && T <= T_MAX);
@@ -1625,7 +1625,7 @@
     "Cross-sectional momentum", "Short-term reversal", "Volatility risk premium",
     "Term-structure carry", "Skew change", "Order-flow imbalance",
     "Open-interest change", "Sector relative strength", "Overnight drift",
-    "Volume surprise", "Realised-implied spread", "Breadth thrust",
+    "Volume surprise", "Realized-implied spread", "Breadth thrust",
     "Correlation regime", "Gamma-exposure proxy",
   ];
 
@@ -1710,7 +1710,7 @@
       { n: 513, what: "independent bets after adjusting for correlation", c: "--accent" },
     ];
     // ⚠️ LINEAR, NOT LOG. A log scale fits all three comfortably and makes
-    //    126,756 and 18,420 look like near neighbours, which is the opposite of
+    //    126,756 and 18,420 look like near neighbors, which is the opposite of
     //    the point. On a linear scale the last bar is a sliver, and the sliver
     //    is the finding. It is floored at two pixels so it stays visible.
     const max = rows[0].n;
@@ -1731,8 +1731,8 @@
 
   /* ------------------------------------------------------- formulas ------
 
-     MathML rather than a maths library or a picture. It renders like typeset
-     maths, scales with the surrounding text, stays selectable and searchable,
+     MathML rather than a math library or a picture. It renders like typeset
+     math, scales with the surrounding text, stays selectable and searchable,
      survives dark mode, and adds nothing to the page. A picture would be none
      of those things, and loading a typesetting library to set six equations
      would be a few hundred kilobytes of dependency on a site whose point is
@@ -2120,7 +2120,7 @@
     });
 
     // Dark mode is a different palette, not a filter, so everything that baked
-    // a colour into a canvas has to be drawn again when the mode changes.
+    // a color into a canvas has to be drawn again when the mode changes.
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     (mq.addEventListener ? mq.addEventListener.bind(mq, "change") : mq.addListener.bind(mq))(drawAll);
 

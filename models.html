@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Machine Learning — Neal D'Andrea</title>
-<meta name="description" content="Machine learning work organised by problem rather than by architecture. Sequence models on sensor data, feature ablation, reinforcement learning under transaction costs, parameter-efficient fine tuning, and retrieval.">
+<meta name="description" content="Machine learning work organized by problem rather than by architecture. Sequence models on sensor data, feature ablation, reinforcement learning under transaction costs, parameter-efficient fine tuning, and retrieval.">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="viz.css">
 <link rel="stylesheet" href="models.css">
@@ -13,7 +13,7 @@
 
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://neal-dandrea.github.io/models.html">
-<meta property="og:title" content="Machine learning, organised by problem">
+<meta property="og:title" content="Machine learning organized by problem">
 <meta property="og:description" content="Sequence models on sensor data, feature ablation, reinforcement learning under costs, parameter-efficient fine tuning, and retrieval. What each model was for and what it cost.">
 <meta property="og:image" content="https://neal-dandrea.github.io/og-card.jpg">
 <meta name="twitter:card" content="summary_large_image">
@@ -22,9 +22,9 @@
 
 <header class="masthead platform-head">
   <p class="backlink"><a href="./">&larr; Neal D&rsquo;Andrea</a></p>
-  <h1>Machine learning, by problem</h1>
+  <h1>Machine learning by problem</h1>
   <p class="standfirst">
-    Organised by the question rather than by the architecture, because the
+    Organized by the question rather than by the architecture, because the
     architecture is usually the least interesting decision in the project. Each
     panel is a problem, what I tried on it, and what the comparison actually
     said.
@@ -130,7 +130,7 @@
     </p>
     <p>
       What fixed it was dropout, a plateau scheduler on the learning rate, and
-      systematic tuning across Adam and SGD rather than switching optimiser and
+      systematic tuning across Adam and SGD rather than switching optimizer and
       hoping. I also started exporting to ONNX and reading the graph in Netron,
       because a computational graph you can look at answers questions that a
       training curve cannot.
@@ -240,13 +240,13 @@
     An open-weight model, a domain corpus far too small to justify touching
     every parameter, and a memory budget that rules out full fine tuning
     anyway. LoRA and QLoRA through the HuggingFace trainer, then post-training
-    quantisation to get the result somewhere it can run.
+    quantization to get the result somewhere it can run.
   </p>
 
   <div class="controls" id="peft-controls"></div>
   <figure class="viz">
     <svg id="peft-svg" viewBox="0 0 720 320" role="img"
-         aria-label="Trainable parameters, memory and output quality across adapter ranks and quantisation levels"></svg>
+         aria-label="Trainable parameters, memory and output quality across adapter ranks and quantization levels"></svg>
     <figcaption>
       Illustrative. Rank buys capacity and memory in roughly equal measure, and
       the quality curve flattens long before the memory curve does.
@@ -254,7 +254,7 @@
   </figure>
 
   <details class="tried">
-    <summary>Where quantisation stops being free</summary>
+    <summary>Where quantization stops being free</summary>
     <p>
       Compression is nearly free until it is suddenly not, and the point where
       it stops being free depends on the task rather than on the model. Judging
@@ -303,7 +303,7 @@
   <h2>Physiological signals across settings that differ</h2>
   <p class="panel-lede">
     Continuous glucose monitoring, in populations and environments the device
-    was not originally designed around. The modelling question is less about
+    was not originally designed around. The modeling question is less about
     accuracy on a benchmark and more about whether performance holds when the
     setting changes, which is the same question as the deployment gap on the
     robotics page wearing different clothes.
@@ -359,7 +359,7 @@
     <li>
       <h3>Retrieval quality as its own benchmark</h3>
       <p>
-        A small labelled set of questions with known correct passages, so
+        A small labeled set of questions with known correct passages, so
         retrieval can be scored without a language model in the loop at all.
       </p>
     </li>

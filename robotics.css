@@ -205,7 +205,7 @@ figure.plate-fig figcaption {
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- drafting grid colour ---------- */
+/* ---------- drafting grid color ---------- */
 
 :root { --drafting: rgba(22, 24, 28, 0.045); }
 @media (prefers-color-scheme: dark) {

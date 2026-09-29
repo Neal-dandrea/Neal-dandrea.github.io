@@ -127,14 +127,14 @@
         { n: "LoRA and QLoRA", d: "adapters through the HuggingFace trainer" },
         { n: "PEFT", d: "parameter-efficient adaptation" },
         { n: "Retrieval-augmented generation", d: "vector search in Postgres" },
-        { n: "Post-training quantisation", d: "deployment under a memory budget" },
+        { n: "Post-training quantization", d: "deployment under a memory budget" },
       ],
     },
     {
       key: "quantum", name: "Quantum",
       where: "parameter-efficiency study",
       items: [
-        { n: "Parameterised quantum circuits", d: "attention projections in PennyLane" },
+        { n: "Parameterized quantum circuits", d: "attention projections in PennyLane" },
       ],
     },
   ];
