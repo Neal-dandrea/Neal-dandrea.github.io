@@ -164,6 +164,11 @@ here so the voice stays consistent across edits.
 - No colons or semicolons breaking up a sentence. Join the clauses with a word
   or start a new sentence.
 - American spelling everywhere, including comments and commit messages.
+- No clipped declaratives. A short punchy sentence that states a thing and
+  leaves the next sentence to explain it should be joined to that next
+  sentence instead. This crept in twice and was cleaned out twice, so it is
+  worth watching for. Figure badges, direct instructions to the reader, and
+  job title and degree lines are not prose and are exempt.
 - No commas in titles or headings. Job titles and degree lines keep theirs,
   since a comma is part of how those are conventionally written.
 - First person where the page is describing something learned. The earlier
