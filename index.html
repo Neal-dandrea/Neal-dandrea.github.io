@@ -1155,35 +1155,47 @@
   </p>
 
   <a class="teaser teaser-ml-wrap" href="models.html" aria-label="Open the machine learning walkthrough">
-    <svg class="teaser-ml" viewBox="0 0 360 200" role="img" aria-label="In-sample fit rising as feature blocks are added while out-of-sample fit falls below zero">
-    <line class="ml-grid" x1="16" y1="33.4" x2="344" y2="33.4"/>
-    <line class="ml-grid" x1="16" y1="66.9" x2="344" y2="66.9"/>
-    <line class="ml-grid" x1="16" y1="100.3" x2="344" y2="100.3"/>
-    <line class="ml-grid" x1="16" y1="133.8" x2="344" y2="133.8"/>
-    <line class="ml-grid" x1="16" y1="167.3" x2="344" y2="167.3"/>
-    <line class="ml-zero" x1="16" y1="133.8" x2="344" y2="133.8"/>
-    <path class="ml-in" d="M16.0,78.3 L125.3,60.8 L234.7,48.8 L344.0,36.7" fill="none"/>
-    <circle class="ml-in-dot" cx="16.0" cy="78.3" r="3.2"/>
-    <circle class="ml-in-dot" cx="125.3" cy="60.8" r="3.2"/>
-    <circle class="ml-in-dot" cx="234.7" cy="48.8" r="3.2"/>
-    <circle class="ml-in-dot" cx="344.0" cy="36.7" r="3.2"/>
-    <path class="ml-oos" d="M16.0,148.4 L125.3,153.3 L234.7,156.9 L344.0,161.4" fill="none"/>
-    <circle class="ml-oos-dot" cx="16.0" cy="148.4" r="3.2"/>
-    <circle class="ml-oos-dot" cx="125.3" cy="153.3" r="3.2"/>
-    <circle class="ml-oos-dot" cx="234.7" cy="156.9" r="3.2"/>
-    <circle class="ml-oos-dot" cx="344.0" cy="161.4" r="3.2"/>
-    <text class="ml-lab ml-in-t" x="340" y="28" text-anchor="end">in sample</text>
-    <text class="ml-lab ml-oos-t" x="340" y="175" text-anchor="end">out of sample</text>
-    <text class="ml-lab ml-zero-t" x="16" y="129">zero</text>
-    <text class="ml-ax" x="16" y="192" text-anchor="middle">base</text>
-    <text class="ml-ax" x="125" y="192" text-anchor="middle">+ block</text>
-    <text class="ml-ax" x="235" y="192" text-anchor="middle">+ block</text>
-    <text class="ml-ax" x="344" y="192" text-anchor="middle">+ both</text>
+<svg class="teaser-nn" viewBox="0 0 330 190" role="img" aria-label="A sequence model, from series of different lengths through convolution, a recurrent layer and a dense head, to one outcome">
+    <rect class="nn-seq" x="16.0" y="44.0" width="74.0" height="13.0" rx="2"/>
+    <rect class="nn-pad" x="90.0" y="44.0" width="10.0" height="13.0" rx="2"/>
+    <rect class="nn-seq" x="16.0" y="64.0" width="46.0" height="13.0" rx="2"/>
+    <rect class="nn-pad" x="62.0" y="64.0" width="38.0" height="13.0" rx="2"/>
+    <rect class="nn-seq" x="16.0" y="84.0" width="84.0" height="13.0" rx="2"/>
+    <rect class="nn-seq" x="16.0" y="104.0" width="36.0" height="13.0" rx="2"/>
+    <rect class="nn-pad" x="52.0" y="104.0" width="48.0" height="13.0" rx="2"/>
+    <rect class="nn-seq" x="16.0" y="124.0" width="62.0" height="13.0" rx="2"/>
+    <rect class="nn-pad" x="78.0" y="124.0" width="22.0" height="13.0" rx="2"/>
+    <text class="nn-lab" x="16.0" y="30.0" text-anchor="start">DIFFERENT LENGTHS</text>
+    <text class="nn-dim" x="16.0" y="176.0" text-anchor="start">PADDING IS NOT DATA</text>
+    <line class="nn-wire" x1="106.0" y1="96" x2="121.0" y2="96"/>
+    <path class="nn-wire" d="M120.0,92 L126.0,96 L120.0,100" fill="none"/>
+    <rect class="nn-block-back" x="140.0" y="38.0" width="34.0" height="96.0" rx="2"/>
+    <rect class="nn-block-back" x="135.0" y="43.0" width="34.0" height="96.0" rx="2"/>
+    <rect class="nn-block" x="130.0" y="48.0" width="34.0" height="96.0" rx="2"/>
+    <text class="nn-dim" x="147.0" y="176.0" text-anchor="middle">CONV</text>
+    <line class="nn-wire" x1="176.0" y1="96" x2="179.0" y2="96"/>
+    <path class="nn-wire" d="M178.0,92 L184.0,96 L178.0,100" fill="none"/>
+    <rect class="nn-block-back" x="196.0" y="48.0" width="30.0" height="76.0" rx="2"/>
+    <rect class="nn-block-back" x="191.0" y="53.0" width="30.0" height="76.0" rx="2"/>
+    <rect class="nn-block" x="186.0" y="58.0" width="30.0" height="76.0" rx="2"/>
+    <text class="nn-dim" x="201.0" y="176.0" text-anchor="middle">LSTM</text>
+    <line class="nn-wire" x1="228.0" y1="96" x2="227.0" y2="96"/>
+    <path class="nn-wire" d="M226.0,92 L232.0,96 L226.0,100" fill="none"/>
+    <rect class="nn-block-back" x="244.0" y="59.0" width="24.0" height="54.0" rx="2"/>
+    <rect class="nn-block-back" x="239.0" y="64.0" width="24.0" height="54.0" rx="2"/>
+    <rect class="nn-block" x="234.0" y="69.0" width="24.0" height="54.0" rx="2"/>
+    <text class="nn-dim" x="246.0" y="176.0" text-anchor="middle">DENSE</text>
+    <path class="nn-wire" d="M189,49.0 C172,40 232,40 213,49.0" fill="none"/>
+    <line class="nn-wire" x1="270.0" y1="96" x2="291.0" y2="96"/>
+    <path class="nn-wire" d="M290.0,92 L296.0,96 L290.0,100" fill="none"/>
+    <circle class="nn-out" cx="306" cy="96" r="8"/>
+    <text class="nn-dim" x="306.0" y="176.0" text-anchor="middle">ONE OUT</text>
     </svg>
     <span class="teaser-caption">
-      <strong>Two feature families, measured.</strong> In-sample fit climbed as
-      they were added. Out of sample it fell, every time, and every value
-      measured was below zero.
+      <strong>One problem, one model.</strong> Series that are not the same
+      length, a stack that narrows, and a single outcome at the end. The page
+      is arranged that way throughout, a question at a time rather than an
+      architecture at a time.
       <span class="teaser-go">Open the walkthrough &rarr;</span>
     </span>
   </a>
