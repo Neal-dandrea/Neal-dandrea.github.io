@@ -828,41 +828,36 @@ footer p { margin: 0; }
 .teaser-r { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
 .teaser-arm { display: block; width: 100%; height: auto; overflow: visible; }
 
-/* A scan line crossing the surface, strike by strike, which is how you read
-   one. Eleven lines share a five and a half second cycle at half second
-   offsets, so what you see is one line travelling across.
+/* The surface changing state rather than sitting still. Four configurations of
+   the same model, the quiet day, an event in the front month, a selloff and the
+   collapse afterwards, crossfading in turn.
 
-   ⚠️ Across STRIKE rather than along EXPIRY, which was the first attempt. A
-   constant-expiry slice at the long end sits at the back of the sheet, and the
-   overlay drew it on top of everything in front of it, so it read as a contour
-   floating over the surface rather than lying on it. A constant-strike line
-   crosses the sheet at every depth, so it reads as a scan wherever it is. */
-.teaser-surface .vs-slice {
-  stroke: #2a78d6;
-  stroke-width: 2;
+   ⚠️ ONE SHARED HEIGHT SCALE ACROSS ALL FOUR. Normalizing each state to its own
+   range would draw the selloff at the same height as the quiet day, which is
+   the opposite of what the sequence is for. The selloff is taller because it is
+   taller.
+
+   A crossfade rather than a geometric morph. Morphing the paths needs SMIL,
+   which no media query can switch off, and this has to be able to stop for
+   anyone who asks for less motion. */
+.teaser-surface .vs-state {
   opacity: 0;
-  animation: vs-sweep 5.5s linear infinite;
+  animation: vs-state 8.8s ease-in-out infinite;
 }
 
-/* Each line holds for about a fifth of the cycle, so two are on screen at once
-   and the sweep reads as a band travelling rather than a light blinking. At a
-   tenth of that the line was almost never visible, which is a sweep nobody
-   sees. */
-@keyframes vs-sweep {
+@keyframes vs-state {
   0%   { opacity: 0; }
-  1%   { opacity: 0.85; }
-  13%  { opacity: 0.85; }
-  20%  { opacity: 0; }
+  4%   { opacity: 1; }
+  21%  { opacity: 1; }
+  25%  { opacity: 0; }
   100% { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .teaser-surface .vs-slice { animation: none; opacity: 0; }
-  .teaser-surface .vs-slice:nth-child(6) { opacity: 0.9; }
+  .teaser-surface .vs-state { animation: none; opacity: 0; }
+  .teaser-surface .vs-state:first-child { opacity: 1; }
 }
 
-@media (prefers-color-scheme: dark) {
-  .teaser-surface .vs-slice { stroke: #3987e5; }
 }
 
 
