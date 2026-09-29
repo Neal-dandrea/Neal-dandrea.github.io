@@ -820,6 +820,40 @@ footer p { margin: 0; }
 }
 
 
+/* The surface changing state rather than sitting still. Four configurations of
+   the same model, the quiet day, an event in the front month, a selloff and the
+   collapse afterwards, crossfading in turn. Exactly one is visible at a time,
+   which is what the opacity of 0 on the base rule is for. Lose that rule and
+   all four stack on top of each other.
+
+   ⚠️ ONE SHARED HEIGHT SCALE ACROSS ALL FOUR. Normalizing each state to its own
+   range would draw the selloff at the same height as the quiet day, which is
+   the opposite of what the sequence is for. The selloff is taller because it is
+   taller.
+
+   A crossfade rather than a geometric morph. Morphing the paths needs SMIL,
+   which no media query can switch off, and this has to be able to stop for
+   anyone who asks for less motion.
+
+   It ignores the pointer on purpose. There is nothing to hover. */
+.teaser-surface .vs-state {
+  opacity: 0;
+  animation: vs-state 8.8s ease-in-out infinite;
+}
+
+@keyframes vs-state {
+  0%   { opacity: 0; }
+  4%   { opacity: 1; }
+  21%  { opacity: 1; }
+  25%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .teaser-surface .vs-state { animation: none; opacity: 0; }
+  .teaser-surface .vs-state:first-child { opacity: 1; }
+}
+
 /* The robotics teaser. A jointed linkage rather than a flipbook, so the motion
    is continuous instead of stepped. Each joint is a group nested inside the one
    above it, and CSS rotates it within its parent's frame, which is why the
