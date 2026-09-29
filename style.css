@@ -828,6 +828,71 @@ footer p { margin: 0; }
 .teaser-r { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
 .teaser-arm { display: block; width: 100%; height: auto; overflow: visible; }
 
+/* A scan line crossing the surface, strike by strike, which is how you read
+   one. Eleven lines share a five and a half second cycle at half second
+   offsets, so what you see is one line travelling across.
+
+   ⚠️ Across STRIKE rather than along EXPIRY, which was the first attempt. A
+   constant-expiry slice at the long end sits at the back of the sheet, and the
+   overlay drew it on top of everything in front of it, so it read as a contour
+   floating over the surface rather than lying on it. A constant-strike line
+   crosses the sheet at every depth, so it reads as a scan wherever it is. */
+.teaser-surface .vs-slice {
+  stroke: #2a78d6;
+  stroke-width: 2;
+  opacity: 0;
+  animation: vs-sweep 5.5s linear infinite;
+}
+
+/* Each line holds for about a fifth of the cycle, so two are on screen at once
+   and the sweep reads as a band travelling rather than a light blinking. At a
+   tenth of that the line was almost never visible, which is a sweep nobody
+   sees. */
+@keyframes vs-sweep {
+  0%   { opacity: 0; }
+  1%   { opacity: 0.85; }
+  13%  { opacity: 0.85; }
+  20%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .teaser-surface .vs-slice { animation: none; opacity: 0; }
+  .teaser-surface .vs-slice:nth-child(6) { opacity: 0.9; }
+}
+
+@media (prefers-color-scheme: dark) {
+  .teaser-surface .vs-slice { stroke: #3987e5; }
+}
+
+
+/* The receiving arm is seven poses along the handover path, shown in turn so
+   it reaches. A flipbook rather than interpolation, because the inverse
+   kinematics that produced each pose is not something CSS can run, and seven
+   poses at 0.42s is close enough to motion at this size. The giving arm and the
+   furniture are drawn once underneath. */
+.teaser-arm .ar-f {
+  opacity: 0;
+  animation: ar-frame 2.94s linear infinite;
+}
+
+/* A hard cut, not a fade. Seven frames on a 2.94s cycle is one seventh each,
+   and any overlap at the edges shows two poses at once, which reads as a ghost
+   rather than as motion. */
+@keyframes ar-frame {
+  0%     { opacity: 1; }
+  13.9%  { opacity: 1; }
+  14.0%  { opacity: 0; }
+  100%   { opacity: 0; }
+}
+
+.teaser-arm .r-arm2 { opacity: 0.4; }
+
+@media (prefers-reduced-motion: reduce) {
+  .teaser-arm .ar-f { animation: none; opacity: 0; }
+  .teaser-arm .ar-f:nth-of-type(4) { opacity: 1; }
+}
+
 .teaser-arm .cap-edge { stroke: var(--ink); stroke-linecap: round; }
 .teaser-arm .cap-body { stroke: var(--paper); stroke-linecap: round; }
 .teaser-arm .r-band { fill: none; stroke: var(--ink-soft); stroke-width: 1.6; opacity: 0.5; }
