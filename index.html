@@ -65,11 +65,10 @@
 <main>
 
 <p class="page-note">
-  This page is the overview. If you would rather look at my work than read a
-  summary of it, three of the domains have walkthroughs of their own, built to
-  be poked at rather than described. The
-  <a href="platform.html">finance platform</a>, the
-  <a href="robotics.html">robot learning</a>, and the
+  This page is the overview, and if you would rather look at my work than read
+  a summary of it, three of the domains have walkthroughs of their own, built
+  to be poked at rather than described. The <a href="platform.html">finance
+  platform</a>, the <a href="robotics.html">robot learning</a>, and the
   <a href="models.html">machine learning organized by problem</a>.
 </p>
 
@@ -77,15 +76,15 @@
   <h2>In short</h2>
 
   <p class="intro-lede">
-    My research is in autonomous robotic control systems for in-space servicing, assembly and
-    manufacturing. I work on imitation learning policies, diffusion policies
-    and vision-language-action models, trained from human demonstrations and
-    run on a Franka FR3. The hard part is rarely the architecture. It is the
-    gap between a policy that scores well offline and one that still closes on the
-    hardware under tight power and compute budgets, communication latency, and
-    nobody in the loop to correct a bad grasp. Most of that gap lives in frame
-    conventions, stale observations, how the action is parameterized, and how
-    the evaluation is split.
+    My research is in autonomous robotic control systems for in-space
+    servicing, assembly and manufacturing. I work on imitation learning
+    policies, diffusion policies and vision-language-action models, trained
+    from human demonstrations and run on a Franka FR3. The hard part is rarely
+    the architecture, it is the gap between a policy that scores well offline
+    and one that still closes on the hardware under tight power and compute
+    budgets, communication latency, and nobody in the loop to correct a bad
+    grasp. Most of that gap lives in frame conventions, stale observations,
+    how the action is parameterized, and how the evaluation is split.
   </p>
 
   <p>
@@ -96,7 +95,7 @@
   </p>
 
   <p>
-    What connects them is evaluation. I am most useful on problems where the
+    What connects them is evaluation, since I am most useful on problems where the
     result is easy to fake and hard to verify, and most of my work on both
     sides has been making a measurement trustworthy before anything gets built
     on top of it. That is not glamorous work and it is usually the difference
@@ -223,11 +222,12 @@
     <p>
       Most of the work so far has been making the question answerable. An
       existing model family turned out to have been trained against the wrong
-      target, regressing the robot&rsquo;s absolute pose at the current timestep
-      rather than a future action. That makes a pose estimator, not a
-      controller. It had also been evaluated on a frame-level random split that
-      leaked temporally adjacent frames between train and validation. Held-out
-      error was 192&nbsp;mm against a 30&nbsp;mm grasp tolerance.
+      target, regressing the robot&rsquo;s absolute pose at the current
+      timestep rather than a future action. Regressing that target makes a
+      pose estimator rather than a controller. It had also been evaluated on a
+      frame-level random split that leaked temporally adjacent frames between
+      train and validation. Held-out error was 192&nbsp;mm against a
+      30&nbsp;mm grasp tolerance.
     </p>
     <p>
       Rebuilding the pipeline around relative action targets in the gripper
@@ -261,22 +261,23 @@
         <text class="c-tol-label" x="184.5" y="118">30 mm grasp tolerance</text>
       </svg>
       <figcaption>
-        Held-out error against the 30&nbsp;mm grasp tolerance. The original
-        pipeline missed by more than six times the tolerance, which makes a pose
-        estimator rather than a controller. Relative action targets and
-        episode-level splits brought it inside.
-      </figcaption>
+     Held-out error measured against the 30&nbsp;mm grasp tolerance, where the
+     original pipeline missed by more than six times the tolerance, which
+     makes a pose estimator rather than a controller. Relative action targets
+     and episode-level splits brought it inside.
+   </figcaption>
     </figure>
     <p>
-      On that footing the comparison is pre-registered. Quantum and matched
-      classical controls run on identical episode splits, across a width ladder
-      spanning a 13&times; parameter range, three seeds per configuration, with
-      an acceptance criterion fixed before data collection and enforced in code.
-      An early pass showed patch-embedding convolutions dominating the parameter
-      count at 89 percent of the narrowest width, which left the quantum layers
-      at 1.4 percent. Restructuring the architecture raised the quantum share to
-      10.5 percent, so the efficiency claim is about the quantum component
-      rather than the classical layers around it.
+      On that footing the comparison is pre-registered, so quantum and matched
+      classical controls run on identical episode splits, across a width
+      ladder spanning a 13&times; parameter range, three seeds per
+      configuration, with an acceptance criterion fixed before data collection
+      and enforced in code. An early pass showed patch-embedding convolutions
+      dominating the parameter count at 89 percent of the narrowest width,
+      which left the quantum layers at 1.4 percent. Restructuring the
+      architecture raised the quantum share to 10.5 percent, so the efficiency
+      claim is about the quantum component rather than the classical layers
+      around it.
     </p>
     <p>
       The current finding is that quantum and classical attention are
@@ -337,7 +338,7 @@
       Glauber dynamics on spin systems such as the hardcore and Ising models.
     </p>
     <p>
-      The object itself is simple to state. Take a sample X from the
+      The object itself is simple enough to state in a sentence. Take a sample X from the
       distribution you care about, observe it through a noisy channel over time,
       and track your evolving belief about what X was. Written as an observation
       process that is
@@ -347,22 +348,25 @@
       with B<sub>t</sub> a standard Brownian motion, and the posterior at time
       t is
     </p>
-    <p class="formula">&mu;<sub>t</sub>(dx) &prop; exp(&lang;y<sub>t</sub>, x&rang; &minus; (t/2)&Vert;x&Vert;&sup2;) &mu;(dx)</p>
-    <p>
-      As t grows, the posterior concentrates on a point. The measure localizes.
-      What makes it a proof technique rather than a curiosity is that the
-      posterior is a martingale, and controlling how quickly its covariance
-      grows along that path is what produces the bound.
+    <p class="formula">
+      &mu;<sub>t</sub>(dx) &prop; exp(&lang;y<sub>t</sub>, x&rang; &minus;
+      (t/2)&Vert;x&Vert;&sup2;) &mu;(dx)
     </p>
     <p>
-      I am learning spectral independence first, deliberately. It lives on
-      finite state spaces with matrices you can write out and chains you can
-      simulate, so the continuous stochastic-calculus version reads as a
-      generalization rather than arriving cold. The intellectual core of the
-      work is the dictionary between the two, meaning what plays the role of
-      pinning a coordinate, what plays the role of the influence matrix, and
-      what the condition that the covariance does not grow too quickly
-      corresponds to on the discrete side.
+      As t grows, the posterior concentrates on a point and the measure
+      localizes. What makes it a proof technique rather than a curiosity is
+      that the posterior is a martingale, and controlling how quickly its
+      covariance grows along that path is what produces the bound.
+    </p>
+    <p>
+      I am learning spectral independence first and doing so deliberately,
+      because it lives on finite state spaces with matrices you can write out
+      and chains you can simulate, so the continuous stochastic-calculus
+      version reads as a generalization rather than arriving cold. The
+      intellectual core of the work is the dictionary between the two, meaning
+      what plays the role of pinning a coordinate, what plays the role of the
+      influence matrix, and what the condition that the covariance does not
+      grow too quickly corresponds to on the discrete side.
     </p>
     <p>
       There is a connection to the market data work that I did not expect to
@@ -385,7 +389,7 @@
       This is a group project for an advanced algorithms course, running ten
       weeks with weekly check-ins. The deliverable is a report with a formal
       problem statement, the preliminaries, and a rigorous proof of the mixing
-      bound and its complexity. I will post what comes out of it.
+      bound and its complexity, and I will post what comes out of it when it is done.
     </p>
   </details>
 </section>
@@ -396,12 +400,16 @@
   <details class="entry">
     <summary>
       <h3>Graduate Research Assistant</h3>
-      <p class="meta">University of Cincinnati <span class="sep">·</span> Aug 2025 &ndash; present</p>
+      <p class="meta">
+        University of Cincinnati <span class="sep">·</span> Aug 2025 &ndash;
+        present
+      </p>
     </summary>
     <p class="lede">
-      Autonomous robotic control systems for in-space servicing, assembly and manufacturing, built
-      around the problem of handing an object from one independent robot to
-      another, reliably, outside the conditions it was trained in.
+      Autonomous robotic control systems for in-space servicing, assembly and
+      manufacturing, built around the problem of handing an object from one
+      independent robot to another, reliably, outside the conditions it was
+      trained in.
     </p>
     <ul>
       <li>
@@ -457,7 +465,10 @@
   <details class="entry">
     <summary>
       <h3>Quantitative Platform Engineer</h3>
-      <p class="meta">EQ Risk Management Consulting <span class="sep">·</span> May 2026 &ndash; present</p>
+      <p class="meta">
+        EQ Risk Management Consulting <span class="sep">·</span> May 2026
+        &ndash; present
+      </p>
     </summary>
     <p class="lede">
       The full market data stack, from tick ingestion to backtest, now in daily
@@ -509,7 +520,10 @@
   <details class="entry">
     <summary>
       <h3>Technical Lead, Quantitative Finance Research Program</h3>
-      <p class="meta">University of Cincinnati <span class="sep">·</span> Aug 2026 &ndash; present</p>
+      <p class="meta">
+        University of Cincinnati <span class="sep">·</span> Aug 2026 &ndash;
+        present
+      </p>
     </summary>
     <ul>
       <li>
@@ -588,7 +602,10 @@
   <details class="entry">
     <summary>
       <h3>Market data platform and an illustrative walkthrough</h3>
-      <p class="meta">Eight panels, in the browser <span class="sep">&middot;</span> <a href="platform.html">Open the walkthrough</a></p>
+      <p class="meta">
+        Eight panels, in the browser <span class="sep">&middot;</span>
+        <a href="platform.html">Open the walkthrough</a>
+      </p>
     </summary>
     <p class="lede">
       A raw tick, a bar being assembled from it, a volatility surface you can
@@ -684,7 +701,10 @@
   <details class="entry">
     <summary>
       <h3>Robot learning and the gap between training and deployment</h3>
-      <p class="meta">Nine panels, in the browser <span class="sep">&middot;</span> <a href="robotics.html">Open the walkthrough</a></p>
+      <p class="meta">
+        Nine panels, in the browser <span class="sep">&middot;</span>
+        <a href="robotics.html">Open the walkthrough</a>
+      </p>
     </summary>
     <p class="lede">
       How a handheld demonstration becomes a policy, how that policy gets onto a
@@ -879,7 +899,10 @@
   <details class="entry">
     <summary>
       <h3>Machine learning organized by problem</h3>
-      <p class="meta">Eight panels, in the browser <span class="sep">&middot;</span> <a href="models.html">Open the walkthrough</a></p>
+      <p class="meta">
+        Eight panels, in the browser <span class="sep">&middot;</span>
+        <a href="models.html">Open the walkthrough</a>
+      </p>
     </summary>
     <p class="lede">
       Sequence models on variable-length sensor data, the ridge ablation that
@@ -890,10 +913,10 @@
       model family is at the top for anyone who wants to check the list first.
     </p>
     <p>
-      The panel I would point at is the ablation. Two feature families I built
-      specifically to help improved in-sample fit and fell out of sample, every
-      time, and a negative result arrived at carefully is the most useful thing
-      on the page.
+      The panel I would point at is the ablation, where two feature families I
+      built specifically to help improved in-sample fit and fell out of
+      sample, every time, and a negative result arrived at carefully is the
+      most useful thing on the page.
     </p>
     <p class="entry-link">
       <a href="models.html">Open the walkthrough</a>
@@ -919,16 +942,18 @@
     </summary>
     <p>
       The Universal Manipulation Interface trains manipulation policies from
-      handheld human demonstrations, and works well for robots on the ground.
-      Space is a harder case. Harsh conditions, tight power and compute budgets,
-      communication latency, and very little opportunity to collect or validate
-      data all work against it. This paper is the first step toward carrying the
-      approach across, with a comparable gripper built and tested in both
-      simulation and experiment on a Franka Emika arm, reproducing the data
-      collection and diffusion policy training pipeline on commodity hardware.
+      handheld human demonstrations, and works well for robots on the ground,
+      but space is a harder case. Harsh conditions, tight power and compute
+      budgets, communication latency, and very little opportunity to collect
+      or validate data all work against it. This paper is the first step
+      toward carrying the approach across, with a comparable gripper built and
+      tested in both simulation and experiment on a Franka Emika arm,
+      reproducing the data collection and diffusion policy training pipeline
+      on commodity hardware.
     </p>
     <p class="entry-link">
-      <a href="https://ieeexplore.ieee.org/abstract/document/11674880">Read it on IEEE Xplore</a>
+      <a href="https://ieeexplore.ieee.org/abstract/document/11674880">Read it
+      on IEEE Xplore</a>
     </p>
   </details>
 
@@ -981,7 +1006,10 @@
   <details class="entry compact">
     <summary>
       <h3>PhD, Computer Science</h3>
-      <p class="meta">University of Cincinnati <span class="sep">·</span> Aug 2024 &ndash; May 2028 (expected)</p>
+      <p class="meta">
+        University of Cincinnati <span class="sep">·</span> Aug 2024 &ndash;
+        May 2028 (expected)
+      </p>
     </summary>
     <p>
       Specialization in applied machine learning and applied deep learning.
@@ -992,7 +1020,10 @@
   <details class="entry compact">
     <summary>
       <h3>BS, Computer and Information Science &middot; BS, Economics</h3>
-      <p class="meta">The Ohio State University <span class="sep">·</span> Aug 2020 &ndash; May 2024</p>
+      <p class="meta">
+        The Ohio State University <span class="sep">·</span> Aug 2020 &ndash;
+        May 2024
+      </p>
     </summary>
     <p>
       Double major with a minor in mathematics.
@@ -1058,10 +1089,17 @@
 <section id="involvement">
   <h2>Involvement</h2>
   <ul class="plain">
-    <li>Bearcat Quant Systems Club, University of Cincinnati <span class="meta">&middot; Founder and president &middot; in formation, 2026</span></li>
+    <li>
+  Bearcat Quant Systems Club, University of Cincinnati
+  <span class="meta">&middot; Founder and president &middot; in formation,
+  2026</span>
+</li>
     <li>University of Cincinnati Artificial Intelligence Society <span class="meta">&middot; 2024 &ndash; present</span></li>
     <li>Bearcat Tech Innovators, University of Cincinnati <span class="meta">&middot; 2024 &ndash; present</span></li>
-    <li>Translational Data Analytics Institute, Ohio State <span class="meta">&middot; 2023 &ndash; 2024</span></li>
+    <li>
+     Translational Data Analytics Institute, Ohio State
+     <span class="meta">&middot; 2023 &ndash; 2024</span>
+   </li>
     <li>Big Data and Analytics Association, Ohio State <span class="meta">&middot; 2022 &ndash; 2024</span></li>
   </ul>
 </section>

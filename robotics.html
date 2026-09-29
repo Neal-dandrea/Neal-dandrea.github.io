@@ -32,16 +32,17 @@
   <aside class="disclaimer" role="note" aria-labelledby="disclaimer-title">
     <h2 id="disclaimer-title">About the figures</h2>
     <p>
-      <strong>The numbers are measured.</strong> Where a figure is quoted in the
-      text, it came out of the work. Frame counts, demonstration counts,
+      <strong>The numbers on this page are measured, so where a figure is quoted
+      in the text it came out of the work.</strong> Frame counts, demonstration counts,
       latencies, error magnitudes and the results of the comparisons are all
       real.
     </p>
     <p>
-      <strong>The pictures are reconstructions.</strong> The rollouts, the
-      curves and the trajectories on this page are generated in your browser to
-      show the mechanism, because the lab&rsquo;s logs and video are not mine to
-      publish. Where a figure illustrates rather than reports, it says so.
+      <strong>The pictures, by contrast, are reconstructions, because the
+      rollouts, the curves and the trajectories on this page are generated in
+      your browser to show the mechanism.</strong> The lab&rsquo;s logs and
+      video are not mine to publish. Where a figure illustrates rather than
+      reports, it says so.
     </p>
   </aside>
 </header>
@@ -89,9 +90,9 @@
   <span class="plate-kicker">Problem statement</span>
   <h2>Why handover is the hard case</h2>
   <p class="lede">
-    One robot holds an object. Another has to take it. On the ground you can
-    retry, and a person can step in. In orbit you cannot do either, and a failed
-    grasp can put the object somewhere nobody can reach.
+    One robot holds an object and another has to take it from it. On the
+    ground you can retry, and a person can step in. In orbit you cannot do
+    either, and a failed grasp can put the object somewhere nobody can reach.
   </p>
   <p class="lede me">
     I came into this expecting the difficulty to be in the policy. Most of my
@@ -103,19 +104,19 @@
   <figure class="plate-fig">
     <div id="constraints"></div>
     <figcaption>
-      In-space servicing, assembly and manufacturing sets the constraints. They
-      are not the constraints a lab bench has.
-    </figcaption>
+     In-space servicing, assembly and manufacturing sets the constraints, and
+     they are not the constraints a lab bench has.
+   </figcaption>
   </figure>
 
   <details class="tried">
     <summary>What I assumed going in</summary>
     <p>
-      That the research question was which architecture to use. It turned out
-      the architecture was rarely the thing standing between a policy that works
-      in evaluation and one that works on the arm. Frame conventions, stale
-      observations and the way an action is parameterized did more damage than
-      any modeling choice I made.
+      I assumed the research question was which architecture to use, and it
+      turned out the architecture was rarely the thing standing between a
+      policy that works in evaluation and one that works on the arm. Frame
+      conventions, stale observations and the way an action is parameterized
+      did more damage than any modeling choice I made.
     </p>
   </details>
 </section>
@@ -157,16 +158,16 @@
   <details class="tried">
     <summary>What we throw away, and why</summary>
     <p>
-      The pose of the handheld gripper comes from visual tracking, and tracking
-      fails. A dropped frame is obvious. A frame where tracking has drifted is
-      not, and it trains the policy to associate an image with a pose the
-      gripper was never at.
+      The pose of the handheld gripper comes from visual tracking, and
+      tracking fails. A dropped frame is obvious, but a frame where tracking
+      has drifted is not, and it trains the policy to associate an image with
+      a pose the gripper was never at.
     </p>
     <p>
-      So validation runs per step rather than per episode, and a step that fails
-      is dropped. Dropping data feels wrong the first few times. It is much
-      cheaper than finding out later that a policy learned from poses that never
-      happened.
+      So validation runs per step rather than per episode, and a step that
+      fails is dropped. Dropping data feels wrong the first few times, but it
+      is much cheaper than finding out later that a policy learned from poses
+      that never happened.
     </p>
   </details>
 </section>
@@ -177,10 +178,11 @@
   <span class="plate-kicker">Model selection</span>
   <h2>Changing the model and having to justify it</h2>
   <p class="lede">
-    The stack ran on a 171-million-parameter U-Net diffusion policy. It now runs
-    on a 3-billion-parameter vision-language-action model. The reason was not
-    that bigger is better. It was that the diffusion policy did not generalize
-    outside the distribution it was trained on, and I could show that.
+    The stack ran on a 171-million-parameter U-Net diffusion policy and it now
+    runs on a 3-billion-parameter vision-language-action model. The reason was
+    not that bigger is better, it was that the diffusion policy did not
+    generalize outside the distribution it was trained on, and I could show
+    that.
   </p>
 
   <div class="controls" id="model-controls"></div>
@@ -196,12 +198,12 @@
   <details class="tried">
     <summary>How I argued for it</summary>
     <p>
-      Not with a benchmark score. A change of that size needs a reason somebody
-      else can check, so I wrote it up as a cited review of published handover
-      and out-of-distribution results and put my own measurements next to them.
-      The argument was that the failure was a generalization failure rather than
-      a capacity or tuning failure, and that scaling the same architecture would
-      not fix it.
+      A change of that size needs a reason somebody else can check, and a
+      benchmark score is not one, so I wrote it up as a cited review of
+      published handover and out-of-distribution results and put my own
+      measurements next to them. The argument was that the failure was a
+      generalization failure rather than a capacity or tuning failure, and
+      that scaling the same architecture would not fix it.
     </p>
   </details>
 </section>
@@ -212,9 +214,9 @@
   <span class="plate-kicker">Control timing</span>
   <h2>Closing the loop on real hardware</h2>
   <p class="lede">
-    Inference takes about 125 milliseconds on the GPU. The arm wants a command
-    every millisecond. Those two numbers do not meet, and everything in this
-    panel exists to bridge them.
+    Inference takes about 125 milliseconds on the GPU while the arm wants a
+    command every millisecond. Those two numbers do not meet, and everything
+    in this panel exists to bridge them.
   </p>
 
   <div class="controls" id="loop-controls"></div>
@@ -222,8 +224,7 @@
     <canvas id="loop-canvas" height="260" aria-label="Timing of the control loop, from inference through action chunking to the controller"></canvas>
     <figcaption>
       The policy emits a chunk of future actions rather than one. The client
-      subsamples the chunk, rate limits it, and refuses anything outside the
-      workspace. The controller interpolates the rest.
+      subsamples the chunk, rate limits it, and refuses anything outside the workspace, and the controller interpolates the rest.
     </figcaption>
   </figure>
 
@@ -245,13 +246,14 @@
   <span class="plate-kicker">Failure modes</span>
   <h2>The gap between training and deployment</h2>
   <p class="lede">
-    This is the panel I would show first. Three defects, all in the deployment
-    client rather than the model, each one individually plausible and quiet.
-    Turn them on and watch what they do to the same policy.
+    This is the panel I would show first, because it holds three defects that
+    all sit in the deployment client rather than the model, each one
+    individually plausible and quiet. Turn them on and watch what they do to
+    the same policy.
   </p>
   <p class="lede me">
-    Every one of these looked like a model problem when I first met it. That is
-    what made them expensive.
+    Every one of these looked like a model problem when I first met it, and
+    that is what made them expensive.
   </p>
 
   <div class="controls" id="bug-controls"></div>
@@ -280,9 +282,9 @@
       in the model first, retrained, and got the same behavior back.
     </p>
     <p>
-      The stale observations were subtler again. The policy was acting on what
-      the camera saw a control cycle or two ago, which at low speed is almost
-      invisible and at speed turns into overshoot.
+      The stale observations were subtler again, because the policy was acting
+      on what the camera saw a control cycle or two ago, which at low speed is
+      almost invisible and at speed turns into overshoot.
     </p>
     <p>
       The observation mask removed 5.6 percent of the image the model was
@@ -299,10 +301,10 @@
   <span class="plate-kicker">Domain shift</span>
   <h2>Video compression as domain shift</h2>
   <p class="lede">
-    The demonstrations are video. Video gets compressed. The policy trains on the
-    compressed frames and then runs on frames from a live camera, which are not
-    compressed the same way, and the difference is a domain shift nobody wrote
-    down.
+    The demonstrations are video and video gets compressed. The policy trains
+    on the compressed frames and then runs on frames from a live camera, which
+    are not compressed the same way, and the difference is a domain shift
+    nobody wrote down.
   </p>
 
   <figure class="plate-fig">
@@ -318,7 +320,7 @@
   <details class="tried">
     <summary>Why this was worth doing at all</summary>
     <p>
-      It was not an obvious place to look. I only went there because the
+      It was not an obvious place to look, and I only went there because the
       evaluation had become trustworthy enough to show a difference this size,
       which is the previous panel and the one after it doing their job.
     </p>
@@ -331,9 +333,10 @@
   <span class="plate-kicker">Measurement</span>
   <h2>One rollout tells you almost nothing</h2>
   <p class="lede">
-    A diffusion policy samples. Run the same policy on the same episode twice
-    and you get two different trajectories. Compare two policies on one rollout
-    each and you are mostly comparing two samples.
+    A diffusion policy samples rather than computing one answer. Run the same
+    policy on the same episode twice and you get two different trajectories.
+    Compare two policies on one rollout each and you are mostly comparing two
+    samples.
   </p>
 
   <div class="controls" id="eval-controls"></div>
@@ -341,19 +344,18 @@
     <svg id="rollouts-svg" viewBox="0 0 720 320" role="img"
          aria-label="Final error across repeated rollouts for two policies, with the spread shown"></svg>
     <figcaption>
-      Illustrative. Add rollouts and the two distributions separate. At one
-      rollout each, the worse policy wins often enough to be dangerous.
+      Illustrative. Adding rollouts separates the two distributions, and at one rollout each the worse policy wins often enough to be dangerous.
     </figcaption>
   </figure>
 
   <details class="tried">
     <summary>What I was doing before</summary>
     <p>
-      Comparing single trajectories and believing the result. It is fast and it
-      feels like measurement. Establishing that it could not distinguish a real
-      improvement from sampler variance is what made the compression work
-      possible, because until then there was no instrument fine enough to see
-      the improvement it produced.
+      We were comparing single trajectories and believing the result, which is
+      fast and feels like measurement. Establishing that it could not
+      distinguish a real improvement from sampler variance is what made the
+      compression work possible, because until then there was no instrument
+      fine enough to see the improvement it produced.
     </p>
   </details>
 </section>
@@ -364,12 +366,13 @@
   <span class="plate-kicker">Parameter study</span>
   <h2>Do quantum layers buy parameter efficiency</h2>
   <p class="lede">
-    A separate question inside the same stack. If parameterized quantum circuits
-    replaced the attention projections in a vision transformer policy, would
-    accuracy hold at fewer parameters. The comparison was pre-registered, with
-    matched classical controls on identical episode splits, a width ladder
-    spanning a 13 times parameter range, three seeds per configuration, and an
-    acceptance criterion fixed before data collection and enforced in code.
+    This is a separate question living inside the same stack. If parameterized
+    quantum circuits replaced the attention projections in a vision
+    transformer policy, would accuracy hold at fewer parameters. The
+    comparison was pre-registered, with matched classical controls on
+    identical episode splits, a width ladder spanning a 13 times parameter
+    range, three seeds per configuration, and an acceptance criterion fixed
+    before data collection and enforced in code.
   </p>
 
   <div class="controls" id="ladder-controls"></div>
@@ -471,8 +474,7 @@
 
 <footer>
   <p>
-    Figures on this page are generated in your browser. Quoted numbers are
-    measured.
+    Figures on this page are generated in your browser and quoted numbers are measured.
     <span class="sep">&middot;</span>
     <a href="./">neal-dandrea.github.io</a>
   </p>

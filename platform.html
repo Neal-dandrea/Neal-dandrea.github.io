@@ -32,17 +32,18 @@
   <aside class="disclaimer" role="note" aria-labelledby="disclaimer-title">
     <h2 id="disclaimer-title">What this is and what it is not</h2>
     <p>
-      <strong>This is not the platform.</strong> The production system is
-      proprietary and stays that way. Nothing on this page touches it. There is
-      no connection to the firm&rsquo;s data, no client information, and none of
-      the logic that decides anything.
+      <strong>None of this is the platform itself, and the production system
+      it stands in for is proprietary and stays that way.</strong> Nothing on
+      this page touches it, so there is no connection to the firm&rsquo;s
+      data, no client information, and none of the logic that decides
+      anything.
     </p>
     <p>
       What you are looking at is a <strong>visual analogue</strong>, built
       standalone for this page. Every number is generated in your browser from
       published textbook models and a seeded random number generator. It is
       similar in nature to the real thing and a considerably lesser version of
-      it. The shapes, the vocabulary and the questions are the same. The
+      it. The shapes, the vocabulary and the questions are the same, while the
       substance underneath is not.
     </p>
     <p class="disclaimer-foot">
@@ -75,8 +76,8 @@
   <h2>Where the data comes from</h2>
   <p class="panel-lede">
     A quote arrives over a WebSocket, lands in an in-memory buffer, and is
-    written to a date-partitioned store. Bars are derived from it rather than
-    fetched.
+    written to a date-partitioned store, and bars are derived from it rather
+    than fetched.
   </p>
   <p class="panel-lede me">
     I assumed getting the data would be the easy part and the models would be
@@ -88,28 +89,30 @@
   <figure class="viz">
     <div id="pipeline" class="pipeline"></div>
     <figcaption>
-      The vendor publishes native bars at one minute and above. Anything finer
-      is assembled from the buffer.
+      The vendor publishes native bars at one minute and above, so anything
+      finer is assembled from the buffer.
     </figcaption>
   </figure>
 
   <details class="tried">
     <summary>What we tried first</summary>
     <p>
-      Polling the vendor&rsquo;s REST endpoint, because it took an afternoon to
-      stand up. Measured against one liquid name over a single session it
-      accounted for 13 to 15 percent of the shares that actually traded. The
-      rest happened between polls. Everything live moved onto the stream after
-      that, and the buffer was written so that only the fetch function had to
-      change.
+      Polling the vendor&rsquo;s REST endpoint, because it took an afternoon
+      to stand up. Measured against one liquid name over a single session it
+      accounted for 13 to 15 percent of the shares that actually traded, and
+      the rest happened between polls. Everything live moved onto the stream
+      after that, and the buffer was written so that only the fetch function
+      had to change.
     </p>
     <p>
-      Two things cost real time. Our credential has no per-trade entitlement, so
-      the trade feed is declined rather than delivered, and our own code logged
-      that it had subscribed anyway because it never checked the response code
-      on a subscribe. Separately, the stream sends delta frames that omit
-      unchanged fields, and treating an absent field as zero quietly zeroed the
-      volume on every frame that did not carry it.
+      Two things cost us real time here, and neither of them was the
+      market&rsquo;s fault. The first was that our credential has no per-trade
+      entitlement, so the trade feed is declined rather than delivered, and
+      our own code logged that it had subscribed anyway because it never
+      checked the response code on a subscribe. The second was that the stream
+      sends delta frames that omit unchanged fields, and treating an absent
+      field as zero quietly zeroed the volume on every frame that did not
+      carry it.
     </p>
   </details>
 </section>
@@ -132,8 +135,7 @@
   <figure class="viz">
     <canvas id="tape-canvas" height="320" aria-label="A simulated tape of one-minute candles with the newest bar still forming"></canvas>
     <figcaption>
-      Amber is the forming bar. Open fixed, close moving with every tick, high
-      and low ratcheting outward.
+      Amber is the forming bar, with its open fixed and its close moving on every tick while the high and the low ratchet outward.
     </figcaption>
   </figure>
 
@@ -164,13 +166,14 @@
     every strike and every expiry and you get a surface.
   </p>
   <p class="panel-lede me">
-    I understood volatility before I started this. I had no idea you could build
+    I understood volatility before I started this, but I had no idea you could build
     a whole surface out of it, or that the surface could end up being the most
     useful thing on the screen.
   </p>
   <p class="panel-lede">
-    Pick a name and a date. The five dates are months apart. Everything below,
-    including the worked trade, reprices off the selection.
+    Pick a name and a date, keeping in mind that the five dates are months
+    apart, and everything below, including the worked trade, reprices off the
+    selection.
   </p>
 
   <div class="controls" id="surface-controls"></div>
@@ -252,17 +255,18 @@
   <details class="tried">
     <summary>What broke first</summary>
     <p>
-      Short maturities. Below about forty-five days the fitted at-the-money
-      volatility collapsed on some dates, with the first percentile landing at
-      0.6 percent on an index that has never been that quiet. Those slices are
-      now excluded rather than patched, because a fit that is wrong in a
-      plausible-looking way is worse than a gap.
+      The trouble was concentrated in short maturities, where below about
+      forty-five days the fitted at-the-money volatility collapsed on some
+      dates, with the first percentile landing at 0.6 percent on an index that
+      has never been that quiet. Those slices are now excluded rather than
+      patched, because a fit that is wrong in a plausible-looking way is worse
+      than a gap.
     </p>
     <p>
-      Building this page reproduced the same class of problem. The first
-      parameterization of the model drawn here failed the butterfly check below,
-      on the upside wing at short maturities, for exactly the reason the real
-      fits did.
+      Building this page reproduced the same class of problem, because the
+      first parameterization of the model drawn here failed the butterfly
+      check below, on the upside wing at short maturities, for exactly the
+      reason the real fits did.
     </p>
   </details>
 </section>
@@ -279,7 +283,7 @@
     Each vertical mark is one option&rsquo;s market drawn from its bid to its
     ask. The line is the fit, and it runs across the whole range including the
     stretches where nothing is listed, which is where it is least constrained
-    and most likely to be wrong. The panel underneath is the residual.
+    and most likely to be wrong, and the panel underneath is the residual.
   </p>
 
   <div class="controls" id="smile-controls"></div>
@@ -297,10 +301,10 @@
   <details class="tried">
     <summary>What we tried first</summary>
     <p>
-      Fitting whatever the history handed us. It contains quotes with
-      non-positive implied volatility, and a fit that runs through them drags
-      the whole smile down. They are dropped now, and the number dropped is
-      reported rather than quietly absorbed.
+      We were fitting whatever the history handed us, which contains quotes
+      with non-positive implied volatility, and a fit that runs through them
+      drags the whole smile down. They are dropped now, and the number dropped
+      is reported rather than quietly absorbed.
     </p>
   </details>
 </section>
@@ -318,19 +322,19 @@
   <figure class="viz">
     <svg id="skew-svg" viewBox="0 0 720 320" role="img" aria-label="Twenty five delta risk reversal against time to expiry, on three dates"></svg>
     <figcaption>
-      A calm day, an event in the front month, and a selloff. The near end
-      moves most.
+      A calm day, an event in the front month, and a selloff, with the near end moving most.
     </figcaption>
   </figure>
 
   <details class="tried">
     <summary>What we got wrong</summary>
     <p>
-      Anchoring the surface on the cash close. The at-the-money point belongs at
-      the forward, not at spot, and the difference is financing and dividends
-      rather than rounding. It is implied from put-call parity across every
-      strike now and taken as a median, which survives the handful of strikes
-      where one side of the market is stale.
+      We were anchoring the surface on the cash close, when the at-the-money
+      point belongs at the forward rather than at spot, and the difference
+      there is financing and dividends rather than rounding. It is implied
+      from put-call parity across every strike now and taken as a median,
+      which survives the handful of strikes where one side of the market is
+      stale.
     </p>
   </details>
 </section>
@@ -376,7 +380,7 @@
     came back indistinguishable from the baseline and were retired.
   </p>
   <p class="panel-lede me">
-    This is not the answer I was hoping for. I spent a while convinced the
+    This is not the answer I was hoping for, and I spent a while convinced the
     harness was broken before I accepted that the harness was fine.
   </p>
 
@@ -399,10 +403,10 @@
       already did.
     </p>
     <p>
-      In-sample fit rose steadily as we added them. Out of sample it fell, on
-      every symbol, every time. An earlier walk-forward had said the same thing
-      in a different way, when the configuration that ranked first in sample
-      came 103rd of 144 out of sample.
+      In-sample fit rose steadily as we added them, while out of sample it
+      fell, on every symbol and every time. An earlier walk-forward had said
+      the same thing in a different way, when the configuration that ranked
+      first in sample came 103rd of 144 out of sample.
     </p>
   </details>
 </section>
@@ -424,8 +428,7 @@
   <figure class="viz">
     <div id="breadth-figure" class="breadth"></div>
     <figcaption>
-      The standard effective-sample-size calculation on a correlated set. What
-      it changed here was the research agenda, from finding more signals to
+      This is the standard effective-sample-size calculation on a correlated set, and what it changed here was the research agenda, from finding more signals to
       getting more independent evidence about the ones already in hand.
     </figcaption>
   </figure>
@@ -433,9 +436,10 @@
   <details class="tried">
     <summary>What we were counting before</summary>
     <p>
-      Trades. For longer than we should have been. The thing that changed the
-      research plan was not a new signal, it was noticing that the ones already
-      in hand were largely the same bet placed again.
+      We were counting trades, and we were doing it for longer than we should
+      have been. The thing that changed the research plan was not a new
+      signal, it was noticing that the ones already in hand were largely the
+      same bet placed again.
     </p>
   </details>
 </section>
@@ -460,8 +464,7 @@
       <svg id="payoff-svg" viewBox="0 0 420 300" role="img"
            aria-label="Profit and loss at expiry for a short put and long call against the underlying price"></svg>
       <figcaption>
-        Flat between the strikes, where both options expire worthless. No floor
-        on the left.
+        Flat between the strikes, where both options expire worthless, and with no floor on the left.
       </figcaption>
     </figure>
   </div>
@@ -487,9 +490,9 @@
   <p class="panel-num">10</p>
   <h2>What is next</h2>
   <p class="panel-lede">
-    Roughly the order I would pick it up. Two items are waiting on somebody else
-    to decide, one on a driver signature, and one on the market to hand us
-    enough data.
+    This is roughly the order I would pick it up in. Two items are waiting on
+    somebody else to decide, one on a driver signature, and one on the market
+    to hand us enough data.
   </p>
 
   <ol class="next-list">
@@ -514,10 +517,11 @@
         study rather than a build, which is a pleasant change.
       </p>
       <p>
-        The one-second end is the constrained one. Sub-minute bars are
-        accumulated from ticks rather than fetched from history, so that sample
-        grows one session at a time and cannot be backfilled. Checking the
-        coverage before assuming a long one-second sample is the first step.
+        The one-second end is the constrained one, since sub-minute bars are
+        accumulated from ticks rather than fetched from history, so that
+        sample grows one session at a time and cannot be backfilled. Checking
+        the coverage before assuming a long one-second sample is the first
+        step.
       </p>
     </li>
 
