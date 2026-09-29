@@ -386,28 +386,28 @@
 
   const NAMES = {
     SPX:  { label: "SPX",  spot: 5480, base: 0.135, term: 0.055, skew: 0.62,
-            note: "An index, so the steepest skew on the board, because everyone hedges the same way" },
+            note: "An index. The steepest skew on the board, because everyone hedges the same way" },
     AAPL: { label: "AAPL", spot: 232,  base: 0.225, term: 0.040, skew: 0.34,
-            note: "A large-cap single name with a moderate tilt" },
+            note: "A large-cap single name, moderate tilt" },
     XLE:  { label: "XLE",  spot: 92,   base: 0.255, term: 0.030, skew: 0.28,
-            note: "A sector ETF, flatter than the index and higher in level" },
+            note: "A sector ETF. Flatter than the index and higher in level" },
     NVDA: { label: "NVDA", spot: 128,  base: 0.425, term: 0.020, skew: 0.26,
-            note: "A high-beta single name, a tall surface with a near-symmetric smile" },
+            note: "High beta. A tall surface with a nearly symmetric smile" },
     TSLA: { label: "TSLA", spot: 246,  base: 0.520, term: 0.010, skew: 0.20,
-            note: "The highest level here and the flattest tilt, because the fear is two-sided" },
+            note: "The highest level here, and the flattest tilt, because the fear is two-sided" },
   };
 
   const DATES = {
     "2025-01-17": { label: "17 Jan 2025", lvl: 0.82, evt: 0,     str: 0,    skewMul: 0.95,
-                    note: "a quiet tape. Low level, upward-sloping term structure, textbook shape." },
+                    note: "A quiet tape. Low level, term structure sloping up." },
     "2025-04-04": { label: "4 Apr 2025",  lvl: 1.95, evt: 0,     str: 0.13, skewMul: 1.35,
-                    note: "a selloff. The whole surface lifts, the front lifts most, and the skew steepens." },
+                    note: "A selloff. The whole surface lifts, the front most, and the skew steepens." },
     "2025-07-25": { label: "25 Jul 2025", lvl: 1.05, evt: 0.085, str: 0,    skewMul: 1.0,
-                    note: "an earnings print inside the front month. One expiry stands proud of its neighbours." },
+                    note: "An earnings print inside the front month, so one expiry stands proud of its neighbours." },
     "2025-10-31": { label: "31 Oct 2025", lvl: 0.74, evt: 0,     str: -0.035, skewMul: 0.9,
-                    note: "the crush after the event. The front end collapses and the term structure steepens upward." },
+                    note: "The crush afterwards. The front end collapses." },
     "2026-02-27": { label: "27 Feb 2026", lvl: 1.28, evt: 0.03,  str: 0.04, skewMul: 1.15,
-                    note: "a nervous drift. Elevated everywhere without a single dominant event." },
+                    note: "Elevated everywhere, without one dominant event." },
   };
 
   const market = { sym: "SPX", date: "2025-01-17" };
@@ -746,10 +746,8 @@
             <tr><td>Worst single quote</td><td class="v">${d.worst.toFixed(2)} vol pts</td></tr>
             <tr><td>Fit inside the bid-ask</td><td class="v">${d.insidePct.toFixed(0)}%</td></tr>
           </table>
-          <p class="aside">The weighted number is the one to quote. A tenth of a
-             volatility point in the wing is worth far less money than a tenth
-             at the money, so an unweighted RMSE lets the least tradeable
-             quotes dominate the statistic.</p>
+          <p class="aside">Weighted is the number to quote. A tenth of a point
+             in the wing is worth far less money than a tenth at the money.</p>
         </div>
         <div>
           <h4>No-arbitrage</h4>
@@ -761,10 +759,9 @@
           </table>
           <pre>g(k) = (1 − k·w′/2w)² − (w′/4)(1/w + ¼) + w″/2</pre>
           <p class="aside">Total variance must not fall with maturity, or a
-             calendar spread is free money on paper. And Durrleman&rsquo;s g must
+             calendar spread is free money on paper. Durrleman&rsquo;s g must
              stay non-negative, or the smile implies a negative probability
-             somewhere. Both are computed over a 40 by 40 grid every time the
-             market changes, not asserted once and forgotten.</p>
+             somewhere. Computed over a 40 by 40 grid.</p>
         </div>
       </div>`;
   }
@@ -1337,11 +1334,9 @@
       </div>`;
     }).join("")
     + `<p style="margin:1rem 0 0;font-size:0.88rem;color:var(--ink-soft)">
-         The bars are linear and the last one is barely a mark, which is the
-         finding rather than a drawing problem. The drop from the first number
-         to the third is a factor of ${Math.round(126756 / 513)}, so the
-         evidence is ${Math.round(Math.sqrt(126756 / 513))} times weaker than
-         the trade count suggests, since precision goes with the square root.
+         Linear bars. The last one is barely a mark, which is the finding. A
+         factor of ${Math.round(126756 / 513)} on the count is a factor of
+         ${Math.round(Math.sqrt(126756 / 513))} on the precision.
        </p>`;
   }
 
@@ -1453,16 +1448,16 @@
         <li>
           <h4>1. Start from the forward, not the spot</h4>
           <p>Spot is ${money(t.S)}. Carry it out three months at ${(R * 100).toFixed(1)}%
-             and the forward is <strong>${money2(t.F)}</strong>. Every strike below is
-             quoted against that, so financing is stated once instead of leaking
-             into each greek.</p>
+             and the forward is <strong>${money2(t.F)}</strong>. Strikes below are
+             quoted against that, so financing is stated once rather than
+             leaking into each greek.</p>
           <pre>F = S·e^(rT) = ${t.S} × e^(${R}×${TRADE_T}) = ${t.F.toFixed(2)}</pre>
         </li>
         <li>
           <h4>2. Ask the surface for the 25-delta strikes</h4>
           <p>The strike and its volatility depend on each other, so this is
-             solved rather than looked up: guess a vol, get a strike, read the
-             surface at that strike, repeat. It settles in three passes.</p>
+             solved rather than looked up. Guess a vol, get a strike, read the
+             surface there, repeat. It settles in three passes.</p>
           <pre>K = F·exp(½σ²T ∓ 0.6745·σ√T)</pre>
           <table class="nums">
             <tr><th></th><th>strike</th><th>vol from the surface</th></tr>
@@ -1470,9 +1465,8 @@
             <tr><td>at the money</td><td>${t.F.toFixed(2)}</td><td>${pc(t.atmVol)}</td></tr>
             <tr><td>25-delta call</td><td>${t.call.K.toFixed(2)}</td><td>${pc(t.call.vol)}</td></tr>
           </table>
-          <p class="aside">The gap between the first and last row is the skew:
-             <strong>${((t.put.vol - t.call.vol) * 100).toFixed(2)} volatility points</strong>.
-             That is the number the whole trade is about.</p>
+          <p class="aside">The gap between the first and last row is the skew,
+             <strong>${((t.put.vol - t.call.vol) * 100).toFixed(2)} volatility points</strong>.</p>
         </li>
         <li>
           <h4>3. Price both legs</h4>
@@ -1503,11 +1497,10 @@ put  = e^(−rT)[K·N(−d₂) − F·N(−d₁)]</pre>
           </table>
           <p class="aside">Price the same position off a single at-the-money
              number and you misprice it by ${money(Math.abs(t.skewValue))} a
-             contract. That is the answer to why anyone fits a surface instead
-             of quoting one volatility.</p>
+             contract.</p>
         </li>
         <li>
-          <h4>5. Hedge the direction out, because that is not the bet</h4>
+          <h4>5. Hedge the direction out</h4>
           <p>The package is born delta ${t.netDelta > 0 ? "long" : "short"}. Trade
              ${Math.abs(t.netDelta).toFixed(0)} shares
              ${t.netDelta > 0 ? "short" : "long"} against it and what is left is a
@@ -1520,15 +1513,14 @@ put  = e^(−rT)[K·N(−d₂) − F·N(−d₁)]</pre>
             <tr><td>Gamma P&amp;L from a 1% move, curvature alone</td>
                 <td class="v">${money2(t.gammaPnl1pct)}</td></tr>
           </table>
-          <p class="aside">The two vegas very nearly cancel, and that is the
-             point rather than an accident. Both legs sit at the same delta, so
-             they carry almost the same sensitivity to the <em>level</em> of
-             volatility, and what survives the subtraction is a bet on its
-             <em>shape</em>. Lift the whole surface by a point and this position
-             barely notices. Flatten the skew by a point and it pays.</p>
+          <p class="aside">The two vegas nearly cancel. Both legs sit at the
+             same delta, so they carry almost the same sensitivity to the
+             <em>level</em> of volatility, and what survives is a bet on its
+             <em>shape</em>. Lift the whole surface a point and this position
+             barely notices.</p>
         </li>
         <li>
-          <h4>6. Now subtract what it costs to do</h4>
+          <h4>6. Subtract the cost of doing it</h4>
           <p>At ${SPREAD_VOL_PTS} of a volatility point per leg, crossing the
              spread on both legs costs <strong>${money(t.cost)}</strong>, against a
              skew premium of ${money(t.skewValue)}.</p>
@@ -1540,14 +1532,12 @@ put  = e^(−rT)[K·N(−d₂) − F·N(−d₁)]</pre>
         </li>
         <li>
           <h4>7. What you are actually short</h4>
-          <p>The premium is compensation, not a gift. Selling the ${t.put.K.toFixed(0)}
-             put means below that strike the losses run one-for-one with the
-             index while the call financing it expires worthless. The skew is
+          <p>Below ${t.put.K.toFixed(0)} the losses run one-for-one with the
+             index while the call financing them expires worthless. The skew is
              steep because that outcome is the one everybody is hedging, and a
              model that says the skew is "too steep" is competing with everyone
              who has already paid to be wrong about it.</p>
-          <p class="aside">Which is why the honest version of this analysis ends
-             at the ablation panel above rather than at a trade ticket.</p>
+
         </li>
       </ol>`;
 

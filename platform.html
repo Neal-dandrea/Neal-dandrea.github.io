@@ -73,9 +73,9 @@
   <p class="panel-num">01</p>
   <h2>Where the data comes from</h2>
   <p class="panel-lede">
-    Everything downstream is only as good as the capture. A quote arrives over a
-    WebSocket, lands in an in-memory buffer, and is written to a date-partitioned
-    time-series store. Bars are derived from that, never fetched.
+    A quote arrives over a WebSocket, lands in an in-memory buffer, and is
+    written to a date-partitioned store. Bars are derived from it rather than
+    fetched.
   </p>
 
   <div class="stat-row" id="stat-row"></div>
@@ -83,9 +83,8 @@
   <figure class="viz">
     <div id="pipeline" class="pipeline"></div>
     <figcaption>
-      The path a single quote takes. The vendor publishes native bars at one
-      minute and above, so anything finer has to be assembled from the tick
-      buffer, which is the reason the buffer exists at all.
+      The vendor publishes native bars at one minute and above. Anything finer
+      is assembled from the buffer.
     </figcaption>
   </figure>
 </section>
@@ -95,19 +94,16 @@
   <p class="panel-num">02</p>
   <h2>A bar being built, one tick at a time</h2>
   <p class="panel-lede">
-    The rightmost candle is still forming. It is drawn differently on purpose.
-    A partial bar that looks like a finished one is the single easiest way to
-    put lookahead bias into a backtest, because the high and low of a bar are
-    not knowable until it closes.
+    The rightmost candle is still forming, and is drawn differently for that
+    reason. A bar&rsquo;s high and low are not knowable until it closes.
   </p>
 
   <div class="controls" id="tape-controls"></div>
   <figure class="viz">
     <canvas id="tape-canvas" height="320" aria-label="A simulated tape of one-minute candles with the newest bar still forming"></canvas>
     <figcaption>
-      Amber is the forming bar. Its open is fixed, its close moves with every
-      tick, and its high and low only ratchet outward. When the clock rolls over
-      it is committed and a new one starts.
+      Amber is the forming bar. Open fixed, close moving with every tick, high
+      and low ratcheting outward.
     </figcaption>
   </figure>
 </section>
@@ -118,16 +114,12 @@
   <h2>The volatility surface</h2>
   <p class="panel-lede">
     An option&rsquo;s price is usually quoted as an implied volatility, the
-    number you put into Black-Scholes to recover the market price. Plot that
-    across every strike and every expiry and you get a surface. It is the single
-    most useful picture in options because it says what the market expects, not
-    what already happened.
+    number that puts Black-Scholes back onto the market price. Plot it across
+    every strike and every expiry and you get a surface.
   </p>
   <p class="panel-lede">
-    Pick a name and a date. The five dates are months apart and were chosen
-    because the surfaces look nothing like each other. Everything below this
-    point, including the worked trade at the end, is priced off whichever one is
-    selected.
+    Pick a name and a date. The five dates are months apart. Everything below,
+    including the worked trade, reprices off the selection.
   </p>
 
   <div class="controls" id="surface-controls"></div>
@@ -136,10 +128,8 @@
     <figure class="viz">
       <canvas id="surface-canvas" height="420" aria-label="A three dimensional implied volatility surface across strike and time to expiry. Drag to rotate."></canvas>
       <figcaption>
-        Drag to rotate. Height and colour both encode implied volatility, so the
-        shape survives being printed in black and white. The dots are the mid
-        of each listed option's market, every other strike, so you can see where
-        the quotes sit relative to the sheet that was fitted to them.
+        Drag to rotate. Height and colour both encode implied volatility. The
+        dots are the mid of each listed option, every other strike.
       </figcaption>
     </figure>
 
@@ -148,49 +138,45 @@
       <dl class="reading-list">
         <dt>The floor is the money</dt>
         <dd>
-          One axis is strike relative to the forward, the other is time to
-          expiry. The middle of the strike axis is at the money, which is where
-          most of the volume is.
+          Strike relative to the forward on one axis, time to expiry on the
+          other. The middle of the strike axis is at the money.
         </dd>
 
         <dt>The tilt is the skew</dt>
         <dd>
           Slice at one expiry and the curve is almost never flat. Downside
-          strikes carry higher volatility than upside ones, because crashes are
-          faster than rallies and the people hedging them are price takers.
+          strikes carry higher volatility than upside ones.
           <button type="button" class="cue" data-cue="skew">Show me</button>
         </dd>
 
         <dt>The slope away from you is the term structure</dt>
         <dd>
-          Slice at one strike instead and you get volatility against time. In a
-          calm market it rises with maturity. Before an event it inverts, with
-          the near expiry the most expensive thing on the board.
+          Slice at one strike instead and you get volatility against time. It
+          usually rises with maturity. Before an event it inverts, and the near
+          expiry becomes the most expensive thing on the board. Compare the
+          January and July dates above.
           <button type="button" class="cue" data-cue="term">Show me</button>
         </dd>
 
         <dt>What a trader actually does with it</dt>
         <dd>
-          Price something that is not quoted, by interpolating. Find something
-          quoted away from the surface, which is either an opportunity or bad
-          data, and it is bad data far more often. Hedge a book by knowing how
-          the whole sheet moves when one number does.
+          Three things. Price something that is not quoted, by interpolating.
+          Find something quoted away from the surface, which is usually bad data
+          and occasionally not. Hedge a book, which needs to know how the whole
+          sheet moves when one number does.
         </dd>
 
-        <dt>Why it has to be fitted, not just plotted</dt>
+        <dt>Why it has to be fitted</dt>
         <dd>
           Raw quotes are noisy, arrive at different times, and disagree. A fit
-          gives one continuous surface you can differentiate, which is the next
-          panel.
+          gives one continuous surface you can differentiate.
         </dd>
 
         <dt>The sheet is smooth, the market is not</dt>
         <dd>
           Switch to <em>quotes only</em> and the continuum disappears. What is
-          actually listed is a handful of expiries, weeklies out to about a
-          month and then monthlies and quarterlies, on discrete strikes, with
-          holes in the wings where nobody makes a two-sided market. Everything
-          between those slices is an interpolation and should be read as one.
+          listed is fifteen expiries on discrete strikes, with holes in the
+          wings. Everything between the slices is interpolation.
         </dd>
       </dl>
     </div>
@@ -198,9 +184,8 @@
 
   <div class="diag" id="fit-diag"></div>
   <p class="panel-foot">
-    A surface nobody checked is a decoration. These two numbers are what a
-    fitter reports before anyone is allowed to price off it, and they are
-    recomputed here every time the market changes rather than asserted once.
+    Both checks are recomputed on every market change rather than asserted
+    once.
   </p>
 </section>
 
@@ -209,12 +194,12 @@
   <p class="panel-num">04</p>
   <h2>Fitting one expiry: the smile</h2>
   <p class="panel-lede">
-    A single listed expiry, fitted with SVI, a five-parameter form that is
-    standard in the literature and cheap to evaluate. Each vertical mark is one
-    option&rsquo;s market, drawn from its bid to its ask, because an implied
-    volatility is a band and not a number. The line is the fit, drawn across the
-    whole range including the stretches where nothing is listed. The panel
-    underneath is what the fit missed, which is the part worth looking at.
+    A single listed expiry, fitted with SVI. Five parameters, standard in the
+    literature, cheap enough to refit every expiry on every symbol overnight.
+    Each vertical mark is one option&rsquo;s market drawn from its bid to its
+    ask. The line is the fit, and it runs across the whole range including the
+    stretches where nothing is listed, which is where it is least constrained
+    and most likely to be wrong. The panel underneath is the residual.
   </p>
 
   <div class="controls" id="smile-controls"></div>
@@ -222,11 +207,10 @@
     <svg id="smile-svg" viewBox="0 0 720 300" role="img" aria-label="Implied volatility against log moneyness, with quoted points and a fitted curve"></svg>
     <svg id="resid-svg" viewBox="0 0 720 120" role="img" aria-label="Fit residuals in volatility points"></svg>
     <figcaption>
-      Residuals are in volatility points, measured from the mid. Structure in
-      them means the model is wrong in a way that will show up in every price
-      you take off it. Noise in them means you are fitting the market rather
-      than the noise. Notice they fan out in the wings, where the spread is
-      wide and the quote is stale.
+      Residuals in volatility points, measured from the mid. They fan out in
+      the wings, where the spread is wide and the last print is old. Structure
+      in them rather than scatter would mean the model is wrong in a way that
+      reaches every price taken off it.
     </figcaption>
   </figure>
 </section>
@@ -236,17 +220,16 @@
   <p class="panel-num">05</p>
   <h2>Skew, tracked over time</h2>
   <p class="panel-lede">
-    Once every expiry is fitted every day, the fit parameters become a time
-    series of their own. This is the cost of downside protection relative to
-    upside, by maturity, on three days chosen to look different.
+    Fit every expiry every day and the parameters become a time series of
+    their own. This one is the cost of downside protection relative to
+    upside.
   </p>
 
   <figure class="viz">
     <svg id="skew-svg" viewBox="0 0 720 320" role="img" aria-label="Twenty five delta risk reversal against time to expiry, on three dates"></svg>
     <figcaption>
-      A calm day, a day with an event in the front month, and a day in a selloff.
-      The near end moves the most, which is why a single headline volatility
-      number tells you almost nothing.
+      A calm day, an event in the front month, and a selloff. The near end
+      moves most.
     </figcaption>
   </figure>
 </section>
@@ -256,9 +239,8 @@
   <p class="panel-num">06</p>
   <h2>A backtest, gross and net</h2>
   <p class="panel-lede">
-    The gap between these two lines is the entire reason the cost model exists.
-    Gross of costs, a mediocre strategy looks like a good one. Net of a
-    calibrated slippage estimate, most of them stop existing.
+    The same signal on the same bars, before and after a calibrated slippage
+    estimate.
   </p>
 
   <div class="controls" id="bt-controls"></div>
@@ -266,9 +248,7 @@
     <svg id="equity-svg" viewBox="0 0 720 300" role="img" aria-label="Cumulative return gross and net of costs"></svg>
     <svg id="dd-svg" viewBox="0 0 720 110" role="img" aria-label="Drawdown from the running peak, net of costs"></svg>
     <figcaption>
-      Drawdown below, net of costs, measured from the running peak. It is the
-      number that decides whether a strategy is survivable by a human, which is
-      a different question from whether it is profitable.
+      Drawdown from the running peak, net of costs.
     </figcaption>
   </figure>
 </section>
@@ -280,16 +260,15 @@
   <p class="panel-lede">
     Fourteen candidate signal families, each tested out of sample against a
     matched baseline on identical bars and identical cost assumptions. Thirteen
-    were statistically indistinguishable from the baseline and were retired.
+    came back indistinguishable from the baseline and were retired.
   </p>
 
   <figure class="viz">
     <svg id="ablation-svg" viewBox="0 0 720 420" role="img" aria-label="Out of sample performance of fourteen candidate signals against baseline, with confidence intervals"></svg>
     <figcaption>
-      Bars are the out-of-sample edge over baseline, whiskers are the confidence
-      interval. A bar whose whisker crosses zero has not shown it can do
-      anything. Reporting this honestly is the work. Anyone can find fourteen
-      signals that look good in sample.
+      Bars are the out-of-sample edge over baseline, whiskers the confidence
+      interval. A whisker crossing zero means the family has not shown it can do
+      anything. Anyone can find fourteen signals that look good in sample.
     </figcaption>
   </figure>
 </section>
@@ -299,19 +278,17 @@
   <p class="panel-num">08</p>
   <h2>How many independent bets you actually have</h2>
   <p class="panel-lede">
-    Counting trades overstates how much evidence you have, because the trades
-    are correlated. Names in the same sector move together, and the same signal
-    fires across them on the same day. Adjusting for that collapses the count,
-    and the collapsed number is the one that governs how sure you can be.
+    Counting trades overstates the evidence, because the trades are
+    correlated. Names in the same sector move together, and the same signal
+    fires across them on the same day.
   </p>
 
   <figure class="viz">
     <div id="breadth-figure" class="breadth"></div>
     <figcaption>
-      The adjustment is the standard effective-sample-size calculation on a
-      correlated set. The consequence is strategic rather than technical: it
-      redirects the work from finding more signals toward getting more
-      independent evidence about the ones you have.
+      The standard effective-sample-size calculation on a correlated set. What
+      it changed here was the research agenda, from finding more signals to
+      getting more independent evidence about the ones already in hand.
     </figcaption>
   </figure>
 </section>
@@ -320,11 +297,9 @@
   <p class="panel-num">09</p>
   <h2>Using the surface: a worked trade, with the arithmetic</h2>
   <p class="panel-lede">
-    A surface is only worth fitting if a number comes off it that you could act
-    on. This prices a three-month risk reversal on the selected name and date,
-    step by step, and then does the thing most write-ups skip, which is
-    subtracting what it costs to put on. Change the underlying or the date above
-    and every number here moves.
+    A three-month risk reversal, priced off the selected surface, step by
+    step, and then costed. Change the underlying or the date above and every
+    number here moves.
   </p>
 
   <div class="trade-layout">
@@ -333,10 +308,8 @@
       <svg id="payoff-svg" viewBox="0 0 420 300" role="img"
            aria-label="Profit and loss at expiry for a short put and long call against the underlying price"></svg>
       <figcaption>
-        Flat between the strikes, because between them both options expire
-        worthless and you keep the premium. The line on the left has no floor,
-        which is the whole risk of the position and the reason the skew is
-        priced where it is.
+        Flat between the strikes, where both options expire worthless. No floor
+        on the left.
       </figcaption>
     </figure>
   </div>
@@ -345,11 +318,9 @@
 <section class="panel closing">
   <h2>What this page is doing</h2>
   <p>
-    The point of the real platform is not that it draws nice pictures. It is
-    that a number coming out of it can be trusted, which takes point-in-time
-    reconstruction, cost modelling, and an evaluation regime willing to return a
-    negative answer. The picture is the easy part and it is the part that fits
-    on a web page.
+    Drawing the surface is the easy part, and it is the part that fits on a web
+    page. The work behind the real platform is point-in-time reconstruction,
+    cost modelling, and an evaluation regime willing to come back negative.
   </p>
   <p class="closing-links">
     <a href="./">Back to the main page</a>
