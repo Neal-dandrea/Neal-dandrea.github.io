@@ -157,6 +157,59 @@ nav.sections a {
 
 nav.sections a:hover { color: var(--accent); }
 
+/* ---------- the bar moves into the margin on a wide screen ----------
+
+   A sticky bar across the top works at laptop width and is a nuisance on a
+   large monitor: content slides underneath it for the whole length of the page.
+   Past 82rem there is empty gutter to the left of the text column, so the bar
+   goes and lives there instead, and nothing ever passes beneath it.
+
+   The ul keeps its flex layout and just changes direction, so the markup is the
+   same list in both cases and there is no second copy of the nav. */
+
+@media (min-width: 82rem) {
+  nav.sections {
+    position: fixed;
+    top: 50%;
+    left: calc(50% - 30rem);
+    width: 11rem;
+    transform: translateY(-50%);
+    z-index: 10;
+    margin: 0;
+    padding: 0;
+    background: none;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+  }
+
+  nav.sections ul {
+    flex-direction: column;
+    gap: 0.55rem;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--rule);
+  }
+
+  nav.sections li { padding-left: 0.85rem; }
+
+  nav.sections a {
+    display: block;
+    padding: 0.08rem 0;
+  }
+
+  /* The current section, marked by the scroll spy. */
+  nav.sections li.here { box-shadow: inset 2px 0 0 -0.5px var(--accent); }
+  nav.sections li.here a { color: var(--ink); }
+
+  /* Nothing is under a bar any more, so anchors need far less clearance. */
+  section { scroll-margin-top: 2rem; }
+
+  /* The bar is out of the flow now, so the space it held has to come back. */
+  main { margin-top: 2.5rem; }
+}
+
 /* Anchor targets clear the sticky bar. */
 section { scroll-margin-top: 4.5rem; }
 

@@ -1247,6 +1247,38 @@
   openTarget();
   window.addEventListener('hashchange', openTarget);
 
+
+  /* Scroll spy for the margin nav. Marks the section the reader is actually in,
+     which a plain list of links cannot do and which is most of the value of
+     moving the bar into the gutter. Position-based rather than
+     IntersectionObserver, because a tall panel and a short one need the same
+     answer: whichever section last crossed the top third of the viewport. */
+  (function spy() {
+    var links = Array.prototype.slice.call(
+      document.querySelectorAll('nav.sections a[href^="#"]'));
+    if (!links.length) return;
+    var targets = links.map(function (a) {
+      return { li: a.parentElement, el: document.getElementById(a.hash.slice(1)) };
+    }).filter(function (t) { return t.el; });
+    var queued = false;
+
+    function mark() {
+      queued = false;
+      var line = window.innerHeight * 0.32, best = null;
+      targets.forEach(function (t) {
+        if (t.el.getBoundingClientRect().top <= line) best = t;
+      });
+      if (!best) best = targets[0];
+      targets.forEach(function (t) { t.li.classList.toggle("here", t === best); });
+    }
+
+    window.addEventListener("scroll", function () {
+      if (!queued) { queued = true; requestAnimationFrame(mark); }
+    }, { passive: true });
+    window.addEventListener("resize", mark);
+    mark();
+  })();
+
   // Print the whole page, not just the headings.
   var all = document.querySelectorAll('details.entry');
   var before = [];

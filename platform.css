@@ -79,7 +79,9 @@ body.platform footer { max-width: none; }
 
 body.platform footer > p { max-width: 46rem; margin-inline: auto; }
 
-.platform-head {
+/* Specificity: `body.platform .masthead` above sets max-width to none, so this
+   needs the same weight or the header runs the full width of a large monitor. */
+body.platform .platform-head {
   max-width: 46rem;
   margin-inline: auto;
 }
@@ -494,4 +496,47 @@ table.nums td.v { font-variant-numeric: tabular-nums; }
 @media print {
   .controls, .panel-nav, .cue { display: none; }
   .panel { page-break-inside: avoid; }
+}
+
+/* ---------- the margin nav, on this page ----------
+
+   The panels here run to 64rem rather than the 34rem reading measure, so the
+   gutter the sidebar lives in does not open up until much later. Between the
+   two breakpoints the bar stays where style.css put it originally, across the
+   top. */
+
+@media (min-width: 82rem) and (max-width: 97rem) {
+  nav.sections {
+    position: sticky;
+    top: 0;
+    left: auto;
+    width: auto;
+    transform: none;
+    margin-inline: -1.5rem;
+    padding: 0 1.5rem;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  nav.sections ul {
+    flex-direction: row;
+    gap: 1.35rem;
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 0.85rem 0;
+    border-left: none;
+  }
+
+  nav.sections li { padding-left: 0; }
+  nav.sections li.here { box-shadow: none; }
+  main { margin-top: 0; }
+  .panel { scroll-margin-top: 4.5rem; }
+}
+
+@media (min-width: 97rem) {
+  /* Clear of the widest panel, which is the surface at 64rem. */
+  nav.sections { left: calc(50% - 45rem); }
+  .panel { scroll-margin-top: 2rem; }
 }

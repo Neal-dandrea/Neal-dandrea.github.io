@@ -434,7 +434,11 @@
 
   /* ------------------------------------------------------- 03 vol surface */
 
-  const surf = { yaw: -0.85, tilt: 0.52, cue: null, drag: null, mode: "both" };
+  const surf = {
+    yaw: -0.85, tilt: 0.52, cue: null, drag: null, mode: "both",
+    zoom: 1, panX: 0, panY: 0,        // view transform, applied after the auto-fit
+    hit: [], hover: -1,               // projected quotes, and which one is under the cursor
+  };
   const NK = 30, NT = 20;
 
   function surfaceGrid() {
@@ -610,12 +614,32 @@
       s,
       ox: padX - x0 * s + (availW - (x1 - x0) * s) / 2,
       oy: padTop - y0 * s + (availH - (y1 - y0) * s) / 2,
+      cx: w / 2, cy: h / 2,
     };
   }
 
+  /* The auto-fit puts the whole surface in the box. The view transform then
+     zooms and pans within that, about the canvas centre, so zooming is
+     independent of the angle and of which market is loaded. */
   function project(k, T, v, vlo, vhi, fit) {
     const r = raw(k, T, v, vlo, vhi);
-    return { x: r.x * fit.s + fit.ox, y: r.y * fit.s + fit.oy, depth: r.depth };
+    const x = r.x * fit.s + fit.ox, y = r.y * fit.s + fit.oy;
+    return {
+      x: (x - fit.cx) * surf.zoom + fit.cx + surf.panX,
+      y: (y - fit.cy) * surf.zoom + fit.cy + surf.panY,
+      depth: r.depth,
+    };
+  }
+
+  /* Zoom about a point, so the thing under the cursor stays under the cursor.
+     Without this, zooming walks whatever you were looking at off the canvas. */
+  function zoomAbout(px, py, factor, cx, cy) {
+    const z1 = surf.zoom;
+    const z2 = clamp(z1 * factor, 0.6, 14);
+    if (z2 === z1) return;
+    surf.panX = px - cx - ((px - cx - surf.panX) / z1) * z2;
+    surf.panY = py - cy - ((py - cy - surf.panY) / z1) * z2;
+    surf.zoom = z2;
   }
 
   let lastQuotes = [];
@@ -651,17 +675,19 @@
     // wrong: every quote floats in front regardless of where it sits.
     const items = surf.mode === "quotes" ? [] : quads.map((q) => ({ kind: "quad", ...q }));
 
+    surf.hit = [];
     if (surf.mode !== "fit") {
-      // ⚠️ MIDS ONLY UP HERE, and every other strike. The full board is ~1,600
-      //    lines; drawn as bid-to-ask segments in three dimensions they cover
-      //    the sheet completely and the picture says nothing. The width of the
-      //    market is shown in the smile panel below, where one slice has room
-      //    for it. This view answers a different question: where do the quotes
-      //    sit relative to the fitted sheet.
+      // ⚠️ MIDS ONLY UP HERE, and every other strike UNTIL YOU ZOOM IN. The
+      //    full board is ~1,600 lines; drawn in three dimensions at the default
+      //    scale they cover the sheet and the picture says nothing. Zoomed in
+      //    there is room for all of them, so the thinning is lifted past 1.8x.
+      const everyOne = surf.zoom > 1.8 || surf.mode === "quotes";
       lastQuotes.forEach((q) => {
-        if (surf.mode === "both" && q.i % 2) return;
+        if (!everyOne && q.i % 2) return;
         const p = project(q.k, q.T, q.mid, vlo, vhi, fit);
-        items.push({ kind: "quote", p, depth: p.depth, thin: q.thin });
+        if (p.x < -20 || p.x > w + 20 || p.y < -20 || p.y > h + 20) return;
+        items.push({ kind: "quote", p, depth: p.depth, thin: q.thin, q });
+        surf.hit.push({ x: p.x, y: p.y, q });
       });
     }
     items.sort((a, b) => a.depth - b.depth);
@@ -682,11 +708,20 @@
         ctx.lineWidth = 0.5;
         ctx.stroke();
       } else {
-        ctx.globalAlpha = 0.75 - 0.4 * it.thin;
-        ctx.fillStyle = quoteCol;
+        const on = surf.hover >= 0 && surf.hit[surf.hover]
+          && surf.hit[surf.hover].q === it.q;
+        ctx.globalAlpha = on ? 1 : 0.75 - 0.4 * it.thin;
+        ctx.fillStyle = on ? cssVar("--accent") : quoteCol;
         ctx.beginPath();
-        ctx.arc(it.p.x, it.p.y, 1.5, 0, Math.PI * 2);
+        ctx.arc(it.p.x, it.p.y, on ? 4 : 1.5 + Math.min(surf.zoom - 1, 2) * 0.6, 0, Math.PI * 2);
         ctx.fill();
+        if (on) {
+          ctx.strokeStyle = cssVar("--accent");
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(it.p.x, it.p.y, 8, 0, Math.PI * 2);
+          ctx.stroke();
+        }
         ctx.globalAlpha = 1;
       }
     });
@@ -719,9 +754,18 @@
     ctx.font = "11.5px ui-sans-serif, system-ui, sans-serif";
     ctx.fillText("strike, away from the forward →", 10, h - 8);
     ctx.fillText(`implied vol ${(vlo * 100).toFixed(0)}% to ${(vhi * 100).toFixed(0)}%`, 10, 16);
+    if (surf.zoom !== 1) {
+      ctx.textAlign = "right";
+      ctx.fillText(`${surf.zoom.toFixed(1)}x`, w - 10, 16);
+      ctx.textAlign = "left";
+    }
     ctx.textAlign = "right";
     ctx.fillText("← more time to expiry", w - 10, h - 8);
     ctx.textAlign = "left";
+  }
+
+  function resetView() {
+    surf.zoom = 1; surf.panX = 0; surf.panY = 0; surf.hover = -1;
   }
 
   function renderDiagnostics() {
@@ -778,6 +822,12 @@
       + Object.keys(DATES).map((k) =>
           `<button type="button" data-date="${k}" aria-pressed="${k === market.date}">${DATES[k].label}</button>`).join("")
       + '</div>'
+      + '<div class="picker"><span class="control-label">View</span>'
+      + '<button type="button" data-zoom="in" title="Zoom in">Zoom in</button>'
+      + '<button type="button" data-zoom="out" title="Zoom out">Zoom out</button>'
+      + '<button type="button" data-zoom="reset">Reset</button>'
+      + '<span class="control-label">drag to rotate, shift-drag to pan, ctrl-scroll or double-click to zoom</span>'
+      + '</div>'
       + '<div class="picker"><span class="control-label">Show</span>'
       + [["both", "Fit and quotes"], ["fit", "Fitted surface"], ["quotes", "Quotes only"]]
           .map(([k, lab]) =>
@@ -797,6 +847,15 @@
       b.addEventListener("click", () => pick("sym", "sym")(b)));
     host.querySelectorAll("[data-date]").forEach((b) =>
       b.addEventListener("click", () => pick("date", "date")(b)));
+    host.querySelectorAll("[data-zoom]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const c = document.getElementById("surface-canvas");
+        const cx = c.clientWidth / 2, cy = parseFloat(c.style.height) / 2;
+        if (b.dataset.zoom === "reset") resetView();
+        else zoomAbout(cx, cy, b.dataset.zoom === "in" ? 1.4 : 1 / 1.4, cx, cy);
+        drawSurface();
+      }));
+
     host.querySelectorAll("[data-mode]").forEach((b) =>
       b.addEventListener("click", () => {
         surf.mode = b.dataset.mode;
@@ -817,24 +876,107 @@
     });
 
     const canvas = document.getElementById("surface-canvas");
+    const at = (e) => {
+      const b = canvas.getBoundingClientRect();
+      return { x: e.clientX - b.left, y: e.clientY - b.top, b };
+    };
+
     canvas.addEventListener("pointerdown", (e) => {
-      surf.drag = { x: e.clientX, yaw: surf.yaw };
+      const p = at(e);
+      surf.drag = { x: e.clientX, y: e.clientY, yaw: surf.yaw,
+                    panX: surf.panX, panY: surf.panY, pan: e.shiftKey || e.button === 1 };
       canvas.setPointerCapture(e.pointerId);
+      if (surf.drag.pan) e.preventDefault();
     });
+
     canvas.addEventListener("pointermove", (e) => {
-      if (!surf.drag) return;
-      surf.yaw = surf.drag.yaw + (e.clientX - surf.drag.x) * 0.008;
-      drawSurface();
+      if (surf.drag) {
+        if (surf.drag.pan) {
+          surf.panX = surf.drag.panX + (e.clientX - surf.drag.x);
+          surf.panY = surf.drag.panY + (e.clientY - surf.drag.y);
+        } else {
+          surf.yaw = surf.drag.yaw + (e.clientX - surf.drag.x) * 0.008;
+        }
+        hideTip();
+        drawSurface();
+        return;
+      }
+
+      // Hit test against the projected quotes. The threshold grows with zoom
+      // because the points do, and it is in screen space rather than model
+      // space so it behaves the same at every angle.
+      const p = at(e);
+      const sx = canvas.clientWidth / (canvas.width / (window.devicePixelRatio || 1));
+      const px = p.x / (sx || 1), py = p.y / (sx || 1);
+      let best = -1, bestD = 100;
+      surf.hit.forEach((h, i) => {
+        const d = (h.x - px) * (h.x - px) + (h.y - py) * (h.y - py);
+        if (d < bestD) { bestD = d; best = i; }
+      });
+
+      if (best !== surf.hover) { surf.hover = best; drawSurface(); }
+      if (best < 0) { hideTip(); return; }
+
+      const q = surf.hit[best].q;
+      const days = Math.round(q.T * 365);
+      const inside = q.fit >= q.bid && q.fit <= q.ask;
+      showTip(
+        `<strong>${NAMES[market.sym].label} ${q.K.toFixed(2)}</strong>`
+        + ` &middot; ${days}d<br>`
+        + `<span class="k">moneyness</span> ${(q.k * 100).toFixed(1)}% from the forward<br>`
+        + `<span class="k">bid / ask</span> ${(q.bid * 100).toFixed(2)}% / ${(q.ask * 100).toFixed(2)}%<br>`
+        + `<span class="k">mid</span> ${(q.mid * 100).toFixed(2)}%<br>`
+        + `<span class="k">fitted</span> ${(q.fit * 100).toFixed(2)}%<br>`
+        + `<span class="k">residual</span> ${((q.mid - q.fit) * 100).toFixed(2)} vol pts<br>`
+        + `<span class="k">spread</span> ${((q.ask - q.bid) * 100).toFixed(2)} vol pts`
+        + (inside ? "" : "<br>Fit sits outside this market."),
+        e.clientX, e.clientY);
     });
+
+    canvas.addEventListener("pointerleave", () => {
+      if (surf.hover !== -1) { surf.hover = -1; drawSurface(); }
+      hideTip();
+    });
+
     const end = () => { surf.drag = null; };
     canvas.addEventListener("pointerup", end);
     canvas.addEventListener("pointercancel", end);
 
-    // Rotation from the keyboard, so the panel is not mouse-only.
+    // ⚠️ A BARE WHEEL STILL SCROLLS THE PAGE. Trapping it inside a figure that
+    //    is most of the screen means a visitor scrolling past this panel gets
+    //    stuck in it, which is worse than having no wheel zoom at all. Ctrl or
+    //    the command key zooms, matching how maps behave, and the buttons do
+    //    the same job for anyone who does not know that.
+    canvas.addEventListener("wheel", (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      const p = at(e);
+      zoomAbout(p.x, p.y, Math.exp(-e.deltaY * 0.002), canvas.clientWidth / 2,
+                parseFloat(canvas.style.height) / 2);
+      drawSurface();
+    }, { passive: false });
+
+    canvas.addEventListener("dblclick", (e) => {
+      const p = at(e);
+      zoomAbout(p.x, p.y, 1.8, canvas.clientWidth / 2,
+                parseFloat(canvas.style.height) / 2);
+      drawSurface();
+    });
+
+    // Rotation and zoom from the keyboard, so the panel is not mouse-only.
     canvas.tabIndex = 0;
+    canvas.setAttribute("role", "application");
     canvas.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") { surf.yaw -= 0.12; drawSurface(); e.preventDefault(); }
-      if (e.key === "ArrowRight") { surf.yaw += 0.12; drawSurface(); e.preventDefault(); }
+      const c = [canvas.clientWidth / 2, parseFloat(canvas.style.height) / 2];
+      const keys = {
+        ArrowLeft: () => { surf.yaw -= 0.12; },
+        ArrowRight: () => { surf.yaw += 0.12; },
+        "+": () => zoomAbout(c[0], c[1], 1.25, c[0], c[1]),
+        "=": () => zoomAbout(c[0], c[1], 1.25, c[0], c[1]),
+        "-": () => zoomAbout(c[0], c[1], 0.8, c[0], c[1]),
+        "0": () => resetView(),
+      };
+      if (keys[e.key]) { keys[e.key](); drawSurface(); e.preventDefault(); }
     });
   }
 
@@ -1649,6 +1791,38 @@ put  = e^(−rT)[K·N(−d₂) − F·N(−d₁)]</pre>
       requestAnimationFrame(loop);
     })(last);
   }
+
+
+  /* Scroll spy for the margin nav. Marks the section the reader is actually in,
+     which a plain list of links cannot do and which is most of the value of
+     moving the bar into the gutter. Position-based rather than
+     IntersectionObserver, because a tall panel and a short one need the same
+     answer: whichever section last crossed the top third of the viewport. */
+  (function spy() {
+    var links = Array.prototype.slice.call(
+      document.querySelectorAll('nav.sections a[href^="#"]'));
+    if (!links.length) return;
+    var targets = links.map(function (a) {
+      return { li: a.parentElement, el: document.getElementById(a.hash.slice(1)) };
+    }).filter(function (t) { return t.el; });
+    var queued = false;
+
+    function mark() {
+      queued = false;
+      var line = window.innerHeight * 0.32, best = null;
+      targets.forEach(function (t) {
+        if (t.el.getBoundingClientRect().top <= line) best = t;
+      });
+      if (!best) best = targets[0];
+      targets.forEach(function (t) { t.li.classList.toggle("here", t === best); });
+    }
+
+    window.addEventListener("scroll", function () {
+      if (!queued) { queued = true; requestAnimationFrame(mark); }
+    }, { passive: true });
+    window.addEventListener("resize", mark);
+    mark();
+  })();
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
