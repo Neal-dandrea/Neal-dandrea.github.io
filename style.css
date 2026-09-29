@@ -844,6 +844,35 @@ footer p { margin: 0; }
   .teaser-arm .r-cam { fill: #3987e5; }
 }
 
+
+/* The machine learning teaser. The ablation result, drawn from the measured
+   numbers rather than a shape that resembles them, because it is the finding
+   that page is proudest of. */
+
+.teaser-ml-wrap { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.teaser-ml { display: block; width: 100%; height: auto; }
+
+.teaser-ml .ml-grid { stroke: var(--rule); stroke-width: 1; }
+.teaser-ml .ml-zero { stroke: var(--ink-faint); stroke-width: 1; }
+.teaser-ml .ml-in { stroke: #eb6834; stroke-width: 2; }
+.teaser-ml .ml-in-dot { fill: #eb6834; }
+.teaser-ml .ml-oos { stroke: #2a78d6; stroke-width: 2; }
+.teaser-ml .ml-oos-dot { fill: #2a78d6; }
+.teaser-ml .ml-lab { font-size: 11px; font-family: inherit; }
+.teaser-ml .ml-in-t { fill: #eb6834; }
+.teaser-ml .ml-oos-t { fill: #2a78d6; }
+.teaser-ml .ml-zero-t { fill: var(--ink-faint); font-size: 10px; }
+.teaser-ml .ml-ax { font-size: 9.5px; fill: var(--ink-faint); font-family: inherit; }
+
+@media (prefers-color-scheme: dark) {
+  .teaser-ml .ml-in, .teaser-ml .ml-in-t { stroke: #d95926; fill: #d95926; }
+  .teaser-ml .ml-in-dot { fill: #d95926; }
+  .teaser-ml .ml-oos, .teaser-ml .ml-oos-t { stroke: #3987e5; fill: #3987e5; }
+  .teaser-ml .ml-oos-dot { fill: #3987e5; }
+  .teaser-ml .ml-in { fill: none; }
+  .teaser-ml .ml-oos { fill: none; }
+}
+
 /* ---------- print ---------- */
 
 @media print {
