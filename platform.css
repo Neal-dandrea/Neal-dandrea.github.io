@@ -137,6 +137,14 @@ body.platform .platform-head {
 .panel h2 { margin-top: 0; }
 .panel-lede { max-width: 34rem; color: var(--ink-soft); }
 
+/* A first-person line. Deliberately styled almost as body text rather than as
+   a callout, because the moment it looks like a UI component it stops sounding
+   like someone talking. */
+.panel-lede.me {
+  margin-top: 0.9rem;
+  color: var(--ink);
+}
+
 figure.viz {
   margin: 1.6rem 0 0;
   padding: 1rem 1rem 0.4rem;

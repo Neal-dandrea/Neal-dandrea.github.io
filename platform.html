@@ -77,6 +77,10 @@
     written to a date-partitioned store. Bars are derived from it rather than
     fetched.
   </p>
+  <p class="panel-lede me">
+    I assumed getting the data would be the easy part and the models would be
+    the hard part. It has been the other way round for most of this project.
+  </p>
 
   <div class="stat-row" id="stat-row"></div>
 
@@ -117,6 +121,10 @@
     The rightmost candle is still forming, and is drawn differently for that
     reason. A bar&rsquo;s high and low are not knowable until it closes.
   </p>
+  <p class="panel-lede me">
+    Watching one bar build is what made lookahead bias concrete for me. I had
+    read the definition plenty of times before that and it had not landed.
+  </p>
 
   <div class="controls" id="tape-controls"></div>
   <figure class="viz">
@@ -152,6 +160,11 @@
     An option&rsquo;s price is usually quoted as an implied volatility, the
     number that puts Black-Scholes back onto the market price. Plot it across
     every strike and every expiry and you get a surface.
+  </p>
+  <p class="panel-lede me">
+    I understood volatility before I started this. I had no idea you could build
+    a whole surface out of it, or that the surface would end up being the most
+    useful thing on the screen.
   </p>
   <p class="panel-lede">
     Pick a name and a date. The five dates are months apart. Everything below,
@@ -356,6 +369,10 @@
     matched baseline on identical bars and identical cost assumptions. Thirteen
     came back indistinguishable from the baseline and were retired.
   </p>
+  <p class="panel-lede me">
+    This is not the answer I was hoping for. I spent a while convinced the
+    harness was broken before I accepted that the harness was fine.
+  </p>
 
   <figure class="viz">
     <svg id="ablation-svg" viewBox="0 0 720 420" role="img" aria-label="Out of sample performance of fourteen candidate signals against baseline, with confidence intervals"></svg>
@@ -393,6 +410,10 @@
     correlated. Names in the same sector move together, and the same signal
     fires across them on the same day.
   </p>
+  <p class="panel-lede me">
+    When I first saw the adjusted number I assumed I had dropped three orders of
+    magnitude somewhere in the code.
+  </p>
 
   <figure class="viz">
     <div id="breadth-figure" class="breadth"></div>
@@ -420,6 +441,11 @@
     A three-month risk reversal, priced off the selected surface, step by
     step, and then costed. Change the underlying or the date above and every
     number here moves.
+  </p>
+  <p class="panel-lede me">
+    I could not have priced any of this before this project started. Working a
+    trade through by hand, in this order, is how I came to understand what the
+    surface is actually for.
   </p>
 
   <div class="trade-layout">
