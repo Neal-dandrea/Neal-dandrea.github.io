@@ -929,6 +929,29 @@
       ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
       ctx.fillText(label, clamp(ms.x - 10, 6, w - 130), ms.y - 8);
     }
+    // The slice the smile panel is showing, drawn on the surface. Without this
+    // the two panels are related and nothing says so.
+    if (surf.mode !== "quotes") {
+      const slice = [];
+      for (let i = 0; i < NK; i++) {
+        const k = lerp(K_MIN, K_MAX, i / (NK - 1));
+        slice.push({ k, T: smile.T, v: sviVol(k, smile.T, marketCtx()) });
+      }
+      ctx.beginPath();
+      slice.forEach((p, n) => {
+        const q = project(p.k, p.T, p.v, vlo, vhi, fit);
+        if (n === 0) ctx.moveTo(q.x, q.y); else ctx.lineTo(q.x, q.y);
+      });
+      ctx.strokeStyle = cssVar("--series-1");
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      const mid = project(slice[2].k, smile.T, slice[2].v, vlo, vhi, fit);
+      ctx.fillStyle = cssVar("--series-1");
+      ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+      ctx.fillText(`${Math.round(smile.T * 365)}d, shown below`,
+                   clamp(mid.x - 4, 6, w - 120), mid.y - 7);
+    }
+
     if (surf.cue === "skew") ribbon(g[3], "one expiry: the skew");
     if (surf.cue === "term") {
       const col = g.map((row) => row[Math.round(NK * 0.55)]);
@@ -1073,15 +1096,17 @@
     };
 
     canvas.addEventListener("pointerdown", (e) => {
-      const p = at(e);
       surf.drag = { x: e.clientX, y: e.clientY, yaw: surf.yaw,
-                    panX: surf.panX, panY: surf.panY, pan: e.shiftKey || e.button === 1 };
+                    panX: surf.panX, panY: surf.panY, pan: e.shiftKey || e.button === 1,
+                    moved: 0, t0: performance.now() };
       canvas.setPointerCapture(e.pointerId);
       if (surf.drag.pan) e.preventDefault();
     });
 
     canvas.addEventListener("pointermove", (e) => {
       if (surf.drag) {
+        surf.drag.moved = Math.max(surf.drag.moved,
+          Math.abs(e.clientX - surf.drag.x) + Math.abs(e.clientY - surf.drag.y));
         if (surf.drag.pan) {
           surf.panX = surf.drag.panX + (e.clientX - surf.drag.x);
           surf.panY = surf.drag.panY + (e.clientY - surf.drag.y);
@@ -1120,7 +1145,8 @@
         + `<span class="k">fitted</span> ${(q.fit * 100).toFixed(2)}%<br>`
         + `<span class="k">residual</span> ${((q.mid - q.fit) * 100).toFixed(2)} vol pts<br>`
         + `<span class="k">spread</span> ${((q.ask - q.bid) * 100).toFixed(2)} vol pts`
-        + (inside ? "" : "<br>Fit sits outside this market."),
+        + (inside ? "" : "<br>Fit sits outside this market.")
+        + '<br><span class="k">click to open this expiry below</span>',
         e.clientX, e.clientY);
     });
 
@@ -1129,9 +1155,18 @@
       hideTip();
     });
 
-    const end = () => { surf.drag = null; };
-    canvas.addEventListener("pointerup", end);
-    canvas.addEventListener("pointercancel", end);
+    // ⚠️ A CLICK HERE IS A DRAG THAT DID NOT MOVE. Rotation and selection share
+    //    the same button, so selecting has to wait for pointerup and check that
+    //    the pointer stayed put, or every rotation would also jump the page to
+    //    whatever expiry happened to be under the cursor when the drag started.
+    canvas.addEventListener("pointerup", (e) => {
+      const d = surf.drag;
+      surf.drag = null;
+      if (!d || d.pan || d.moved > 5 || performance.now() - d.t0 > 600) return;
+      if (surf.hover < 0 || !surf.hit[surf.hover]) return;
+      selectExpiry(surf.hit[surf.hover].q.T, { scroll: true });
+    });
+    canvas.addEventListener("pointercancel", () => { surf.drag = null; });
 
     // ⚠️ A BARE WHEEL STILL SCROLLS THE PAGE. Trapping it inside a figure that
     //    is most of the screen means a visitor scrolling past this panel gets
@@ -1192,15 +1227,35 @@
 
   /* --------------------------------------------------------- 04 smile fit */
 
-  // The expiries are LISTED ones, taken from the same schedule the quote
-  // generator uses, so this panel is a slice of the surface above rather than a
-  // separate drawing that happens to look similar.
-  const EXPIRIES = [
-    { label: "1 week", T: 7 / 365 }, { label: "1 month", T: 28 / 365 },
-    { label: "3 months", T: 91 / 365 }, { label: "6 months", T: 189 / 365 },
-    { label: "1 year", T: 350 / 365 },
-  ];
+  // Every listed expiry, from the same schedule the quote generator uses, so
+  // this panel is a slice of the surface above rather than a separate drawing
+  // that happens to look similar. All fifteen are offered rather than five
+  // round tenors, because the point of both panels is that the board is a list.
+  const EXPIRIES = LISTED_T.map((T) => ({ T, label: Math.round(T * 365) + "d" }));
   const smile = { T: 91 / 365 };
+
+  /* One place that changes the expiry, wherever the change came from. The
+     surface and the smile are two views of the same slice and they should never
+     disagree about which one is showing. */
+  function selectExpiry(T, opts) {
+    smile.T = T;
+    document.querySelectorAll("#smile-controls [data-t]").forEach((b) =>
+      b.setAttribute("aria-pressed", String(Math.abs(parseFloat(b.dataset.t) - T) < 1e-9)));
+    const label = document.getElementById("smile-date");
+    if (label) {
+      label.textContent = `${Math.round(T * 365)} days, expiring ${expiryLabel(T)}`;
+    }
+    drawSmile();
+    drawResid();
+    drawSurface();
+    if (opts && opts.scroll) {
+      document.getElementById("smile").scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto" : "smooth",
+        block: "start",
+      });
+    }
+  }
 
   function smileData() {
     // Exactly the quotes on that expiry, bid and ask as they came, rather than
@@ -1345,15 +1400,13 @@
     const host = document.getElementById("smile-controls");
     if (!host) return;
     host.innerHTML = '<span class="control-label">Expiry</span>'
-      + EXPIRIES.map((x) => `<button type="button" data-t="${x.T}" aria-pressed="${Math.abs(x.T - smile.T) < 1e-9}">${x.label}</button>`).join("");
+      + EXPIRIES.map((x) =>
+          `<button type="button" class="chip" data-t="${x.T}" aria-pressed="${Math.abs(x.T - smile.T) < 1e-9}">${x.label}</button>`).join("")
+      + '<span class="control-label" id="smile-date"></span>';
     host.querySelectorAll("[data-t]").forEach((b) => {
-      b.addEventListener("click", () => {
-        smile.T = parseFloat(b.dataset.t);
-        host.querySelectorAll("[data-t]").forEach((o) =>
-          o.setAttribute("aria-pressed", String(o === b)));
-        drawSmile(); drawResid();
-      });
+      b.addEventListener("click", () => selectExpiry(parseFloat(b.dataset.t)));
     });
+    selectExpiry(smile.T);
   }
 
   /* -------------------------------------------------------------- 05 skew */

@@ -394,6 +394,11 @@ table.nums td.v { font-variant-numeric: tabular-nums; }
   color: var(--ink);
 }
 
+.controls .chip {
+  padding: 0.22rem 0.5rem;
+  font-size: 0.78rem;
+}
+
 /* ---------- stat tiles ---------- */
 
 .stat-row {

@@ -165,9 +165,11 @@
       <canvas id="surface-canvas" height="420" aria-label="A three dimensional implied volatility surface across strike and time to expiry. Drag to rotate."></canvas>
       <figcaption>
         Drag to rotate. Height and colour both encode implied volatility. The
-        dots are the mid of each listed option. Hover one for its market, and
-        zoom in to see every strike rather than every second one. The expiry
-        axis is dated from the as-of date, so it names actual expirations.
+        dots are the mid of each listed option. Hover one for its market, click
+        one to open that expiry in the panel below, and zoom in to see every
+        strike rather than every second one. The expiry axis is dated from the
+        as-of date, so it names actual expirations. The blue line is whichever
+        slice is currently showing below.
       </figcaption>
     </figure>
 
@@ -251,8 +253,10 @@
   <p class="panel-num">04</p>
   <h2>Fitting one expiry: the smile</h2>
   <p class="panel-lede">
-    A single listed expiry, fitted with SVI. Five parameters, standard in the
-    literature, cheap enough to refit every expiry on every symbol overnight.
+    The slice marked in blue on the surface above, fitted with SVI. Five
+    parameters, standard in the literature, cheap enough to refit every expiry
+    on every symbol overnight. All fifteen listed expiries are here, and picking
+    one moves the line up there too.
     Each vertical mark is one option&rsquo;s market drawn from its bid to its
     ask. The line is the fit, and it runs across the whole range including the
     stretches where nothing is listed, which is where it is least constrained
