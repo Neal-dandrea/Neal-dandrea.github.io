@@ -113,7 +113,7 @@
     },
     {
       key: "rl", name: "Reinforcement learning",
-      where: "trading environment",
+      where: "trading environments and robot control",
       items: [
         { n: "PPO", d: "cost-aware reward shaping" },
         { n: "DQN", d: "discrete action comparison" },
