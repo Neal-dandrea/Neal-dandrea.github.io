@@ -999,8 +999,9 @@
             <tr><td>Worst single quote</td><td class="v">${d.worst.toFixed(2)} vol pts</td></tr>
             <tr><td>Fit inside the bid-ask</td><td class="v">${d.insidePct.toFixed(0)}%</td></tr>
           </table>
-          <p class="aside">Weighted is the number to quote. A tenth of a point
-             in the wing is worth far less money than a tenth at the money.</p>
+          <p class="aside">Weighted is the number to quote, because a tenth of a
+             point in the wing is worth far less money than a tenth at the
+             money.</p>
         </div>
         <div>
           <h4>No-arbitrage</h4>
@@ -1014,7 +1015,7 @@
           <p class="aside">Total variance must not fall with maturity, or a
              calendar spread is free money on paper. Durrleman&rsquo;s g must
              stay non-negative, or the smile implies a negative probability
-             somewhere. Computed over a 40 by 40 grid.</p>
+             somewhere, and both are computed over a 40 by 40 grid.</p>
         </div>
       </div>`;
   }
@@ -1723,7 +1724,8 @@
       </div>`;
     }).join("")
     + `<p style="margin:1rem 0 0;font-size:0.88rem;color:var(--ink-soft)">
-         Linear bars. The last one is barely a mark, which is the finding. A
+         The bars are linear, and the last one is barely a mark, which is the
+         finding. A
          factor of ${Math.round(126756 / 513)} on the count is a factor of
          ${Math.round(Math.sqrt(126756 / 513))} on the precision.
        </p>`;
@@ -1945,7 +1947,7 @@
           <h4>2. Ask the surface for the 25-delta strikes</h4>
           <p>The strike and its volatility depend on each other, so this is
              solved rather than looked up. Guess a vol, get a strike, read the
-             surface there, repeat. It settles in three passes.</p>
+             surface there, repeat, and it settles in three passes.</p>
           ${eq("strike")}
           <table class="nums">
             <tr><th></th><th>strike</th><th>vol from the surface</th></tr>
@@ -2000,8 +2002,8 @@
             <tr><td>Gamma P&amp;L from a 1% move, curvature alone</td>
                 <td class="v">${money2(t.gammaPnl1pct)}</td></tr>
           </table>
-          <p class="aside">The two vegas nearly cancel. Both legs sit at the
-             same delta, so they carry almost the same sensitivity to the
+          <p class="aside">The two vegas nearly cancel, because both legs sit at
+             the same delta, so they carry almost the same sensitivity to the
              <em>level</em> of volatility, and what survives is a bet on its
              <em>shape</em>. Lift the whole surface a point and this position
              barely notices.</p>
@@ -2013,8 +2015,8 @@
              skew premium of ${money(t.skewValue)}.</p>
           <p class="verdict">${
             Math.abs(t.skewValue) > t.cost * 2.5
-              ? `Costs eat ${(100 * t.cost / Math.abs(t.skewValue)).toFixed(0)}% of the edge. Survivable, and worth carrying further.`
-              : `Costs eat ${(100 * t.cost / Math.abs(t.skewValue)).toFixed(0)}% of the edge. On this surface the trade is mostly a way to pay a market maker.`
+              ? `Costs eat ${(100 * t.cost / Math.abs(t.skewValue)).toFixed(0)}% of the edge, which is survivable and worth carrying further.`
+              : `Costs eat ${(100 * t.cost / Math.abs(t.skewValue)).toFixed(0)}% of the edge, so on this surface the trade is mostly a way to pay a market maker.`
           }</p>
         </li>
         <li>

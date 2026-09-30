@@ -1327,7 +1327,7 @@
       name: "Stale observations",
       body: "The camera frame is a few control cycles old, so the policy "
         + "answers a question about where the arm used to be. At low speed it "
-        + "is nearly invisible. Faster, it becomes overshoot and then "
+        + "is nearly invisible, and faster it becomes overshoot and then "
         + "oscillation.",
     },
     mask: {

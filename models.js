@@ -432,7 +432,8 @@
       </div>`;
     }).join("")
     + '</div><p style="margin:0.8rem 0 0;font-size:0.88rem;color:var(--ink-soft)">'
-    + 'Illustrative. The averages are close enough to look interchangeable. The '
+    + 'The chart is illustrative, and the averages are close enough to look '
+    + 'interchangeable. The '
     + 'spread is not, and the spread is what decides whether a claim about '
     + 'adaptability holds.</p>';
   }
