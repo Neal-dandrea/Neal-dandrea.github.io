@@ -31,6 +31,7 @@
   }
   const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
   const lerp = (a, b, t) => a + (b - a) * t;
+  const ease = (u) => u * u * (3 - 2 * u);            // smooth at both ends
 
   const root = document.querySelector(".viz-root") || document.documentElement;
   const cssVar = (n) => getComputedStyle(root).getPropertyValue(n).trim();
@@ -190,7 +191,6 @@
     released: 0.58,              // the giving arm has let go
   };
 
-  const ease = (u) => u * u * (3 - 2 * u);            // smooth at both ends
   const mix = (p, q, u) => ({ x: lerp(p.x, q.x, u), y: lerp(p.y, q.y, u) });
 
   const heroState = { t: 0.55, seed: [-1.35, 0.55, 0.62, 0.3, 0.1] };
@@ -667,7 +667,7 @@
       }));
   }
 
-  window.__robotics = { rng, gauss, clamp, lerp, cssVar, el, clear, showTip,
+  window.__robotics = { rng, gauss, clamp, lerp, ease, cssVar, el, clear, showTip,
     hideTip, fitCanvas, fitAspect, axes, renderStats, renderConstraints,
     drawModel, modelControls, drawLoop, loopControls,
     drawArmPlate, heroControls, poseArm, ARM };
@@ -677,7 +677,7 @@
 (function () {
   "use strict";
   const R = window.__robotics;
-  const { rng, gauss, clamp, lerp, cssVar, el, clear, showTip, hideTip,
+  const { rng, gauss, clamp, lerp, ease, cssVar, el, clear, showTip, hideTip,
           fitCanvas, fitAspect, axes } = R;
 
   /* ------------------------------------------------ 02 the pipeline, moving
@@ -788,6 +788,7 @@
          groups apart to open the jaws. */
       const UMI = window.UMI_GRIPPER;
       const shell = cssVar("--surface-panel");
+      const TOOL_R = 1.05;                     // tool units to canvas units
 
       const path = (u) => ({
         x: 170 + u * 300,
@@ -814,12 +815,41 @@
       }
       ctx.globalAlpha = 1;
 
+      /* The object the demonstration ends on. A demonstration reaching for
+         nothing is a gripper waving, and the whole point of the stage is that
+         somebody picked something up. It sits at the end of the path because
+         the traced outline puts the grasp point at its own origin, so the
+         gripper arrives with the object already between the fingers. */
+      /* The traced fingers run from the body out to x = 0, so the grasp point
+         is the very fingertip. An object centered there sits half outside the
+         jaws. Setting it back along the tool axis puts it in the mouth, where
+         a gripper actually holds something. */
+      const OBJ_R = 12;                        // tool units, so 24 across
+      const OBJ_BACK = 14;
+      const e0 = path(0.98), e1 = path(1);
+      const eth = Math.atan2(e1.y - e0.y, e1.x - e0.x);
+      const objAt = { x: e1.x - Math.cos(eth) * OBJ_BACK * TOOL_R,
+                      y: e1.y - Math.sin(eth) * OBJ_BACK * TOOL_R };
+      ctx.fillStyle = accent;
+      ctx.globalAlpha = 0.16;
+      ctx.beginPath();
+      ctx.arc(sx(objAt.x), sy(objAt.y), (OBJ_R + 7) * TOOL_R * S, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.arc(sx(objAt.x), sy(objAt.y), OBJ_R * TOOL_R * S, 0, Math.PI * 2);
+      ctx.fill();
+
       const g = path(p);
-      const ah = path(Math.min(1, p + 0.02));
-      const th = Math.atan2(ah.y - g.y, ah.x - g.x);
+      /* Take the heading from a step that is always inside the path. Sampling
+         forward from p clamps to the same point at the end, and atan2(0, 0) is
+         zero, so the tool used to snap flat on the last frame. */
+      const hb0 = Math.min(p, 0.98);
+      const h0 = path(hb0), h1 = path(hb0 + 0.02);
+      const th = Math.atan2(h1.y - h0.y, h1.x - h0.x);
       const fx = Math.cos(th), fy = Math.sin(th);
       const ux = -Math.sin(th), uy = Math.cos(th);
-      const TOOL = 1.05;                       // the tool is 100 units long
+      const TOOL = TOOL_R;                     // the tool is 100 units long
       const at = (f, a) => ({ x: g.x + (fx * f + ux * a) * TOOL,
                               y: g.y + (fy * f + uy * a) * TOOL });
 
@@ -857,7 +887,11 @@
 
       // Place the traced outlines. The canvas transform does the posing, so the
       // path data stays in the frame it was generated in.
-      const open = 5 + 4 * Math.sin(p * 7);     // the jaws working
+      /* Larger values here bring the fingers TOGETHER, because each group is
+         translated toward the tool axis. Wide on the way in, closed on the
+         object by the end. At 11 the faces sit at about 12 either side, which
+         is the object's radius. */
+      const open = 2 + 9 * ease(clamp((p - 0.78) / 0.22, 0, 1));
       ctx.save();
       ctx.translate(sx(g.x), sy(g.y));
       ctx.rotate(th);
