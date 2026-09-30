@@ -168,6 +168,31 @@
      get to, which is the failure this plate had on its first day. */
   const ARM_B = { base: { x: 620, y: 300 }, seed: [-1.85, -0.55, -0.62, -0.3, -0.1] };
 
+  /* The handover as a sequence rather than as one frozen instant.
+
+     Posing both arms onto the object at every slider position left the two
+     hands welded together for the whole sweep, which is the one thing a
+     handover is not. The giving arm now carries the object in from its own
+     side, the two meet, it releases, and it withdraws, so the drawing shows
+     the approach and the separation that make it a handover.
+
+     ⚠️ ALL THREE POINTS HAVE TO BE INSIDE THE REACH THAT USES THEM. Links sum
+     to 322 and the bases are 470 apart. meet is 264 from both bases, giver is
+     192 from the giving base, taker is 175 from the receiving base. Move any
+     of them without redoing that arithmetic and the solver stretches a joint
+     straight at a point it cannot get to, which is how this plate broke the
+     first time. */
+  const SEQ = {
+    meet:  { x: 385, y: 180 },   // where the two hands come together
+    giver: { x: 500, y: 150 },   // where the giving arm starts and returns to
+    taker: { x: 300, y: 210 },   // where the receiving arm waits before closing in
+    closed: 0.42,                // the hands have met
+    released: 0.58,              // the giving arm has let go
+  };
+
+  const ease = (u) => u * u * (3 - 2 * u);            // smooth at both ends
+  const mix = (p, q, u) => ({ x: lerp(p.x, q.x, u), y: lerp(p.y, q.y, u) });
+
   const heroState = { t: 0.55, seed: [-1.35, 0.55, 0.62, 0.3, 0.1] };
 
   function drawArmPlate() {
@@ -185,14 +210,20 @@
 
     const mono = (px) => `${px * S}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
 
-    // The object travels along the handover path as the slider moves.
-    const from = { x: 415, y: 155 }, to = { x: 355, y: 205 };
-    const target = {
-      x: lerp(from.x, to.x, heroState.t),
-      y: lerp(from.y, to.y, heroState.t),
-    };
+    /* Where everything is at this point in the sequence. The object rides with
+       the giving arm until the release, and with the receiving arm after it. */
+    const t = heroState.t;
+    const inbound = ease(clamp(t / SEQ.closed, 0, 1));
+    const outbound = ease(clamp((t - SEQ.released) / (1 - SEQ.released), 0, 1));
+
+    const object = mix(SEQ.giver, SEQ.meet, inbound);
+    const target = mix(SEQ.taker, SEQ.meet, inbound);   // the receiving hand
     const sol = poseArm(target, heroState.seed);
     const pts = sol.pts;
+
+    // The receiving hand closes as it arrives, the giving hand opens to let go.
+    const gripA = clamp((t - SEQ.closed) / (SEQ.released - SEQ.closed), 0, 1);
+    const gripB = 1 - gripA;
 
     /* ---- the table, with a thickness rather than a single line ---------- */
     ctx.fillStyle = cssVar("--surface-panel");
@@ -237,8 +268,10 @@
     /* One arm, given its solved points. Both arms are the same machine, so the
        drawing is the same code, and the second one is drawn faintly because a
        page with two equally loud robots on it has no subject. */
-    function drawArm(pts, base, dim) {
+    function drawArm(pts, base, dim, grip) {
       const a = dim ? 0.45 : 1;
+      // 1 is closed on the object, 0 is open and clear of it.
+      const span = 13 - 4 * clamp(grip === undefined ? 1 : grip, 0, 1);
       ctx.globalAlpha = a;
 
       // Pedestal, two stacked cylinders, the way the arm is actually mounted.
@@ -279,12 +312,12 @@
 
       capsule(alongL(hbL, -2), alongL(hbL, 4), 11, body, edge);
       capsule(alongL(hbL, 4), alongL(hbL, 15), 9, body, edge);
-      capsule({ x: hbL.x + Math.cos(thL) * 15 + nxL * 10, y: hbL.y + Math.sin(thL) * 15 + nyL * 10 },
-              { x: hbL.x + Math.cos(thL) * 15 - nxL * 10, y: hbL.y + Math.sin(thL) * 15 - nyL * 10 },
+      capsule({ x: hbL.x + Math.cos(thL) * 15 + nxL * (span + 1), y: hbL.y + Math.sin(thL) * 15 + nyL * (span + 1) },
+              { x: hbL.x + Math.cos(thL) * 15 - nxL * (span + 1), y: hbL.y + Math.sin(thL) * 15 - nyL * (span + 1) },
               3, body, edge);
       [-1, 1].forEach((sgn) => {
-        const root = { x: hbL.x + Math.cos(thL) * 15 + nxL * 9 * sgn,
-                       y: hbL.y + Math.sin(thL) * 15 + nyL * 9 * sgn };
+        const root = { x: hbL.x + Math.cos(thL) * 15 + nxL * span * sgn,
+                       y: hbL.y + Math.sin(thL) * 15 + nyL * span * sgn };
         capsule(root, alongL(root, 18), 3, body, edge);
         ctx.strokeStyle = band;
         ctx.lineWidth = 2 * S;
@@ -304,13 +337,19 @@
        the identical point, or the two hands occupy the same space and the
        drawing turns into one knot. Its target is the object, pulled 17 units
        back along the line to its own base. */
-    const dxB = ARM_B.base.x - target.x, dyB = ARM_B.base.y - target.y;
-    const nB = Math.hypot(dxB, dyB) || 1;
-    const targetB = { x: target.x + dxB / nB * 17, y: target.y + dyB / nB * 17 };
+    const holdB = (p) => {
+      const dx = ARM_B.base.x - p.x, dy = ARM_B.base.y - p.y;
+      const n = Math.hypot(dx, dy) || 1;
+      return { x: p.x + dx / n * 17, y: p.y + dy / n * 17 };
+    };
+    // Carrying the object in, then backing off to where it started.
+    const targetB = outbound > 0
+      ? mix(holdB(SEQ.meet), holdB(SEQ.giver), outbound)
+      : holdB(object);
 
     const solB = poseArm(targetB, ARM_B.seed, ARM_B.base);
-    drawArm(solB.pts, ARM_B.base, true);
-    const handA = drawArm(pts, ARM.base, false);
+    drawArm(solB.pts, ARM_B.base, true, gripB);
+    const handA = drawArm(pts, ARM.base, false, gripA);
     const tip = handA.tip, th = handA.th, nx = handA.nx, ny = handA.ny, hb = handA.hb;
 
     // Wrist camera and its cone.
@@ -340,13 +379,13 @@
     // The object, and the grasp tolerance drawn to the same scale.
     ctx.fillStyle = accent;
     ctx.beginPath();
-    ctx.arc(sx(target.x), sy(target.y), 6 * S, 0, Math.PI * 2);
+    ctx.arc(sx(object.x), sy(object.y), 6 * S, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = accent;
     ctx.globalAlpha = 0.5;
     ctx.setLineDash([3 * S, 3 * S]);
     ctx.beginPath();
-    ctx.arc(sx(target.x), sy(target.y), 17 * S, 0, Math.PI * 2);
+    ctx.arc(sx(object.x), sy(object.y), 17 * S, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
@@ -355,8 +394,8 @@
     ctx.strokeStyle = faint;
     ctx.setLineDash([2 * S, 4 * S]);
     ctx.beginPath();
-    ctx.moveTo(sx(from.x), sy(from.y));
-    ctx.lineTo(sx(to.x), sy(to.y));
+    ctx.moveTo(sx(SEQ.giver.x), sy(SEQ.giver.y));
+    ctx.lineTo(sx(SEQ.meet.x), sy(SEQ.meet.y));
     ctx.stroke();
     ctx.setLineDash([]);
 
@@ -381,7 +420,7 @@
     }
 
     leader(camAt.x, camAt.y, 250, 78, "WRIST CAMERA");
-    leader(target.x, target.y - 17, 450, 64, "GRASP TOLERANCE 30 MM");
+    leader(object.x, object.y - 17, 450, 64, "GRASP TOLERANCE 30 MM");
     leader(pts[1].x, pts[1].y, 54, 196, "7 AXES, SHOWN AS 5", "left");
     leader(ARM_B.base.x - 36, 240, 700, 276, "SECOND ARM, GIVING", "right");
     leader(ARM.base.x, 322, 232, 366, "IMPEDANCE CONTROL 1 KHZ");
@@ -403,8 +442,11 @@
     const read = document.getElementById("arm-read");
     const upd = () => {
       heroState.t = slide.value / 100;
-      read.textContent = heroState.t < 0.15 ? "object held by the other arm"
-        : heroState.t > 0.85 ? "grasp closed" : "approach";
+      const t = heroState.t;
+      read.textContent = t < 0.42 ? "the giving arm brings it in"
+        : t < 0.58 ? "both hands on it"
+        : t < 0.9 ? "released, and backing off"
+        : "clear, and the object has changed hands";
       drawArmPlate();
     };
     slide.addEventListener("input", upd);

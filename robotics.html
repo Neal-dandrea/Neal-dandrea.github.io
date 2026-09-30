@@ -51,7 +51,7 @@
   <div class="controls" id="arm-controls"></div>
   <figure class="plate-fig">
     <canvas id="arm-canvas" height="380"
-      aria-label="Schematic of a robot arm reaching for an object being handed over by a second arm, annotated with the grasp tolerance, the wrist camera, the control rate and the inference time"></canvas>
+      aria-label="Two robot arms performing a handover, with the giving arm carrying the object in and withdrawing once the receiving arm has it, annotated with the grasp tolerance, the wrist camera, the control rate and the inference time"></canvas>
     <div class="plate-title">
       <span><b>Plate 00</b></span>
       <span>Handover, planar schematic</span>
@@ -59,11 +59,13 @@
       <span>Not to scale</span>
     </div>
     <figcaption>
-      Drag the slider to move the object along the handover path. Both arms
-      pose onto it, the giving one holding it from its own side. The linkage is
-      solved rather than drawn, so the reach is a real reach and the path stays
-      inside what both of them can actually get to, but the proportions are a
-      sketch and the joint count is reduced to keep the linkage legible.
+      Drag the slider to run the handover. The giving arm carries the object in
+      from its own side while the receiving arm closes on the meeting point, both
+      hands hold it for a moment, and then the giving one opens and withdraws.
+      The linkage is solved rather than drawn, so the reach is a real reach and
+      every point stays inside what the arm using it can actually get to, but the
+      proportions are a sketch and the joint count is reduced to keep the linkage
+      legible.
     </figcaption>
   </figure>
 </div>
@@ -483,6 +485,6 @@
 </footer>
 
 <script src="gripper-outline.js?v=3a92f561"></script>
-<script src="robotics.js?v=a841fdef"></script>
+<script src="robotics.js?v=a864c763"></script>
 </body>
 </html>
