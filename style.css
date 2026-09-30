@@ -210,6 +210,16 @@ nav.sections a:hover { color: var(--accent); }
   main { margin-top: 2.5rem; }
 }
 
+/* The date the page was last touched. tools/stamp.py rewrites it, so it is one
+   less thing to remember and one less thing to be quietly wrong about. A stale
+   date is worse than no date, because it tells a reader the work stopped. */
+.updated {
+  margin: 0.9rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.02em;
+}
+
 /* Anchor targets clear the sticky bar. */
 section { scroll-margin-top: 4.5rem; }
 

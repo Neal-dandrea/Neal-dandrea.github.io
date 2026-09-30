@@ -17,9 +17,11 @@ expand-and-collapse control, so the three animated teasers on it are CSS only.
 `DESIGN-NOTES.md` records what was added and why one approach was taken over
 another. Read it before undoing something that looks arbitrary.
 
-Run `python3 tools/stamp.py` before committing a change to any `.css` or `.js`
-file. It stamps each link with a hash of the file so a browser cannot serve a
-stale stylesheet against a fresh page.
+Run `python3 tools/stamp.py` before committing any change at all. It does two
+things. It stamps each stylesheet and script link with a hash of the file, so a
+browser cannot serve a stale stylesheet against a fresh page, and it sets the
+last-updated date in the masthead to today. Running it when nothing has changed
+rewrites nothing.
 
 ## Editing it
 

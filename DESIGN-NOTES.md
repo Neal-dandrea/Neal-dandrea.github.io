@@ -191,6 +191,18 @@ Headless Chromium also stops advancing CSS animations after about a second, so
 animated states are verified by forcing each state visible and rendering it,
 rather than by waiting for the animation to reach it.
 
+## The last updated date
+
+The masthead carries the date the page was last touched, and `tools/stamp.py`
+rewrites it rather than anyone editing it by hand. A date that has to be
+maintained manually goes stale without anyone noticing, and a stale one is
+worse than none at all, because it tells a reader the work stopped a year ago
+when it did not.
+
+It sits under the contact links and above the section nav, set small and faint.
+Near enough to the top that someone deciding whether the page is current can
+find it, quiet enough that it is not competing with the standfirst.
+
 ## Cache busting
 
 Every stylesheet and script link carries a hash of the file it points at, as in
