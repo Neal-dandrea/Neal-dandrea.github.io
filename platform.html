@@ -6,7 +6,7 @@
 <title>Market Data Platform — Neal D'Andrea</title>
 <meta name="description" content="An illustrative walkthrough of the market data platform Neal D'Andrea built at EQ Risk Management Consulting: volatility surfaces, SVI fits, tick capture, bar assembly, backtesting with costs, and the evaluation work that retired most of the signals.">
 <link rel="stylesheet" href="style.css?v=c7dd4110">
-<link rel="stylesheet" href="viz.css?v=16e3931a">
+<link rel="stylesheet" href="viz.css?v=f9769405">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="canonical" href="https://neal-dandrea.github.io/platform.html">
 
@@ -460,13 +460,16 @@
 
   <div class="trade-layout">
     <div id="trade-steps" class="trade-steps"></div>
-    <figure class="viz payoff">
-      <svg id="payoff-svg" viewBox="0 0 420 300" role="img"
-           aria-label="Profit and loss at expiry for a short put and long call against the underlying price"></svg>
-      <figcaption>
-        Flat between the strikes, where both options expire worthless, and with no floor on the left.
-      </figcaption>
-    </figure>
+    <div class="payoff-stick">
+      <figure class="viz payoff">
+        <svg id="payoff-svg" viewBox="0 0 420 300" role="img"
+             aria-label="Profit and loss at expiry for a short put and long call against the underlying price"></svg>
+        <figcaption>
+          Flat between the strikes, where both options expire worthless, and
+          with no floor on the left.
+        </figcaption>
+      </figure>
+    </div>
   </div>
 
   <details class="tried">

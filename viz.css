@@ -442,7 +442,27 @@ figure.viz figcaption {
   margin-top: 1.6rem;
 }
 
-.payoff { position: sticky; top: 1rem; margin-top: 0; }
+/* The chart follows the steps down the page, held at the middle of the screen
+   rather than jammed against the top.
+
+   Sticky can only pin a box to an offset, and centring needs half the box's own
+   height, which CSS has no way to name. So the sticky box is a full viewport
+   tall and the figure is centred inside it. The box pins at the top, the figure
+   sits in the middle of the screen, and when the row runs out the whole thing
+   scrolls away with it.
+
+   The row is taller than the viewport because the steps are, so the tall box
+   costs no extra height. Shorten the steps and it would start opening a gap. */
+.payoff-stick {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.payoff { margin: 0; }
 
 .steps {
   margin: 0;
@@ -669,7 +689,7 @@ table.nums td.v { font-variant-numeric: tabular-nums; }
 @media (max-width: 54rem) {
   .surface-layout { grid-template-columns: 1fr; }
   .trade-layout { grid-template-columns: 1fr; }
-  .payoff { position: static; }
+  .payoff-stick { position: static; height: auto; display: block; }
   .picker + .picker { margin-left: 0; }
   .reading { padding-top: 0; }
 }
