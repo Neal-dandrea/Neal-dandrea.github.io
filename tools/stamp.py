@@ -33,7 +33,7 @@ def freshen_date(text):
     if not m:
         return text
     today = datetime.date.today()
-    pretty = "%d %s %d" % (today.day, today.strftime("%B"), today.year)
+    pretty = "%s %d, %d" % (today.strftime("%B"), today.day, today.year)
     fresh = TIME_TAG.sub(r"\g<1>" + today.isoformat() + r"\g<2>" + pretty + r"\g<3>", m.group(0))
     return text[:m.start()] + fresh + text[m.end():]
 
