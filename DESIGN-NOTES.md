@@ -162,7 +162,8 @@ These are preferences rather than rules of typography, and they are recorded
 here so the voice stays consistent across edits.
 
 - No colons or semicolons breaking up a sentence. Join the clauses with a word
-  or start a new sentence.
+  or start a new sentence. A label followed by its value is not a sentence, so
+  `Last updated: September 29, 2026` keeps its colon.
 - American spelling everywhere, including comments and commit messages.
 - No clipped declaratives. A short punchy sentence that states a thing and
   leaves the next sentence to explain it should be joined to that next
