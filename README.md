@@ -17,6 +17,10 @@ expand-and-collapse control, so the three animated teasers on it are CSS only.
 `DESIGN-NOTES.md` records what was added and why one approach was taken over
 another. Read it before undoing something that looks arbitrary.
 
+Run `python3 tools/stamp.py` before committing a change to any `.css` or `.js`
+file. It stamps each link with a hash of the file so a browser cannot serve a
+stale stylesheet against a fresh page.
+
 ## Editing it
 
 Open `index.html` and edit the text directly. Entries are collapsible, so the

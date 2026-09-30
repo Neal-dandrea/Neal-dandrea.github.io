@@ -191,7 +191,25 @@ Headless Chromium also stops advancing CSS animations after about a second, so
 animated states are verified by forcing each state visible and rendering it,
 rather than by waiting for the animation to reach it.
 
+## Cache busting
+
+Every stylesheet and script link carries a hash of the file it points at, as in
+`style.css?v=c7dd4110`. `tools/stamp.py` rewrites those, and it should be run
+before committing any change to a `.css` or `.js` file. It is safe to run when
+nothing has changed, since it rewrites nothing.
+
+The reason is a failure that is genuinely hard to recognize. Pages serves with
+`cache-control: max-age=600` and browsers routinely hold a stylesheet past that
+on an ordinary reload, so a visitor can end up running new HTML against an old
+stylesheet. That combination exists nowhere on the server, and it reads as a
+bug in the page rather than as a caching problem. It cost a round trip once
+already, with four volatility surfaces stacked on top of each other long after
+the fix was live. A URL that changes with the file cannot be matched to a stale
+copy, so the state stops being reachable.
+
 ## Deploying
 
 `git push origin master` publishes. There is no staging environment, so the
 push is the deploy and anything broken is broken in public.
+
+Run `tools/stamp.py` first if any stylesheet or script changed.
