@@ -94,6 +94,11 @@
     the same length. The target is a single outcome per series rather than a
     value per step, which rules out a lot of the obvious framings.
   </p>
+  <p class="panel-lede me">
+    This was the first model where the shape of the data decided the
+    architecture instead of the other way round. I had been picking models off
+    a list before that.
+  </p>
 
   <div class="controls" id="arch-controls"></div>
   <figure class="viz">
@@ -209,6 +214,11 @@
     cost of an action is a number somebody can check, and the robot side is in
     the <a href="robotics.html">robot learning walkthrough</a>.
   </p>
+  <p class="panel-lede me">
+    I expected to spend my time on the algorithm and spent almost all of it on
+    the reward. An agent finds whatever you forgot to charge it for, which is a
+    sentence I understood properly only after watching one do it.
+  </p>
 
   <div class="controls" id="rl-controls"></div>
   <figure class="viz">
@@ -247,6 +257,12 @@
     anyway. LoRA and QLoRA through the HuggingFace trainer, then post-training
     quantization to get the result somewhere it can run.
   </p>
+  <p class="panel-lede me">
+    The part I did not expect was how much of this is a budgeting exercise
+    rather than a modeling one. Most of the decisions came down to what would
+    fit, and the interesting question became how little I could change and
+    still move the result.
+  </p>
 
   <div class="controls" id="peft-controls"></div>
   <figure class="viz">
@@ -278,6 +294,11 @@
     Retrieval-augmented generation with a vector store in Postgres, where most
     of the work is not the generation but the chunking, which sounds like a
     detail and decides almost everything downstream.
+  </p>
+  <p class="panel-lede me">
+    I came in assuming the model was the system and retrieval was plumbing. It
+    is the other way round, and once I could score retrieval on its own the
+    generation stopped being the thing I was debugging.
   </p>
 
   <div class="controls" id="rag-controls"></div>
@@ -313,6 +334,11 @@
     accuracy on a benchmark and more about whether performance holds when the
     setting changes, which is the same question as the deployment gap on the
     robotics page wearing different clothes.
+  </p>
+  <p class="panel-lede me">
+    This is the work that taught me to distrust an average. One number across
+    settings hid the exact thing the study was asking about, and I only saw it
+    once I plotted the settings separately.
   </p>
 
   <figure class="viz">
