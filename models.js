@@ -438,11 +438,108 @@
     + 'adaptability holds.</p>';
   }
 
+  /* --------------------------------------------- 03 what a result beats -- */
+
+  /* One model, four baselines, and a score whose sign depends entirely on which
+     baseline it is quoted against. The point of the panel is that the choice is
+     the result, so the bars are drawn on a shared axis with zero marked rather
+     than as four separate numbers a reader has to hold in their head.
+
+     Illustrative values, chosen to be the shape the real ones have. Returns
+     lose to persistence, realized volatility beats it, which is why one of
+     those is worth forecasting and the other mostly is not. */
+  const BASE = {
+    returns: {
+      name: "next-day return",
+      bars: [
+        { n: "predicts zero", v: 0.214 },
+        { n: "predicts the training mean", v: 0.061 },
+        { n: "predicts a rolling mean", v: -0.018 },
+        { n: "carries the last value forward", v: -0.047 },
+      ],
+      verdict: "Against the baseline anybody would actually use, there is nothing here.",
+    },
+    vol: {
+      name: "realized volatility",
+      bars: [
+        { n: "predicts zero", v: 0.782 },
+        { n: "predicts the training mean", v: 0.336 },
+        { n: "predicts a rolling mean", v: 0.121 },
+        { n: "carries the last value forward", v: 0.068 },
+      ],
+      verdict: "It still beats the hard baseline, which is what makes this one worth forecasting.",
+    },
+  };
+
+  const baseState = { target: "returns" };
+
+  function drawBase() {
+    const svg = document.getElementById("base-svg");
+    if (!svg) return;
+    clear(svg);
+    const W = 720, H = 320, pad = { l: 232, r: 34, t: 34, b: 52 };
+    const d = BASE[baseState.target];
+    const lo = Math.min(-0.12, ...d.bars.map((b) => b.v)) - 0.03;
+    const hi = Math.max(0.12, ...d.bars.map((b) => b.v)) + 0.06;
+    const X = (v) => pad.l + ((v - lo) / (hi - lo)) * (W - pad.l - pad.r);
+    const rowH = (H - pad.t - pad.b) / d.bars.length;
+
+    const faint = cssVar("--ink-faint"), g = cssVar("--grid");
+    const up = cssVar("--series-2"), down = cssVar("--series-1");
+
+    const lab = el("text", { x: pad.l, y: pad.t - 12, "font-size": 11, fill: faint }, svg);
+    lab.textContent = "skill against the baseline, R\u00b2";
+
+    // The zero line is the whole argument, so it is drawn heavier than the grid.
+    for (let v = Math.ceil(lo * 10) / 10; v <= hi; v += 0.2) {
+      if (Math.abs(v) < 1e-9) continue;
+      el("line", { x1: X(v), y1: pad.t, x2: X(v), y2: H - pad.b, stroke: g }, svg);
+      const t = el("text", { x: X(v), y: H - pad.b + 18, "text-anchor": "middle",
+        "font-size": 11, fill: faint }, svg);
+      t.textContent = v.toFixed(1);
+    }
+    el("line", { x1: X(0), y1: pad.t - 4, x2: X(0), y2: H - pad.b + 4,
+      stroke: cssVar("--muted-mark"), "stroke-width": 1.5 }, svg);
+    const zt = el("text", { x: X(0), y: H - pad.b + 18, "text-anchor": "middle",
+      "font-size": 11, fill: cssVar("--ink-soft") }, svg);
+    zt.textContent = "0";
+
+    d.bars.forEach((b, i) => {
+      const y = pad.t + i * rowH + rowH * 0.22;
+      const h = rowH * 0.5;
+      const x0 = Math.min(X(0), X(b.v)), w = Math.abs(X(b.v) - X(0));
+      el("rect", { x: x0, y: y, width: Math.max(w, 1), height: h,
+        fill: b.v >= 0 ? up : down, rx: 1.5 }, svg);
+
+      const t = el("text", { x: pad.l - 14, y: y + h * 0.72, "text-anchor": "end",
+        "font-size": 12, fill: cssVar("--ink-soft") }, svg);
+      t.textContent = b.n;
+
+      const v = el("text", {
+        x: b.v >= 0 ? X(b.v) + 7 : X(b.v) - 7, y: y + h * 0.72,
+        "text-anchor": b.v >= 0 ? "start" : "end",
+        "font-size": 11.5, fill: b.v >= 0 ? up : down }, svg);
+      v.textContent = b.v.toFixed(3);
+
+      const hit = el("rect", { x: pad.l, y: pad.t + i * rowH, width: W - pad.l - pad.r,
+        height: rowH, fill: "transparent" }, svg);
+      hit.addEventListener("pointermove", (e) => showTip(
+        `<strong>${d.name}</strong><br><span class="k">against a model that</span> ${b.n}`
+        + `<br><span class="k">R\u00b2</span> ${b.v.toFixed(3)}`, e.clientX, e.clientY));
+      hit.addEventListener("pointerleave", hideTip);
+    });
+
+    const note = el("text", { x: pad.l, y: H - 12, "font-size": 11,
+      fill: cssVar("--ink-faint") }, svg);
+    note.textContent = d.verdict;
+  }
+
   /* -------------------------------------------------------------- wiring */
 
   function drawAll() {
     renderRoster();
     drawArch();
+    drawBase();
     drawAbl();
     drawRl();
     drawPeft();
@@ -482,6 +579,10 @@
       () => archState.metric,
       (k) => { archState.metric = k; drawArch(); },
       "the LSTM wins on the only axis the problem cared about");
+    controls("base-controls", "Target",
+      [["returns", "Next-day return"], ["vol", "Realized volatility"]],
+      () => baseState.target,
+      (k) => { baseState.target = k; drawBase(); });
     controls("abl-controls", "Show",
       [["both", "Both"], ["inS", "In sample"], ["oos", "Out of sample"]],
       () => ablState.show,

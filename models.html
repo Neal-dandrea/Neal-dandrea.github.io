@@ -50,6 +50,7 @@
   <ul>
     <li><a href="#roster">The models</a></li>
     <li><a href="#sequences">Sensor sequences</a></li>
+    <li><a href="#baselines">Baselines</a></li>
     <li><a href="#ablation">Does this help</a></li>
     <li><a href="#rl">Policies under cost</a></li>
     <li><a href="#peft">Adapting an LLM</a></li>
@@ -146,8 +147,63 @@
 </section>
 
 <!-- 3 ------------------------------------------------------------------ -->
-<section class="panel" id="ablation">
+<section class="panel" id="baselines">
   <p class="panel-num">03</p>
+  <h2>What a result has to beat</h2>
+  <p class="panel-lede">
+    Every number on this page is a comparison against something, and the
+    something is the part that decides whether the number means anything. A
+    model scored against a baseline nobody would ever use will look skillful
+    whatever it does.
+  </p>
+  <p class="panel-lede me">
+    I used to report a score and treat the baseline as a formality. The habit
+    that changed things was writing down what I was comparing against before
+    running anything, because picking it afterwards is picking the answer.
+  </p>
+
+  <div class="controls" id="base-controls"></div>
+  <figure class="viz">
+    <svg id="base-svg" viewBox="0 0 720 320" role="img"
+         aria-label="The same model scored against four different baselines, where the sign of the score depends on which baseline is used"></svg>
+    <figcaption>
+      The chart is illustrative, and it is one model scored four ways. Against a
+      baseline that predicts zero it looks like it has found something, and
+      against the same series carried forward one step it has not.
+    </figcaption>
+  </figure>
+
+  <details class="tried">
+    <summary>Why persistence is the one that hurts</summary>
+    <p>
+      Predicting zero and predicting the training mean are easy to beat on
+      anything with structure in it, so beating them says almost nothing.
+      Carrying the last value forward is harder, because it already contains
+      whatever the series does slowly, and a model only beats it by finding
+      something that is genuinely new in each step rather than by rediscovering
+      the level.
+    </p>
+    <p>
+      On returns almost nothing beats it, which is the correct answer rather
+      than a failure. On realized volatility a model can beat it, and that gap
+      is where the forecasting work is worth doing.
+    </p>
+  </details>
+
+  <details class="tried">
+    <summary>The baseline that turned out to be the answer</summary>
+    <p>
+      The trading agent two panels down converges on something close to holding
+      once it is charged for acting, which took me a while to read correctly.
+      Buy and hold was not the thing the agent failed to beat, it was the best
+      available policy at that cost level, and the run had found it.
+    </p>
+  </details>
+</section>
+
+<!-- 4 ------------------------------------------------------------------ -->
+<section class="panel" id="ablation">
+  <p class="panel-num">04</p>
   <h2>Does this feature block help</h2>
   <p class="panel-lede">
     The most useful model I run is a ridge regression, and it is not there to
@@ -203,7 +259,7 @@
 
 <!-- 4 ------------------------------------------------------------------ -->
 <section class="panel" id="rl">
-  <p class="panel-num">04</p>
+  <p class="panel-num">05</p>
   <h2>A policy when every action costs money</h2>
   <p class="panel-lede">
     Reinforcement learning with PPO and with DQN, on a trading environment
@@ -249,7 +305,7 @@
 
 <!-- 5 ------------------------------------------------------------------ -->
 <section class="panel" id="peft">
-  <p class="panel-num">05</p>
+  <p class="panel-num">06</p>
   <h2>Adapting a language model on a small corpus</h2>
   <p class="panel-lede">
     An open-weight model, a domain corpus far too small to justify touching
@@ -288,7 +344,7 @@
 
 <!-- 6 ------------------------------------------------------------------ -->
 <section class="panel" id="rag">
-  <p class="panel-num">06</p>
+  <p class="panel-num">07</p>
   <h2>Answering questions over a document set</h2>
   <p class="panel-lede">
     Retrieval-augmented generation with a vector store in Postgres, where most
@@ -326,7 +382,7 @@
 
 <!-- 7 ------------------------------------------------------------------ -->
 <section class="panel" id="signals">
-  <p class="panel-num">07</p>
+  <p class="panel-num">08</p>
   <h2>Physiological signals across settings that differ</h2>
   <p class="panel-lede">
     Continuous glucose monitoring, in populations and environments the device
@@ -364,7 +420,7 @@
 
 <!-- 8 ------------------------------------------------------------------ -->
 <section class="panel" id="next">
-  <p class="panel-num">08</p>
+  <p class="panel-num">09</p>
   <h2>What is next</h2>
   <p class="panel-lede">
     This is roughly the order I would pick it up in.
@@ -427,6 +483,6 @@
   </p>
 </footer>
 
-<script src="models.js?v=2eabaf76"></script>
+<script src="models.js?v=021238ed"></script>
 </body>
 </html>
