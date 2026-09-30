@@ -144,8 +144,8 @@
       <span>Runs on its own</span>
     </div>
     <figcaption>
-      215 demonstrations and 265,000 frames through this path. It cycles on its
-      own, or pick a stage. The tool in the first stage is the Universal
+      215 demonstrations and 265,000 frames went through this path, and it
+      cycles on its own unless you pick a stage. The tool in the first stage is the Universal
       Manipulation Interface gripper, drawn with the parts that make it work. A
       155 degree fisheye, mirrors sitting in the camera&rsquo;s peripheral view
       to give stereo from one monocular image, a fiducial that reports finger
@@ -189,9 +189,9 @@
   <figure class="plate-fig">
     <canvas id="model-canvas" height="300" aria-label="In-distribution and out-of-distribution performance for the two policies"></canvas>
     <figcaption>
-      Illustrative. Both policies do well on the distribution they were trained
-      on. The gap opens where the object starts somewhere the demonstrations did
-      not cover.
+      The shape is illustrative, and both policies do well on the distribution
+      they were trained on. The gap opens where the object starts somewhere the
+      demonstrations did not cover.
     </figcaption>
   </figure>
 
@@ -262,9 +262,9 @@
     <figure class="plate-fig">
       <canvas id="traj-canvas" height="380" aria-label="A reach and grasp trajectory with deployment defects applied"></canvas>
       <figcaption>
-        Illustrative. The dashed path is the demonstration, the solid path is
-        what the arm does with the defects currently switched on, and the ring
-        is the grasp tolerance.
+        The paths are illustrative, with the dashed one the demonstration, the
+        solid one what the arm does with the defects currently switched on, and
+        the ring the grasp tolerance.
       </figcaption>
     </figure>
 
@@ -311,7 +311,7 @@
     <svg id="checkpoints-svg" viewBox="0 0 720 300" role="img"
          aria-label="Prediction error against training checkpoint for the original and rebuilt data pipelines"></svg>
     <figcaption>
-      Illustrative shape, measured conclusion. Rebuilding the conversion at
+      The shape is illustrative and the conclusion is measured. Rebuilding the conversion at
       three times the fidelity and retraining produced lower prediction error
       than the original model on 20 held-out episodes, at every checkpoint.
     </figcaption>
@@ -344,7 +344,9 @@
     <svg id="rollouts-svg" viewBox="0 0 720 320" role="img"
          aria-label="Final error across repeated rollouts for two policies, with the spread shown"></svg>
     <figcaption>
-      Illustrative. Adding rollouts separates the two distributions, and at one rollout each the worse policy wins often enough to be dangerous.
+      The shape is illustrative, and adding rollouts separates the two
+      distributions. At one rollout each the worse policy wins often enough to
+      be dangerous.
     </figcaption>
   </figure>
 
@@ -380,7 +382,7 @@
     <svg id="ladder-svg" viewBox="0 0 720 340" role="img"
          aria-label="Held-out error against parameter count for the quantum and classical arms across a width ladder"></svg>
     <figcaption>
-      Illustrative spread, measured conclusion. At matched parameter count the
+      The spread is illustrative and the conclusion is measured. At matched parameter count the
       two arms are statistically indistinguishable, at roughly 140 times the
       wall-clock cost in simulation.
     </figcaption>
@@ -408,7 +410,7 @@
   <span class="plate-kicker">Open work</span>
   <h2>What is next</h2>
   <p class="lede">
-    Roughly the order I would pick it up.
+    This is roughly the order I would pick it up in.
   </p>
 
   <ol class="next-list">
@@ -481,6 +483,6 @@
 </footer>
 
 <script src="gripper-outline.js?v=3a92f561"></script>
-<script src="robotics.js?v=40e08dc0"></script>
+<script src="robotics.js?v=a841fdef"></script>
 </body>
 </html>

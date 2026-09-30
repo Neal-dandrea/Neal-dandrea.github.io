@@ -1354,7 +1354,7 @@
     const r = rng(99 + evalState.n);
     const arms = [
       { name: "policy A", mean: 31, sd: 11, c: cssVar("--muted-mark") },
-      { name: "policy B, genuinely better", mean: 22, sd: 10, c: cssVar("--series-1") },
+      { name: "policy B", mean: 22, sd: 10, c: cssVar("--series-1") },
     ];
     const xr = [0, 70];
     const X = (v) => pad.l + (v - xr[0]) / (xr[1] - xr[0]) * (W - pad.l - pad.r);
