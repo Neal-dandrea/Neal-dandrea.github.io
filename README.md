@@ -17,6 +17,10 @@ expand-and-collapse control, so the three animated teasers on it are CSS only.
 `DESIGN-NOTES.md` records what was added and why one approach was taken over
 another. Read it before undoing something that looks arbitrary.
 
+The pages load GoatCounter for visit counts, which is the only third-party
+request the site makes. It is a single tag before `</body>` on each page, and
+`DESIGN-NOTES.md` says why that one and what it costs.
+
 Run `python3 tools/stamp.py` before committing any change at all. It does two
 things. It stamps each stylesheet and script link with a hash of the file, so a
 browser cannot serve a stale stylesheet against a fresh page, and it sets the

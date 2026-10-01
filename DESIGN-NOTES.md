@@ -204,6 +204,29 @@ It sits under the contact links and above the section nav, set small and faint.
 Near enough to the top that someone deciding whether the page is current can
 find it, quiet enough that it is not competing with the standfirst.
 
+## Counting visits
+
+The four pages load GoatCounter, which is the only third-party request the site
+makes. Everything else, the fonts included, is served from this origin, and that
+was true of the whole site until this was added.
+
+It was chosen over the alternatives because it sets no cookies, stores no IP
+address and keeps no per-visitor identity, so there is no consent banner to add
+and nothing that follows a reader between pages or between sites. What comes
+back is a page path, a referrer, a browser, a country and a date. The dashboard
+is private.
+
+Two things worth being honest about. It is on the standard blocklists, so a
+reader running uBlock Origin will not be counted and will see that the page
+tried, which means the numbers are a floor rather than a census. And on a site
+with this little traffic, context can identify a visit even though the tool
+cannot, since one view with a known referrer an hour after a link was sent is
+not really anonymous.
+
+The number worth watching is not the total. It is whether readers who land on
+the overview go on to open any of the three walkthroughs, which is the one
+question the page's structure is a bet on.
+
 ## Cache busting
 
 Every stylesheet and script link carries a hash of the file it points at, as in
